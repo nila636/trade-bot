@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  background: #070708;
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+/* Telegram Web App — убираем подсветку тапа */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Скрываем скроллбар на мобилке, оставляем скролл */
+body::-webkit-scrollbar { width: 0; background: transparent; }
