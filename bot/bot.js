@@ -507,6 +507,102 @@ function chunkLines(lines, maxLen) {
   return out;
 }
 
+/* ─────────────────────── РАССЫЛКА ─────────────────────── */
+
+/* Хранилище pending-рассылок: key = broadcastId, value = { text, fromAdminId } */
+const pendingBroadcasts = new Map();
+
+bot.command("broadcast", async (ctx) => {
+  if (!isAdmin(ctx.from.id)) return ctx.reply("⛔ Доступ запрещён.");
+
+  // Текст после команды: /broadcast Привет всем!
+  const text = ctx.match?.trim();
+  if (!text) {
+    return ctx.reply(
+      "📢 *Рассылка всем пользователям*\n\n" +
+      "Использование:\n`/broadcast ваш текст`\n\n" +
+      "Поддерживается Markdown: *жирный*, _курсив_, [ссылка](url), `код`.\n\n" +
+      "После команды ты увидишь превью и кнопку подтверждения.",
+      { parse_mode: "Markdown" }
+    );
+  }
+
+  const users = await getAllUsers();
+  if (!users.length) return ctx.reply("_Нет пользователей для рассылки_", { parse_mode: "Markdown" });
+
+  // Сохраняем в памяти — ждём подтверждения
+  const bid = Date.now().toString(36);
+  pendingBroadcasts.set(bid, { text, fromAdminId: ctx.from.id, count: users.length });
+
+  const preview =
+    `📢 *Превью рассылки*\n` +
+    `━━━━━━━━━━━━━━━━\n` +
+    `${text}\n` +
+    `━━━━━━━━━━━━━━━━\n\n` +
+    `👥 *Получателей:* ${users.length}\n` +
+    `⏱ *Примерное время:* ${Math.ceil(users.length * 0.05)} сек\n\n` +
+    `Отправить всем пользователям?`;
+  const kb = new InlineKeyboard()
+    .text("📤 Отправить", `bc_ok_${bid}`)
+    .text("❌ Отмена", `bc_no_${bid}`);
+  await ctx.reply(preview, { parse_mode: "Markdown", reply_markup: kb });
+});
+
+bot.callbackQuery(/^bc_no_(.+)$/, async (ctx) => {
+  if (!isAdmin(ctx.from.id)) return ctx.answerCallbackQuery({ text: "⛔", show_alert: true });
+  const bid = ctx.match[1];
+  pendingBroadcasts.delete(bid);
+  await ctx.answerCallbackQuery({ text: "Отменено" });
+  await ctx.editMessageReplyMarkup({ reply_markup: undefined }).catch(() => {});
+  await ctx.reply("❌ Рассылка отменена.");
+});
+
+bot.callbackQuery(/^bc_ok_(.+)$/, async (ctx) => {
+  if (!isAdmin(ctx.from.id)) return ctx.answerCallbackQuery({ text: "⛔", show_alert: true });
+  const bid = ctx.match[1];
+  const pending = pendingBroadcasts.get(bid);
+  if (!pending) return ctx.answerCallbackQuery({ text: "Истекло, /broadcast заново", show_alert: true });
+  pendingBroadcasts.delete(bid);
+
+  await ctx.answerCallbackQuery({ text: "Запускаю рассылку..." });
+  await ctx.editMessageReplyMarkup({ reply_markup: undefined }).catch(() => {});
+
+  const users = await getAllUsers();
+  let sent = 0, failed = 0, blocked = 0;
+  const statusMsg = await ctx.reply(`📤 Рассылаю... 0 / ${users.length}`);
+  const startedAt = Date.now();
+
+  // Rate limit Telegram: 30 msg/sec для разных чатов. Держим 25 для запаса.
+  for (let i = 0; i < users.length; i++) {
+    const u = users[i];
+    try {
+      await bot.api.sendMessage(u.tg_id, pending.text, { parse_mode: "Markdown", disable_web_page_preview: false });
+      sent++;
+    } catch (e) {
+      failed++;
+      if (e.description?.includes("blocked") || e.description?.includes("deactivated")) blocked++;
+    }
+    // обновляем статус каждые 10 юзеров
+    if ((i + 1) % 10 === 0 || i === users.length - 1) {
+      bot.api.editMessageText(
+        statusMsg.chat.id, statusMsg.message_id,
+        `📤 Рассылаю... ${i + 1} / ${users.length}\n✅ Доставлено: ${sent}\n⚠ Ошибок: ${failed}`
+      ).catch(() => {});
+    }
+    // пауза ~40ms чтобы не упереться в rate limit
+    await new Promise(r => setTimeout(r, 40));
+  }
+
+  const elapsed = ((Date.now() - startedAt) / 1000).toFixed(1);
+  await ctx.reply(
+    `✅ *Рассылка завершена*\n\n` +
+    `📨 Отправлено: ${sent}\n` +
+    `⚠ Ошибок: ${failed}${blocked ? ` (из них заблокировали бота: ${blocked})` : ""}\n` +
+    `⏱ Время: ${elapsed}s`,
+    { parse_mode: "Markdown" }
+  );
+});
+
 /* ─────────────────────── START ─────────────────────── */
 
 bot.catch((err) => console.error("Bot error:", err));
