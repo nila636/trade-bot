@@ -183,6 +183,25 @@ const STR = {
     step_patterns: "› паттерны свечей",
     demo_note: "⚠ Демо-сигнал. В проде — результат ML-модели на исторических данных актива.",
     demo_note_market: "⚠ Демо-сигнал. В проде — результат ML-модели/API.",
+
+    gate_loading: "Проверяем доступ...",
+    gate_channel_title: "Подпишитесь на канал",
+    gate_channel_desc: "Чтобы получить доступ к сигналам, подпишитесь на наш канал с аналитикой и анонсами.",
+    gate_channel_btn: "📣 Открыть канал",
+    gate_check_btn: "Я подписался, проверить",
+    gate_broker_title: "Регистрация на Pocket Option",
+    gate_broker_desc: "Для доступа к полному функционалу зарегистрируйтесь на Pocket Option по нашей ссылке и укажите ваш ID аккаунта ниже.",
+    gate_broker_step1: "1. Зарегистрироваться на бирже",
+    gate_broker_step2: "2. Найти свой UID в профиле",
+    gate_broker_step3: "3. Ввести UID ниже",
+    gate_broker_btn_register: "🏦 Открыть Pocket Option",
+    gate_broker_uid_placeholder: "Ваш UID (цифры)",
+    gate_broker_submit: "Отправить заявку",
+    gate_broker_pending_title: "Заявка на рассмотрении",
+    gate_broker_pending_desc: "Ваш UID отправлен на проверку. Обычно это занимает до 24 часов. Мы пришлём уведомление в Telegram.",
+    gate_broker_rejected: "Заявка отклонена. Убедитесь, что вы зарегистрировались по нашей ссылке, и попробуйте снова.",
+    gate_error: "Ошибка доступа",
+    gate_retry: "Попробовать снова",
   },
 
   en: {
@@ -360,11 +379,36 @@ The rule to learn first: the market owes you nothing. A losing trade is normal, 
     step_patterns: "› candlestick patterns",
     demo_note: "⚠ Demo signal. In production this is the output of an ML model on historical asset data.",
     demo_note_market: "⚠ Demo signal. In production this is the output of an ML model/API.",
+
+    gate_loading: "Checking access...",
+    gate_channel_title: "Subscribe to the channel",
+    gate_channel_desc: "To get access to signals, please subscribe to our analytics channel.",
+    gate_channel_btn: "📣 Open channel",
+    gate_check_btn: "I subscribed, check",
+    gate_broker_title: "Register on Pocket Option",
+    gate_broker_desc: "For full access, please register on Pocket Option via our referral link and enter your account ID below.",
+    gate_broker_step1: "1. Register on the broker",
+    gate_broker_step2: "2. Find your UID in profile",
+    gate_broker_step3: "3. Enter UID below",
+    gate_broker_btn_register: "🏦 Open Pocket Option",
+    gate_broker_uid_placeholder: "Your UID (numbers)",
+    gate_broker_submit: "Submit claim",
+    gate_broker_pending_title: "Claim under review",
+    gate_broker_pending_desc: "Your UID has been submitted. Approval usually takes up to 24 hours. You'll receive a Telegram notification.",
+    gate_broker_rejected: "Claim rejected. Make sure you registered via our link and try again.",
+    gate_error: "Access error",
+    gate_retry: "Retry",
   },
 };
 
 const LangCtx = createContext({ lang: "ru", t: STR.ru, setLang: () => {} });
 const useT = () => useContext(LangCtx);
+
+/* ────────────────────────── CONFIG ────────────────────────── */
+
+const CHANNEL_URL = "https://t.me/traidingpr";
+const BROKER_URL  = "https://u3.shortink.io/register?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&al=1755360&ac=bottg&cid=952923&code=50START";
+const API_URL_HARDCODED = "https://api-production-6682.up.railway.app";
 
 /* ────────────────────────── DATA ────────────────────────── */
 
@@ -519,10 +563,24 @@ export default function TradeAppBot() {
   const [langOpen, setLangOpen] = useState(false);
   const scanRunId = useRef(0);
 
-  // ─── Telegram Web App SDK init ───
+  // ─── API client ───
+  const API_URL = API_URL_HARDCODED;
+  const [authState, setAuthState] = useState({
+    loading: true,
+    session: null,
+    subscribed: false,
+    brokerStatus: "none", // none | pending | approved | rejected
+    error: null,
+  });
+
+  // ─── Telegram Web App SDK init + auth ───
   useEffect(() => {
     const tg = typeof window !== "undefined" ? window.Telegram?.WebApp : null;
-    if (!tg) return;
+    if (!tg) {
+      // dev-режим в обычном браузере — пропускаем гейт
+      setAuthState({ loading: false, session: null, subscribed: true, brokerStatus: "approved", error: null });
+      return;
+    }
     try {
       tg.ready();
       tg.expand();
@@ -531,10 +589,44 @@ export default function TradeAppBot() {
       tg.disableVerticalSwipes?.();
       const tgLang = tg.initDataUnsafe?.user?.language_code;
       if (tgLang === "ru" || tgLang === "en") setLang(tgLang);
-    } catch (e) {
-      console.warn("Telegram WebApp init skipped:", e);
+    } catch (e) { console.warn("TG init:", e); }
+
+    if (!API_URL) {
+      setAuthState({ loading: false, session: null, subscribed: true, brokerStatus: "approved", error: null });
+      return;
     }
+
+    (async () => {
+      try {
+        const r = await fetch(`${API_URL}/api/auth`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ initData: tg.initData }),
+        });
+        if (!r.ok) throw new Error((await r.json()).error || "auth failed");
+        const d = await r.json();
+        setAuthState({ loading: false, session: d.session, subscribed: d.subscribed, brokerStatus: d.brokerStatus, error: null });
+      } catch (e) {
+        setAuthState({ loading: false, session: null, subscribed: false, brokerStatus: "none", error: e.message });
+      }
+    })();
   }, []);
+
+  // ─── Трекинг событий ───
+  const track = async (event, payload = {}) => {
+    if (!API_URL || !authState.session) return;
+    fetch(`${API_URL}/api/track`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Session": authState.session },
+      body: JSON.stringify({ event, payload }),
+    }).catch(() => {});
+  };
+
+  // Трекаем открытие приложения
+  useEffect(() => {
+    if (authState.session) track("app_opened");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authState.session]);
 
   const toggleFav = tk => {
     setFavs(prev => {
@@ -545,8 +637,7 @@ export default function TradeAppBot() {
   };
 
   const runAnalysis = async () => {
-    // Уникальный ID запуска — если пользователь нажмёт Повторить,
-    // старая цепочка setTimeout-ов будет игнорировать свои обновления.
+    track("market_analysis_started");
     const runId = ++scanRunId.current;
     const ok = () => runId === scanRunId.current;
 
@@ -614,7 +705,50 @@ export default function TradeAppBot() {
     setDisplayPrice(null);
   };
 
+  // ─── Проверка доступа к контенту ───
+  const recheckAuth = async () => {
+    const tg = window.Telegram?.WebApp;
+    if (!tg || !API_URL) return;
+    setAuthState(s => ({ ...s, loading: true }));
+    try {
+      const r = await fetch(`${API_URL}/api/auth`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData: tg.initData }),
+      });
+      if (!r.ok) throw new Error((await r.json()).error || "auth failed");
+      const d = await r.json();
+      setAuthState({ loading: false, session: d.session, subscribed: d.subscribed, brokerStatus: d.brokerStatus, error: null });
+    } catch (e) {
+      setAuthState({ loading: false, session: null, subscribed: false, brokerStatus: "none", error: e.message });
+    }
+  };
+
+  const submitBrokerClaim = async (uid) => {
+    if (!API_URL || !authState.session) return false;
+    try {
+      const r = await fetch(`${API_URL}/api/broker/claim`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Session": authState.session },
+        body: JSON.stringify({ broker_uid: uid }),
+      });
+      if (!r.ok) return false;
+      setAuthState(s => ({ ...s, brokerStatus: "pending" }));
+      return true;
+    } catch { return false; }
+  };
+
+  // Какой гейт показать (если какой-то)
+  const gateMode =
+    authState.loading                                     ? "loading" :
+    authState.error                                       ? "error"   :
+    !authState.subscribed                                 ? "channel" :
+    authState.brokerStatus === "pending"                  ? "broker_pending" :
+    authState.brokerStatus === "none" || authState.brokerStatus === "rejected" ? "broker" :
+    null;
+
   const analyzeAsset = (asset) => {
+    track("asset_clicked", { ticker: asset.ticker, catKey: asset.catKey });
     setAssetSignal({ asset, loading: true, result: null });
     setTimeout(() => {
       const isUp = Math.random() > 0.5;
@@ -867,8 +1001,18 @@ export default function TradeAppBot() {
           </div>
         </div>
 
+        {gateMode ? (
+          <AccessGate
+            mode={gateMode}
+            t={t}
+            error={authState.error}
+            onRecheck={recheckAuth}
+            onClaim={submitBrokerClaim}
+          />
+        ) : null}
+
         {/* ACCORDIONS */}
-        <main className="relative z-10 px-4 mt-5 space-y-3">
+        {!gateMode && <main className="relative z-10 px-4 mt-5 space-y-3">
           <AccordionBlock
             icon={<BarChart3 size={18} />} title={t.blocks.assets.title}
             count={t.blocks.assets.sub} open={openBlock === "assets"}
@@ -1024,10 +1168,10 @@ export default function TradeAppBot() {
               ))}
             </div>
           </AccordionBlock>
-        </main>
+        </main>}
 
         {/* STICKY ANALYZE BUTTON */}
-        <div className="fixed bottom-0 left-0 right-0 z-20 p-3 bg-gradient-to-t from-black via-black/90 to-transparent pt-8">
+        {!gateMode && <div className="fixed bottom-0 left-0 right-0 z-20 p-3 bg-gradient-to-t from-black via-black/90 to-transparent pt-8">
           <button
             onClick={runAnalysis}
             disabled={!!scan && scan.stage !== "result"}
@@ -1037,7 +1181,7 @@ export default function TradeAppBot() {
               ? <><span className="w-4 h-4 rounded-full border-2 border-black border-r-transparent spin-glow" />{t.analyze_loading}</>
               : <><Sparkles size={16} />{t.analyze_market}</>}
           </button>
-        </div>
+        </div>}
 
         {/* MARKET SCAN MODAL — многоэтапная анимация */}
         {scan && (() => {
@@ -1384,6 +1528,120 @@ function Modal({ children, onClose }) {
           <X size={14} />
         </button>
         {children}
+      </div>
+    </div>
+  );
+}
+
+/* ────────────────────────── ACCESS GATE ────────────────────────── */
+
+function AccessGate({ mode, t, error, onRecheck, onClaim }) {
+  const [uid, setUid] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!uid.trim() || !/^\d{5,15}$/.test(uid.trim())) return;
+    setSubmitting(true);
+    await onClaim(uid.trim());
+    setSubmitting(false);
+  };
+
+  return (
+    <div className="relative z-10 px-5 mt-8 pb-24">
+      <div className="max-w-md mx-auto rounded-2xl border border-yellow-500/20 bg-neutral-900/70 p-6 slide-up">
+        {mode === "loading" && (
+          <div className="text-center py-8">
+            <div className="w-12 h-12 mx-auto rounded-full border-2 border-yellow-500/30 border-t-yellow-400 spin-glow" />
+            <div className="mt-4 text-sm text-neutral-400 tracking-wider">{t.gate_loading}</div>
+          </div>
+        )}
+
+        {mode === "error" && (
+          <div className="text-center">
+            <div className="text-4xl mb-3">⚠️</div>
+            <div className="text-lg font-bold">{t.gate_error}</div>
+            {error && <div className="mt-2 text-xs text-neutral-500 mono">{error}</div>}
+            <button onClick={onRecheck} className="mt-5 w-full gold-grad text-black font-extrabold py-3 rounded-xl text-sm">
+              {t.gate_retry}
+            </button>
+          </div>
+        )}
+
+        {mode === "channel" && (
+          <>
+            <div className="text-center mb-4">
+              <div className="text-5xl mb-2">📣</div>
+              <div className="text-lg font-extrabold">{t.gate_channel_title}</div>
+              <div className="mt-2 text-sm text-neutral-400 leading-relaxed">{t.gate_channel_desc}</div>
+            </div>
+            <a
+              href={CHANNEL_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="block w-full text-center gold-grad text-black font-extrabold py-3 rounded-xl text-sm mb-2"
+            >
+              {t.gate_channel_btn}
+            </a>
+            <button
+              onClick={onRecheck}
+              className="w-full py-3 rounded-xl bg-neutral-800 border border-white/10 font-bold text-sm hover:bg-neutral-700"
+            >
+              {t.gate_check_btn}
+            </button>
+          </>
+        )}
+
+        {mode === "broker" && (
+          <>
+            <div className="text-center mb-4">
+              <div className="text-5xl mb-2">🏦</div>
+              <div className="text-lg font-extrabold">{t.gate_broker_title}</div>
+              <div className="mt-2 text-sm text-neutral-400 leading-relaxed">{t.gate_broker_desc}</div>
+            </div>
+            <div className="space-y-2 mb-4 text-xs text-neutral-400">
+              <div className="flex items-center gap-2"><span className="text-yellow-400">→</span> {t.gate_broker_step1}</div>
+              <div className="flex items-center gap-2"><span className="text-yellow-400">→</span> {t.gate_broker_step2}</div>
+              <div className="flex items-center gap-2"><span className="text-yellow-400">→</span> {t.gate_broker_step3}</div>
+            </div>
+            <a
+              href={BROKER_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="block w-full text-center gold-grad text-black font-extrabold py-3 rounded-xl text-sm mb-3"
+            >
+              {t.gate_broker_btn_register}
+            </a>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={uid}
+              onChange={e => setUid(e.target.value.replace(/\D/g, "").slice(0, 15))}
+              placeholder={t.gate_broker_uid_placeholder}
+              className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm mono font-bold focus:outline-none focus:border-yellow-500/40 mb-2"
+            />
+            <button
+              onClick={handleSubmit}
+              disabled={!uid || submitting}
+              className="w-full py-3 rounded-xl bg-neutral-800 border border-white/10 font-bold text-sm hover:bg-neutral-700 disabled:opacity-50"
+            >
+              {submitting ? "..." : t.gate_broker_submit}
+            </button>
+          </>
+        )}
+
+        {mode === "broker_pending" && (
+          <div className="text-center">
+            <div className="text-5xl mb-2">⏳</div>
+            <div className="text-lg font-extrabold">{t.gate_broker_pending_title}</div>
+            <div className="mt-2 text-sm text-neutral-400 leading-relaxed">{t.gate_broker_pending_desc}</div>
+            <button
+              onClick={onRecheck}
+              className="mt-5 w-full py-3 rounded-xl bg-neutral-800 border border-white/10 font-bold text-sm hover:bg-neutral-700"
+            >
+              {t.gate_retry}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
