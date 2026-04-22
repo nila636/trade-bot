@@ -74,7 +74,12 @@ async function trackUser(ctx) {
     lang: u.language_code?.startsWith("en") ? "en" : "ru",
   };
 
+  let isNew = false;
   if (hasDb) {
+    // Сначала узнаём новый ли это юзер (чтобы уведомить админа)
+    const exists = await pool.query("SELECT 1 FROM users WHERE tg_id = $1", [data.tg_id]);
+    isNew = exists.rowCount === 0;
+
     await pool.query(
       `INSERT INTO users (tg_id, username, first_name, last_name, lang)
        VALUES ($1, $2, $3, $4, $5)
@@ -87,6 +92,7 @@ async function trackUser(ctx) {
       [data.tg_id, data.username, data.first_name, data.last_name, data.lang]
     );
   } else {
+    isNew = !memUsers.has(data.tg_id);
     const existing = memUsers.get(data.tg_id) || { ...data, first_seen: new Date(), actions: 0 };
     existing.last_seen = new Date();
     existing.actions += 1;
@@ -94,6 +100,21 @@ async function trackUser(ctx) {
     existing.first_name = data.first_name;
     existing.last_name = data.last_name;
     memUsers.set(data.tg_id, existing);
+  }
+
+  // Уведомление админам о новом пользователе
+  if (isNew && ADMIN_IDS.length) {
+    const name = [data.first_name, data.last_name].filter(Boolean).join(" ") || "—";
+    const tag  = data.username ? `@${data.username}` : `id${data.tg_id}`;
+    const stats = hasDb ? await getStats() : { total: memUsers.size };
+    const msg =
+      `🆕 *Новый пользователь*\n\n` +
+      `${name} (${tag})\n` +
+      `🌐 Язык: ${data.lang}\n` +
+      `👥 Всего юзеров: ${stats.total}`;
+    for (const adminId of ADMIN_IDS) {
+      bot.api.sendMessage(adminId, msg, { parse_mode: "Markdown" }).catch(() => {});
+    }
   }
 }
 
@@ -394,6 +415,79 @@ bot.callbackQuery("adm_export", async (ctx) => {
     { source: buf, filename: `users_${Date.now()}.csv` },
     { caption: `📋 Экспорт: ${users.length} пользователей` }
   );
+});
+
+/* ─────────────────────── ЗАЯВКИ НА БИРЖУ ─────────────────────── */
+
+const CHANNEL_USERNAME = process.env.CHANNEL_USERNAME || "traidingpr";
+const BROKER_REF_URL   = process.env.BROKER_REF_URL   || "https://pocketoption.com/ru/?ref=YOUR_REF_ID";
+
+bot.command("claims", async (ctx) => {
+  if (!isAdmin(ctx.from.id)) return ctx.reply("⛔ Доступ запрещён.");
+  if (!hasDb) return ctx.reply("⚠ БД недоступна, функция не работает в in-memory режиме.");
+
+  const r = await pool.query(
+    `SELECT c.tg_id, c.broker_uid, c.created_at, u.username, u.first_name, u.last_name
+     FROM broker_claims c LEFT JOIN users u ON u.tg_id = c.tg_id
+     WHERE c.status = 'pending'
+     ORDER BY c.created_at ASC LIMIT 20`
+  );
+  if (!r.rowCount) return ctx.reply("_Заявок в ожидании нет_", { parse_mode: "Markdown" });
+
+  for (const row of r.rows) {
+    const name = [row.first_name, row.last_name].filter(Boolean).join(" ") || "—";
+    const tag  = row.username ? `@${row.username}` : `id${row.tg_id}`;
+    const text =
+      `⏳ *Заявка на доступ*\n\n` +
+      `👤 ${name} (${tag})\n` +
+      `🏦 Pocket Option UID: \`${row.broker_uid}\`\n` +
+      `📅 Подана: ${fmtDate(row.created_at)}`;
+    const kb = new InlineKeyboard()
+      .text("✅ Одобрить", `claim_ok_${row.tg_id}`)
+      .text("❌ Отклонить", `claim_no_${row.tg_id}`);
+    await ctx.reply(text, { parse_mode: "Markdown", reply_markup: kb });
+  }
+});
+
+bot.callbackQuery(/^claim_(ok|no)_(\d+)$/, async (ctx) => {
+  if (!isAdmin(ctx.from.id)) return ctx.answerCallbackQuery({ text: "⛔", show_alert: true });
+  const [, verdict, tgIdStr] = ctx.match;
+  const tgId = Number(tgIdStr);
+  const newStatus = verdict === "ok" ? "approved" : "rejected";
+
+  if (hasDb) {
+    await pool.query(
+      `UPDATE broker_claims SET status = $1, reviewed_at = NOW() WHERE tg_id = $2`,
+      [newStatus, tgId]
+    );
+  }
+
+  // Уведомление пользователю
+  const userMsg = newStatus === "approved"
+    ? "✅ Ваша регистрация на Pocket Option подтверждена! Полный доступ к приложению открыт."
+    : "❌ Ваша заявка отклонена. Убедитесь, что вы зарегистрировались по реферальной ссылке в боте, и подайте заявку заново.";
+  await bot.api.sendMessage(tgId, userMsg).catch(() => {});
+
+  await ctx.answerCallbackQuery({
+    text: newStatus === "approved" ? "✅ Одобрено" : "❌ Отклонено",
+  });
+  await ctx.editMessageReplyMarkup({ reply_markup: undefined }).catch(() => {});
+  await ctx.reply(`Заявка ${tgId} → *${newStatus}*`, { parse_mode: "Markdown" });
+});
+
+/* Команда проверки подписки юзера на канал — полезна для дебага */
+bot.command("checksub", async (ctx) => {
+  try {
+    const m = await bot.api.getChatMember(`@${CHANNEL_USERNAME}`, ctx.from.id);
+    const subscribed = ["creator", "administrator", "member"].includes(m.status);
+    await ctx.reply(
+      subscribed
+        ? `✅ Вы подписаны на @${CHANNEL_USERNAME} (status: ${m.status})`
+        : `❌ Вы не подписаны на @${CHANNEL_USERNAME}\nhttps://t.me/${CHANNEL_USERNAME}`
+    );
+  } catch (e) {
+    await ctx.reply(`⚠ Ошибка проверки: ${e.description || e.message}\n\nУбедитесь, что бот добавлен админом в канал @${CHANNEL_USERNAME}.`);
+  }
 });
 
 function csvEscape(s) {

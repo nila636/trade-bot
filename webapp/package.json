@@ -1,22 +1,18 @@
 {
-  "name": "trade-bot-webapp",
+  "name": "trade-bot",
   "version": "1.0.0",
   "type": "module",
+  "main": "bot.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "start": "node bot.js",
+    "dev": "node --watch bot.js"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "lucide-react": "^0.460.0"
+    "grammy": "^1.30.0",
+    "dotenv": "^16.4.5",
+    "pg": "^8.13.1"
   },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.15",
-    "vite": "^5.4.11"
+  "engines": {
+    "node": ">=20"
   }
 }
