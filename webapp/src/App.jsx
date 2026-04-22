@@ -739,70 +739,31 @@ export default function TradeAppBot() {
   }, [authState.session]);
 
   // ─── LIVE цены ───
-  // Раз в минуту тянем актуальные котировки с Binance (крипта) и Frankfurter (форекс).
-  // livePrices: Map<ticker, { price, change24h }>
+  // Все 121 котировка прилетают одним запросом с нашего API (кешируется на бэке 60 сек).
+  // Источники на бэке: Binance (крипта) + Frankfurter (основной FX) + Yahoo Finance
+  // (акции, индексы, сырьё, экзотик-FX). OTC синтезируется из реальных пар.
   const [livePrices, setLivePrices] = useState({});
 
   useEffect(() => {
     let alive = true;
 
     async function updatePrices() {
-      // Собираем все крипто-тикеры с binanceSymbol из ASSETS_BY_CAT.crypto
-      const cryptoList = ASSETS_BY_CAT.crypto.filter(a => a.binanceSymbol);
-      const cryptoSymbols = cryptoList.map(a => `"${a.binanceSymbol}"`).join(",");
-
-      const updates = {};
-
-      // 1) Binance — одним запросом берём все цены + 24h change
+      if (!API_URL) return;
       try {
-        const r = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=[${cryptoSymbols}]`);
-        if (r.ok) {
-          const data = await r.json();
-          for (const item of data) {
-            const asset = cryptoList.find(a => a.binanceSymbol === item.symbol);
-            if (asset) {
-              updates[asset.ticker] = {
-                price: parseFloat(item.lastPrice),
-                change: parseFloat(item.priceChangePercent),
-              };
-            }
-          }
-        }
-      } catch (e) { /* ignore */ }
-
-      // 2) Frankfurter — основные форекс-пары (без OTC, они синтетика)
-      try {
-        const r = await fetch("https://api.frankfurter.app/latest?from=USD&to=EUR,GBP,CAD,CHF,JPY,AUD,NZD");
+        const r = await fetch(`${API_URL}/api/quotes`);
         if (r.ok) {
           const d = await r.json();
-          const usdTo = d.rates || {};
-          const mapping = {
-            "EUR/USD": 1 / usdTo.EUR,
-            "GBP/USD": 1 / usdTo.GBP,
-            "AUD/USD": 1 / usdTo.AUD,
-            "USD/JPY": usdTo.JPY,
-            "USD/CHF": usdTo.CHF,
-            "USD/CAD": usdTo.CAD,
-            "EUR/CAD": (1 / usdTo.EUR) * usdTo.CAD,
-            "GBP/JPY": (1 / usdTo.GBP) * usdTo.JPY,
-          };
-          for (const [ticker, price] of Object.entries(mapping)) {
-            if (price && !isNaN(price)) {
-              updates[ticker] = { price, change: updates[ticker]?.change ?? 0 };
-            }
+          if (alive && d.quotes) {
+            setLivePrices(d.quotes);
           }
         }
-      } catch (e) { /* ignore */ }
-
-      if (alive && Object.keys(updates).length) {
-        setLivePrices(prev => ({ ...prev, ...updates }));
-      }
+      } catch (e) { /* игнорируем — покажутся статичные цены */ }
     }
 
     updatePrices();
-    const id = setInterval(updatePrices, 60_000); // раз в минуту
+    const id = setInterval(updatePrices, 30_000); // раз в 30 секунд
     return () => { alive = false; clearInterval(id); };
-  }, []);
+  }, [API_URL]);
 
   // Возвращает актуальный ассет с подставленной live-ценой (если есть)
   const withLivePrice = (asset) => {
