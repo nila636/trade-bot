@@ -915,6 +915,10 @@ export default function TradeAppBot() {
     setAssetSignal({ asset, loading: true, result: null });
     setTimeout(() => {
       const isUp = Math.random() > 0.5;
+      const price = typeof asset.price === "number" ? asset.price : 1;
+      const digits = asset.digits ?? (price < 0.001 ? 8 : price < 1 ? 5 : price < 100 ? 3 : 2);
+      const delta = 0.001 + Math.random() * 0.003;
+      const target = isUp ? price * (1 + delta) : price * (1 - delta);
       setAssetSignal({
         asset,
         loading: false,
@@ -922,10 +926,8 @@ export default function TradeAppBot() {
           isUp,
           prob: 78 + Math.floor(Math.random() * 17),
           time: `${1 + Math.floor(Math.random() * 5)}M`,
-          entry: asset.price,
-          target: isUp
-            ? +(asset.price * (1 + (0.001 + Math.random() * 0.003))).toFixed(5)
-            : +(asset.price * (1 - (0.001 + Math.random() * 0.003))).toFixed(5),
+          entry: price.toFixed(digits),
+          target: target.toFixed(digits),
         },
       });
     }, 1600);
@@ -1576,10 +1578,8 @@ export default function TradeAppBot() {
             ) : (
               <div className="text-center py-1">
                 <div className="flex items-center justify-center gap-2 mb-2">
-                  <div className="flex">
-                    {assetSignal.asset.flags.map((f, i) => (
-                      <span key={i} className="text-xl" style={{ marginLeft: i ? -6 : 0 }}>{f}</span>
-                    ))}
+                  <div className="relative w-11 h-10 flex items-center justify-center">
+                    <AssetIcon asset={assetSignal.asset} />
                   </div>
                   <div className="text-[10px] tracking-[0.3em] text-yellow-400 font-bold">{t.tag_signal}</div>
                 </div>
