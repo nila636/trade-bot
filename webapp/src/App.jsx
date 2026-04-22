@@ -437,18 +437,54 @@ const CAT_META = [
   { key: "fav",    Icon: Heart     },
 ];
 
+const FLAG = (code) => `https://flagcdn.com/w80/${code}.png`;
+
 const ASSETS_BY_CAT = {
   fiat: [
-    { ticker: "EUR/CAD", catKey: "fiat", yield: 73, price: 1.60815, change: 0.00,  flags: ["🇪🇺","🇨🇦"] },
-    { ticker: "EUR/USD", catKey: "fiat", yield: 78, price: 1.08412, change: 0.12,  flags: ["🇪🇺","🇺🇸"] },
-    { ticker: "GBP/JPY", catKey: "fiat", yield: 71, price: 198.430, change: -0.24, flags: ["🇬🇧","🇯🇵"] },
-    { ticker: "USD/CHF", catKey: "fiat", yield: 69, price: 0.88921, change: 0.05,  flags: ["🇺🇸","🇨🇭"] },
-    { ticker: "AUD/USD", catKey: "fiat", yield: 74, price: 0.65127, change: -0.11, flags: ["🇦🇺","🇺🇸"] },
+    { ticker: "EUR/USD", catKey: "fiat", yield: 78, price: 1.08412, change: 0.12,  flagUrls: [FLAG("eu"), FLAG("us")], digits: 5 },
+    { ticker: "GBP/USD", catKey: "fiat", yield: 75, price: 1.27150, change: 0.08,  flagUrls: [FLAG("gb"), FLAG("us")], digits: 5 },
+    { ticker: "USD/JPY", catKey: "fiat", yield: 77, price: 151.220, change: -0.15, flagUrls: [FLAG("us"), FLAG("jp")], digits: 3 },
+    { ticker: "USD/CHF", catKey: "fiat", yield: 69, price: 0.88921, change: 0.05,  flagUrls: [FLAG("us"), FLAG("ch")], digits: 5 },
+    { ticker: "USD/CAD", catKey: "fiat", yield: 72, price: 1.38420, change: -0.18, flagUrls: [FLAG("us"), FLAG("ca")], digits: 5 },
+    { ticker: "AUD/USD", catKey: "fiat", yield: 74, price: 0.65127, change: -0.11, flagUrls: [FLAG("au"), FLAG("us")], digits: 5 },
+    { ticker: "NZD/USD", catKey: "fiat", yield: 73, price: 0.59130, change: 0.22,  flagUrls: [FLAG("nz"), FLAG("us")], digits: 5 },
+    { ticker: "EUR/GBP", catKey: "fiat", yield: 71, price: 0.85280, change: -0.04, flagUrls: [FLAG("eu"), FLAG("gb")], digits: 5 },
+    { ticker: "EUR/JPY", catKey: "fiat", yield: 76, price: 163.850, change: -0.03, flagUrls: [FLAG("eu"), FLAG("jp")], digits: 3 },
+    { ticker: "EUR/CHF", catKey: "fiat", yield: 70, price: 0.96400, change: 0.07,  flagUrls: [FLAG("eu"), FLAG("ch")], digits: 5 },
+    { ticker: "EUR/CAD", catKey: "fiat", yield: 73, price: 1.60815, change: 0.10,  flagUrls: [FLAG("eu"), FLAG("ca")], digits: 5 },
+    { ticker: "EUR/AUD", catKey: "fiat", yield: 72, price: 1.66420, change: 0.23,  flagUrls: [FLAG("eu"), FLAG("au")], digits: 5 },
+    { ticker: "EUR/NZD", catKey: "fiat", yield: 70, price: 1.83410, change: -0.10, flagUrls: [FLAG("eu"), FLAG("nz")], digits: 5 },
+    { ticker: "GBP/JPY", catKey: "fiat", yield: 71, price: 198.430, change: -0.24, flagUrls: [FLAG("gb"), FLAG("jp")], digits: 3 },
+    { ticker: "GBP/CHF", catKey: "fiat", yield: 69, price: 1.13080, change: 0.13,  flagUrls: [FLAG("gb"), FLAG("ch")], digits: 5 },
+    { ticker: "GBP/CAD", catKey: "fiat", yield: 70, price: 1.76020, change: -0.08, flagUrls: [FLAG("gb"), FLAG("ca")], digits: 5 },
+    { ticker: "GBP/AUD", catKey: "fiat", yield: 70, price: 1.95210, change: 0.19,  flagUrls: [FLAG("gb"), FLAG("au")], digits: 5 },
+    { ticker: "AUD/JPY", catKey: "fiat", yield: 74, price: 98.480,  change: -0.26, flagUrls: [FLAG("au"), FLAG("jp")], digits: 3 },
+    { ticker: "AUD/CAD", catKey: "fiat", yield: 71, price: 0.90120, change: -0.05, flagUrls: [FLAG("au"), FLAG("ca")], digits: 5 },
+    { ticker: "AUD/NZD", catKey: "fiat", yield: 69, price: 1.10130, change: -0.30, flagUrls: [FLAG("au"), FLAG("nz")], digits: 5 },
+    { ticker: "AUD/CHF", catKey: "fiat", yield: 68, price: 0.57910, change: -0.06, flagUrls: [FLAG("au"), FLAG("ch")], digits: 5 },
+    { ticker: "NZD/JPY", catKey: "fiat", yield: 73, price: 89.410,  change: 0.15,  flagUrls: [FLAG("nz"), FLAG("jp")], digits: 3 },
+    { ticker: "CAD/JPY", catKey: "fiat", yield: 72, price: 109.250, change: 0.04,  flagUrls: [FLAG("ca"), FLAG("jp")], digits: 3 },
+    { ticker: "CAD/CHF", catKey: "fiat", yield: 68, price: 0.64250, change: 0.11,  flagUrls: [FLAG("ca"), FLAG("ch")], digits: 5 },
+    { ticker: "CHF/JPY", catKey: "fiat", yield: 74, price: 170.080, change: -0.20, flagUrls: [FLAG("ch"), FLAG("jp")], digits: 3 },
+    { ticker: "USD/TRY", catKey: "fiat", yield: 83, price: 34.210,  change: 0.35,  flagUrls: [FLAG("us"), FLAG("tr")], digits: 3 },
+    { ticker: "USD/MXN", catKey: "fiat", yield: 79, price: 20.150,  change: 0.08,  flagUrls: [FLAG("us"), FLAG("mx")], digits: 3 },
+    { ticker: "USD/ZAR", catKey: "fiat", yield: 81, price: 18.420,  change: -0.12, flagUrls: [FLAG("us"), FLAG("za")], digits: 3 },
   ],
   otc: [
-    { ticker: "BHD/CNY OTC", catKey: "otc", yield: 92, price: 18.4378, change: 0.31, flags: ["🇧🇭","🇨🇳"] },
-    { ticker: "D OTC",       catKey: "otc", yield: 92, price: 0.96724, change: 0.08, flags: ["🇺🇸","🇸🇬"] },
-    { ticker: "USD/ARS OTC", catKey: "otc", yield: 88, price: 998.12,  change: 0.42, flags: ["🇺🇸","🇦🇷"] },
+    { ticker: "EUR/USD OTC",  catKey: "otc", yield: 92, price: 1.08412, change: 0.14,  flagUrls: [FLAG("eu"), FLAG("us")], digits: 5 },
+    { ticker: "GBP/USD OTC",  catKey: "otc", yield: 90, price: 1.27150, change: 0.10,  flagUrls: [FLAG("gb"), FLAG("us")], digits: 5 },
+    { ticker: "USD/JPY OTC",  catKey: "otc", yield: 91, price: 151.220, change: -0.12, flagUrls: [FLAG("us"), FLAG("jp")], digits: 3 },
+    { ticker: "AUD/USD OTC",  catKey: "otc", yield: 89, price: 0.65127, change: -0.08, flagUrls: [FLAG("au"), FLAG("us")], digits: 5 },
+    { ticker: "NZD/USD OTC",  catKey: "otc", yield: 92, price: 0.59130, change: 0.25,  flagUrls: [FLAG("nz"), FLAG("us")], digits: 5 },
+    { ticker: "USD/CHF OTC",  catKey: "otc", yield: 88, price: 0.88921, change: 0.06,  flagUrls: [FLAG("us"), FLAG("ch")], digits: 5 },
+    { ticker: "USD/CAD OTC",  catKey: "otc", yield: 89, price: 1.38420, change: -0.16, flagUrls: [FLAG("us"), FLAG("ca")], digits: 5 },
+    { ticker: "EUR/JPY OTC",  catKey: "otc", yield: 88, price: 163.850, change: -0.04, flagUrls: [FLAG("eu"), FLAG("jp")], digits: 3 },
+    { ticker: "GBP/JPY OTC",  catKey: "otc", yield: 90, price: 198.430, change: -0.22, flagUrls: [FLAG("gb"), FLAG("jp")], digits: 3 },
+    { ticker: "CHF/JPY OTC",  catKey: "otc", yield: 87, price: 170.080, change: -0.18, flagUrls: [FLAG("ch"), FLAG("jp")], digits: 3 },
+    { ticker: "EUR/CAD OTC",  catKey: "otc", yield: 88, price: 1.50120, change: 0.12,  flagUrls: [FLAG("eu"), FLAG("ca")], digits: 5 },
+    { ticker: "CHF/NOK OTC",  catKey: "otc", yield: 90, price: 12.150,  change: 0.18,  flagUrls: [FLAG("ch"), FLAG("no")], digits: 3 },
+    { ticker: "BHD/CNY OTC",  catKey: "otc", yield: 92, price: 18.4378, change: 0.31,  flagUrls: [FLAG("bh"), FLAG("cn")], digits: 4 },
+    { ticker: "USD/ARS OTC",  catKey: "otc", yield: 88, price: 998.120, change: 0.42,  flagUrls: [FLAG("us"), FLAG("ar")], digits: 3 },
   ],
   crypto: [
     { ticker: "BTC/USDT",  catKey: "crypto", yield: 89, price: 68240.12, change: 1.24, flags: ["🟠","🟢"], binanceSymbol: "BTCUSDT",  digits: 2, iconUrl: "https://assets.coincap.io/assets/icons/btc@2x.png" },
@@ -475,9 +511,42 @@ const ASSETS_BY_CAT = {
     { ticker: "ETC/USDT",  catKey: "crypto", yield: 72, price: 22.40,    change: 0.05, flags: ["🟢","🟢"], binanceSymbol: "ETCUSDT",  digits: 2, iconUrl: "https://assets.coincap.io/assets/icons/etc@2x.png" },
   ],
   stocks: [
-    { ticker: "AAPL", catKey: "stocks", yield: 76, price: 229.14, change: 0.44,  flags: ["🍎"] },
-    { ticker: "TSLA", catKey: "stocks", yield: 72, price: 251.80, change: -0.87, flags: ["🚗"] },
-    { ticker: "NVDA", catKey: "stocks", yield: 81, price: 141.22, change: 2.10,  flags: ["🖥️"] },
+    { ticker: "AAPL",  catKey: "stocks", yield: 76, price: 229.14,  change: 0.44,  flags: ["🍎"], iconUrl: "https://logo.clearbit.com/apple.com",          digits: 2 },
+    { ticker: "MSFT",  catKey: "stocks", yield: 78, price: 415.75,  change: 0.82,  flags: ["🪟"], iconUrl: "https://logo.clearbit.com/microsoft.com",      digits: 2 },
+    { ticker: "GOOGL", catKey: "stocks", yield: 77, price: 174.20,  change: 0.55,  flags: ["🔍"], iconUrl: "https://logo.clearbit.com/google.com",         digits: 2 },
+    { ticker: "AMZN",  catKey: "stocks", yield: 79, price: 195.44,  change: -0.30, flags: ["📦"], iconUrl: "https://logo.clearbit.com/amazon.com",         digits: 2 },
+    { ticker: "META",  catKey: "stocks", yield: 78, price: 572.18,  change: 1.12,  flags: ["👥"], iconUrl: "https://logo.clearbit.com/meta.com",           digits: 2 },
+    { ticker: "TSLA",  catKey: "stocks", yield: 72, price: 251.80,  change: -0.87, flags: ["🚗"], iconUrl: "https://logo.clearbit.com/tesla.com",          digits: 2 },
+    { ticker: "NVDA",  catKey: "stocks", yield: 81, price: 141.22,  change: 2.10,  flags: ["🖥️"], iconUrl: "https://logo.clearbit.com/nvidia.com",         digits: 2 },
+    { ticker: "NFLX",  catKey: "stocks", yield: 74, price: 732.50,  change: 0.98,  flags: ["🎬"], iconUrl: "https://logo.clearbit.com/netflix.com",        digits: 2 },
+    { ticker: "JPM",   catKey: "stocks", yield: 70, price: 223.85,  change: 0.18,  flags: ["🏦"], iconUrl: "https://logo.clearbit.com/jpmorganchase.com",  digits: 2 },
+    { ticker: "V",     catKey: "stocks", yield: 72, price: 292.10,  change: 0.25,  flags: ["💳"], iconUrl: "https://logo.clearbit.com/visa.com",           digits: 2 },
+    { ticker: "MA",    catKey: "stocks", yield: 71, price: 508.45,  change: 0.32,  flags: ["💳"], iconUrl: "https://logo.clearbit.com/mastercard.com",     digits: 2 },
+    { ticker: "PYPL",  catKey: "stocks", yield: 73, price: 79.20,   change: -0.42, flags: ["💸"], iconUrl: "https://logo.clearbit.com/paypal.com",         digits: 2 },
+    { ticker: "DIS",   catKey: "stocks", yield: 69, price: 97.15,   change: 0.12,  flags: ["🎡"], iconUrl: "https://logo.clearbit.com/disney.com",         digits: 2 },
+    { ticker: "NKE",   catKey: "stocks", yield: 70, price: 78.45,   change: -0.55, flags: ["👟"], iconUrl: "https://logo.clearbit.com/nike.com",           digits: 2 },
+    { ticker: "MCD",   catKey: "stocks", yield: 68, price: 294.80,  change: 0.22,  flags: ["🍔"], iconUrl: "https://logo.clearbit.com/mcdonalds.com",      digits: 2 },
+    { ticker: "KO",    catKey: "stocks", yield: 66, price: 65.42,   change: 0.08,  flags: ["🥤"], iconUrl: "https://logo.clearbit.com/coca-cola.com",      digits: 2 },
+    { ticker: "PEP",   catKey: "stocks", yield: 66, price: 158.90,  change: 0.04,  flags: ["🥤"], iconUrl: "https://logo.clearbit.com/pepsico.com",        digits: 2 },
+    { ticker: "SBUX",  catKey: "stocks", yield: 69, price: 96.15,   change: -0.22, flags: ["☕"], iconUrl: "https://logo.clearbit.com/starbucks.com",       digits: 2 },
+    { ticker: "BA",    catKey: "stocks", yield: 67, price: 154.20,  change: -1.15, flags: ["✈️"], iconUrl: "https://logo.clearbit.com/boeing.com",         digits: 2 },
+    { ticker: "INTC",  catKey: "stocks", yield: 68, price: 23.80,   change: -0.65, flags: ["🖥️"], iconUrl: "https://logo.clearbit.com/intel.com",          digits: 2 },
+    { ticker: "AMD",   catKey: "stocks", yield: 75, price: 158.40,  change: 1.45,  flags: ["🖥️"], iconUrl: "https://logo.clearbit.com/amd.com",            digits: 2 },
+    { ticker: "CSCO",  catKey: "stocks", yield: 67, price: 58.20,   change: 0.12,  flags: ["🌐"], iconUrl: "https://logo.clearbit.com/cisco.com",          digits: 2 },
+    { ticker: "ORCL",  catKey: "stocks", yield: 71, price: 180.15,  change: 0.38,  flags: ["🗄️"], iconUrl: "https://logo.clearbit.com/oracle.com",          digits: 2 },
+    { ticker: "IBM",   catKey: "stocks", yield: 68, price: 215.70,  change: -0.18, flags: ["💼"], iconUrl: "https://logo.clearbit.com/ibm.com",            digits: 2 },
+    { ticker: "ADBE",  catKey: "stocks", yield: 73, price: 485.20,  change: 0.55,  flags: ["🎨"], iconUrl: "https://logo.clearbit.com/adobe.com",          digits: 2 },
+    { ticker: "CRM",   catKey: "stocks", yield: 72, price: 328.45,  change: 0.28,  flags: ["☁️"], iconUrl: "https://logo.clearbit.com/salesforce.com",      digits: 2 },
+    { ticker: "UBER",  catKey: "stocks", yield: 74, price: 72.50,   change: 0.95,  flags: ["🚕"], iconUrl: "https://logo.clearbit.com/uber.com",           digits: 2 },
+    { ticker: "ABNB",  catKey: "stocks", yield: 73, price: 135.80,  change: -0.45, flags: ["🏠"], iconUrl: "https://logo.clearbit.com/airbnb.com",         digits: 2 },
+    { ticker: "SHOP",  catKey: "stocks", yield: 75, price: 109.20,  change: 1.20,  flags: ["🛒"], iconUrl: "https://logo.clearbit.com/shopify.com",        digits: 2 },
+    { ticker: "SPOT",  catKey: "stocks", yield: 73, price: 384.60,  change: 0.68,  flags: ["🎵"], iconUrl: "https://logo.clearbit.com/spotify.com",        digits: 2 },
+    { ticker: "BABA",  catKey: "stocks", yield: 74, price: 95.40,   change: 1.55,  flags: ["🛍️"], iconUrl: "https://logo.clearbit.com/alibaba.com",        digits: 2 },
+    { ticker: "WMT",   catKey: "stocks", yield: 66, price: 82.15,   change: 0.08,  flags: ["🛒"], iconUrl: "https://logo.clearbit.com/walmart.com",        digits: 2 },
+    { ticker: "XOM",   catKey: "stocks", yield: 68, price: 117.50,  change: -0.32, flags: ["⛽"], iconUrl: "https://logo.clearbit.com/exxonmobil.com",      digits: 2 },
+    { ticker: "CVX",   catKey: "stocks", yield: 68, price: 159.80,  change: -0.22, flags: ["⛽"], iconUrl: "https://logo.clearbit.com/chevron.com",        digits: 2 },
+    { ticker: "PFE",   catKey: "stocks", yield: 69, price: 28.45,   change: 0.18,  flags: ["💊"], iconUrl: "https://logo.clearbit.com/pfizer.com",         digits: 2 },
+    { ticker: "COIN",  catKey: "stocks", yield: 77, price: 245.30,  change: 2.10,  flags: ["🪙"], iconUrl: "https://logo.clearbit.com/coinbase.com",       digits: 2 },
   ],
   comm: [
     { ticker: "XAU/USD",  catKey: "comm", yield: 91, price: 2651.40, change: 0.55, flags: ["🥇"], customIcon: "gold",     digits: 2 },
@@ -491,13 +560,23 @@ const ASSETS_BY_CAT = {
     { ticker: "COFFEE",   catKey: "comm", yield: 71, price: 2.34,    change: 0.80, flags: ["☕"], customIcon: "coffee",   digits: 2 },
   ],
   idx: [
-    { ticker: "SPX500", catKey: "idx", yield: 80, price: 5810.22, change: 0.33, flags: ["🇺🇸"] },
-    { ticker: "NAS100", catKey: "idx", yield: 82, price: 20412.5, change: 0.48, flags: ["🇺🇸"] },
+    { ticker: "SPX500", catKey: "idx", yield: 80, price: 5810.22,  change: 0.33,  flags: ["🇺🇸"], iconUrl: FLAG("us"), digits: 2 },
+    { ticker: "NAS100", catKey: "idx", yield: 82, price: 20412.50, change: 0.48,  flags: ["🇺🇸"], iconUrl: FLAG("us"), digits: 2 },
+    { ticker: "DJ30",   catKey: "idx", yield: 79, price: 43125.80, change: 0.22,  flags: ["🇺🇸"], iconUrl: FLAG("us"), digits: 2 },
+    { ticker: "RUS2K",  catKey: "idx", yield: 77, price: 2342.15,  change: -0.18, flags: ["🇺🇸"], iconUrl: FLAG("us"), digits: 2 },
+    { ticker: "UK100",  catKey: "idx", yield: 78, price: 8287.40,  change: 0.15,  flags: ["🇬🇧"], iconUrl: FLAG("gb"), digits: 2 },
+    { ticker: "GER40",  catKey: "idx", yield: 79, price: 19284.60, change: 0.28,  flags: ["🇩🇪"], iconUrl: FLAG("de"), digits: 2 },
+    { ticker: "FRA40",  catKey: "idx", yield: 77, price: 7442.80,  change: -0.08, flags: ["🇫🇷"], iconUrl: FLAG("fr"), digits: 2 },
+    { ticker: "EU50",   catKey: "idx", yield: 78, price: 4835.20,  change: 0.12,  flags: ["🇪🇺"], iconUrl: FLAG("eu"), digits: 2 },
+    { ticker: "JPN225", catKey: "idx", yield: 81, price: 38912.50, change: -0.42, flags: ["🇯🇵"], iconUrl: FLAG("jp"), digits: 2 },
+    { ticker: "HK50",   catKey: "idx", yield: 80, price: 20415.80, change: 0.85,  flags: ["🇭🇰"], iconUrl: FLAG("hk"), digits: 2 },
+    { ticker: "CN50",   catKey: "idx", yield: 80, price: 13240.60, change: 1.10,  flags: ["🇨🇳"], iconUrl: FLAG("cn"), digits: 2 },
+    { ticker: "AUS200", catKey: "idx", yield: 76, price: 8240.50,  change: 0.18,  flags: ["🇦🇺"], iconUrl: FLAG("au"), digits: 2 },
   ],
   fav: [
-    { ticker: "EUR/USD",  catKey: "fiat",   yield: 78, price: 1.08412,  change: 0.12, flags: ["🇪🇺","🇺🇸"] },
-    { ticker: "BTC/USDT", catKey: "crypto", yield: 89, price: 68240.12, change: 1.24, flags: ["🟠","🟢"] },
-    { ticker: "XAU/USD",  catKey: "comm",   yield: 91, price: 2651.40,  change: 0.55, flags: ["🥇"] },
+    { ticker: "EUR/USD",  catKey: "fiat",   yield: 78, price: 1.08412,  change: 0.12, flagUrls: [FLAG("eu"), FLAG("us")], digits: 5 },
+    { ticker: "BTC/USDT", catKey: "crypto", yield: 89, price: 68240.12, change: 1.24, flags: ["🟠","🟢"], binanceSymbol: "BTCUSDT", digits: 2, iconUrl: "https://assets.coincap.io/assets/icons/btc@2x.png" },
+    { ticker: "XAU/USD",  catKey: "comm",   yield: 91, price: 2651.40,  change: 0.55, flags: ["🥇"], customIcon: "gold", digits: 2 },
   ],
 };
 
@@ -1684,22 +1763,32 @@ function AssetRow({ asset, fav, onFav, onClick }) {
       onClick={onClick}
       className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/5 active:bg-yellow-500/10 transition text-left group"
     >
-      <div className="relative w-10 h-10 shrink-0 flex items-center justify-center">
-        {asset.iconUrl ? (
-          // Крипто: реальный логотип с CoinCap CDN
+      <div className="relative w-11 h-10 shrink-0 flex items-center justify-center">
+        {asset.flagUrls && asset.flagUrls.length >= 2 ? (
+          // Фиат / OTC / индексы — два перекрывающихся флага
+          asset.flagUrls.map((url, i) => (
+            <div key={i}
+              className="absolute w-7 h-7 rounded-full bg-neutral-800 border border-white/20 overflow-hidden shadow"
+              style={{ left: i === 0 ? 0 : 14, top: i === 0 ? 0 : 8, zIndex: 2 - i }}
+            >
+              <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e)=>{e.currentTarget.style.display='none';}} />
+            </div>
+          ))
+        ) : asset.iconUrl ? (
+          // Крипто / акции / одиночный флаг для индексов
           <img
             src={asset.iconUrl}
             alt={asset.ticker}
-            className="w-9 h-9 rounded-full bg-neutral-900 p-0.5 object-contain"
+            className="w-9 h-9 rounded-full bg-white object-contain shadow"
             loading="lazy"
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
         ) : asset.customIcon ? (
-          // Сырьё: кастомная SVG-иконка
+          // Сырьё — кастомный SVG
           <CommodityIcon type={asset.customIcon} />
         ) : (
-          // Fallback: эмодзи/флаги (для fiat, otc, stocks, idx)
-          asset.flags.map((f, i) => (
+          // Fallback — эмодзи
+          (asset.flags || []).map((f, i) => (
             <div key={i}
               className="absolute w-7 h-7 rounded-full bg-neutral-800 border border-white/10 flex items-center justify-center text-sm"
               style={{ left: i === 0 ? 0 : 14, top: i === 0 ? 0 : 10, zIndex: 2 - i }}
