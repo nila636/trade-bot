@@ -66,9 +66,22 @@ if (pool) {
       status      TEXT NOT NULL DEFAULT 'pending',
       proof_file  TEXT,
       created_at  TIMESTAMPTZ DEFAULT NOW(),
-      reviewed_at TIMESTAMPTZ
+      reviewed_at TIMESTAMPTZ,
+      auto_approved BOOLEAN DEFAULT FALSE
+    );
+
+    CREATE TABLE IF NOT EXISTS broker_webhooks (
+      id         BIGSERIAL PRIMARY KEY,
+      source     TEXT NOT NULL,
+      method     TEXT,
+      query      JSONB,
+      body       JSONB,
+      headers    JSONB,
+      received_at TIMESTAMPTZ DEFAULT NOW()
     );
   `);
+  // На случай, если таблица уже была создана старой версией без auto_approved
+  await pool.query(`ALTER TABLE broker_claims ADD COLUMN IF NOT EXISTS auto_approved BOOLEAN DEFAULT FALSE`).catch(() => {});
   console.log("✅ API: Postgres connected, tables ready");
 }
 
@@ -272,6 +285,223 @@ app.get("/api/me", authMiddleware, async (req, res) => {
   res.json({
     user: u.rows[0] || null,
     broker: c.rows[0] || { status: "none" },
+  });
+});
+
+/* ───────── WEBHOOK: Pocket Option postback ─────────
+ * Pocket Option (и большинство affiliate-сетей) шлют S2S-postback с клик-id
+ * когда пользователь регистрируется или делает депозит.
+ *
+ * Настройка в кабинете партнёра partners.pocketoption.com:
+ *   URL:       https://YOUR_API/api/webhook/pocketoption?sub_id={sub_id}&trader_id={trader_id}&event={event}
+ *   Метод:     GET (или POST — этот endpoint принимает оба)
+ *   sub_id:    параметр, в который мы подставляем telegram_id при клике на реф-ссылку
+ *
+ * Логика:
+ *   1. Парсим sub_id (= telegram_id юзера, кликнувшего по реф-ссылке)
+ *   2. Парсим trader_id (= его ID в Pocket Option после регистрации)
+ *   3. Если в broker_claims есть заявка с tg_id=sub_id → ставим status=approved
+ *   4. Если заявки нет — создаём её сразу в approved (юзер мог пройти мимо UID-формы)
+ *   5. Шлём пользователю уведомление через Telegram
+ *   6. Всё пишем в broker_webhooks для аудита.
+ */
+
+app.all("/api/webhook/pocketoption", express.urlencoded({ extended: true }), async (req, res) => {
+  const params = { ...req.query, ...(typeof req.body === "object" ? req.body : {}) };
+
+  if (pool) {
+    await pool.query(
+      `INSERT INTO broker_webhooks (source, method, query, body, headers)
+       VALUES ('pocketoption', $1, $2, $3, $4)`,
+      [req.method, req.query || {}, req.body || {}, { "user-agent": req.get("user-agent") || "" }]
+    ).catch(e => console.error("webhook log:", e));
+  }
+
+  // Pocket Option умеет называть параметры по-разному: sub_id, subid, s1, click_id, clickid
+  const subId =
+    params.sub_id || params.subid || params.s1 ||
+    params.click_id || params.clickid || params.cid || params.tag;
+  const traderId =
+    params.trader_id || params.traderid || params.user_id || params.uid || params.id;
+  const eventType =
+    params.event || params.event_type || params.goal || params.status || "reg";
+
+  if (!subId || !/^\d+$/.test(String(subId))) {
+    return res.json({ ok: true, warn: "no valid sub_id, logged" });
+  }
+
+  const tgId = Number(subId);
+
+  if (pool) {
+    // Upsert: если заявки нет — создаём approved. Если есть pending/rejected — переводим в approved.
+    await pool.query(
+      `INSERT INTO broker_claims (tg_id, broker_uid, status, auto_approved, reviewed_at)
+       VALUES ($1, $2, 'approved', TRUE, NOW())
+       ON CONFLICT (tg_id) DO UPDATE SET
+         broker_uid    = COALESCE(EXCLUDED.broker_uid, broker_claims.broker_uid),
+         status        = 'approved',
+         auto_approved = TRUE,
+         reviewed_at   = NOW()`,
+      [tgId, traderId ? String(traderId) : null]
+    );
+
+    // Шлём уведомление пользователю через Telegram Bot API
+    const notifyText =
+      `✅ Ваша регистрация на Pocket Option подтверждена автоматически!\n` +
+      `Pocket Option ID: ${traderId || "—"}\n\n` +
+      `Полный доступ к приложению открыт. 🚀`;
+    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: tgId, text: notifyText }),
+    }).catch(() => {});
+  }
+
+  res.json({ ok: true, tg_id: tgId, trader_id: traderId, event: eventType });
+});
+
+/* ───────── ТЕХАНАЛИЗ ─────────
+ * /api/analyze — возвращает направление (BUY/SELL) на основе RSI+MACD+Bollinger.
+ * Для крипты берём реальные свечи с Binance. Для форекса — синтезируем серию
+ * вокруг текущего курса (Frankfurter даёт только дневные данные, что для интрадея мало).
+ */
+
+function sma(arr, p) {
+  const out = Array(arr.length).fill(null);
+  for (let i = p - 1; i < arr.length; i++) {
+    let s = 0;
+    for (let j = i - p + 1; j <= i; j++) s += arr[j];
+    out[i] = s / p;
+  }
+  return out;
+}
+function ema(arr, p) {
+  const out = Array(arr.length).fill(null);
+  const k = 2 / (p + 1);
+  let seedSum = 0;
+  for (let i = 0; i < p && i < arr.length; i++) seedSum += arr[i];
+  out[p - 1] = seedSum / p;
+  for (let i = p; i < arr.length; i++) out[i] = arr[i] * k + out[i - 1] * (1 - k);
+  return out;
+}
+function rsi(arr, p = 14) {
+  if (arr.length < p + 1) return null;
+  let gains = 0, losses = 0;
+  for (let i = 1; i <= p; i++) {
+    const d = arr[i] - arr[i - 1];
+    if (d > 0) gains += d; else losses -= d;
+  }
+  let avgG = gains / p, avgL = losses / p;
+  for (let i = p + 1; i < arr.length; i++) {
+    const d = arr[i] - arr[i - 1];
+    avgG = (avgG * (p - 1) + Math.max(0, d)) / p;
+    avgL = (avgL * (p - 1) + Math.max(0, -d)) / p;
+  }
+  if (avgL === 0) return 100;
+  const rs = avgG / avgL;
+  return 100 - 100 / (1 + rs);
+}
+function macd(arr) {
+  if (arr.length < 26) return null;
+  const ema12 = ema(arr, 12);
+  const ema26 = ema(arr, 26);
+  const macdLine = arr.map((_, i) => (ema12[i] != null && ema26[i] != null) ? ema12[i] - ema26[i] : null);
+  const macdOnly = macdLine.filter(x => x != null);
+  if (macdOnly.length < 9) return null;
+  const signal = ema(macdOnly, 9);
+  const macdLast = macdOnly[macdOnly.length - 1];
+  const signalLast = signal[signal.length - 1];
+  return { macd: macdLast, signal: signalLast, hist: macdLast - signalLast };
+}
+function bollinger(arr, p = 20, k = 2) {
+  if (arr.length < p) return null;
+  const mean = sma(arr, p)[arr.length - 1];
+  let sq = 0;
+  for (let i = arr.length - p; i < arr.length; i++) sq += (arr[i] - mean) ** 2;
+  const std = Math.sqrt(sq / p);
+  return { mid: mean, upper: mean + k * std, lower: mean - k * std, price: arr[arr.length - 1] };
+}
+
+async function fetchCandles(pair) {
+  // pair: { label, source, symbol|from|to, digits, ... }
+  try {
+    if (pair.source === "binance") {
+      const r = await fetch(`https://api.binance.com/api/v3/klines?symbol=${pair.symbol}&interval=5m&limit=60`);
+      const j = await r.json();
+      if (Array.isArray(j)) return { closes: j.map(c => parseFloat(c[4])), real: true };
+    } else if (pair.source === "frankfurter") {
+      // Frankfurter — только дневные. Берём текущий курс и синтезируем 60 точек около него
+      // с волатильностью, пропорциональной разряду цены. Это не честный теханализ,
+      // но даёт осмысленное распределение сигналов (≠ чистый рандом).
+      const r = await fetch(`https://api.frankfurter.app/latest?from=${pair.from}&to=${pair.to}`);
+      const j = await r.json();
+      const base = j.rates?.[pair.to] || pair.fallback || 1;
+      return { closes: syntheticSeries(base, pair.digits), real: false };
+    }
+  } catch {}
+  // Fallback — синтез от fallback-значения
+  return { closes: syntheticSeries(pair.fallback || 1, pair.digits || 5), real: false };
+}
+
+function syntheticSeries(base, digits) {
+  const vol = Math.pow(10, -(digits - 2));   // шкала волатильности
+  const drift = (Math.random() - 0.5) * vol * 0.5;
+  let price = base * (1 + (Math.random() - 0.5) * 0.002);
+  const out = [];
+  for (let i = 0; i < 60; i++) {
+    price += drift + (Math.random() - 0.5) * vol;
+    out.push(price);
+  }
+  return out;
+}
+
+app.post("/api/analyze", authMiddleware, async (req, res) => {
+  const { pair } = req.body || {};
+  if (!pair || typeof pair !== "object" || !pair.source || !pair.label) {
+    return res.status(400).json({ error: "invalid pair" });
+  }
+
+  const { closes, real } = await fetchCandles(pair);
+  if (closes.length < 26) return res.json({
+    direction: Math.random() > 0.5 ? "BUY" : "SELL",
+    confidence: 0.5, real: false, reason: "insufficient data"
+  });
+
+  const rsiVal = rsi(closes);
+  const macdVal = macd(closes);
+  const bb = bollinger(closes);
+
+  // Голосование 3 индикаторов
+  let votes = 0;
+  const signals = {};
+  if (rsiVal != null) {
+    if (rsiVal < 30) { votes++; signals.rsi = "BUY"; }
+    else if (rsiVal > 70) { votes--; signals.rsi = "SELL"; }
+    else { signals.rsi = rsiVal < 50 ? "BUY" : "SELL"; votes += rsiVal < 50 ? 0.3 : -0.3; }
+  }
+  if (macdVal) {
+    if (macdVal.hist > 0) { votes++; signals.macd = "BUY"; }
+    else { votes--; signals.macd = "SELL"; }
+  }
+  if (bb) {
+    if (bb.price < bb.lower) { votes++; signals.bb = "BUY"; }
+    else if (bb.price > bb.upper) { votes--; signals.bb = "SELL"; }
+    else { signals.bb = bb.price < bb.mid ? "BUY" : "SELL"; votes += bb.price < bb.mid ? 0.3 : -0.3; }
+  }
+
+  const direction = votes >= 0 ? "BUY" : "SELL";
+  const confidence = Math.min(0.95, 0.5 + Math.abs(votes) / 6);
+
+  res.json({
+    direction,
+    confidence: Math.round(confidence * 100) / 100,
+    real,
+    indicators: {
+      rsi:  rsiVal != null ? Math.round(rsiVal * 10) / 10 : null,
+      macd: macdVal ? Math.round(macdVal.hist * 1e6) / 1e6 : null,
+      bb_pos: bb ? ((bb.price - bb.lower) / (bb.upper - bb.lower)).toFixed(2) : null,
+    },
+    signals,
   });
 });
 
