@@ -657,7 +657,7 @@ const fmtMoney = n => `$${fmt(n, 2)}`;
 /* ────────────────────────── MAIN APP ────────────────────────── */
 
 export default function TradeAppBot() {
-  const [lang, setLang] = useState("ru");
+  const [lang, setLang] = useState("en");   // дефолт English
   const t = STR[lang];
 
   const [openBlock, setOpenBlock] = useState("assets");
@@ -698,7 +698,8 @@ export default function TradeAppBot() {
       tg.setBackgroundColor?.("#070708");
       tg.disableVerticalSwipes?.();
       const tgLang = tg.initDataUnsafe?.user?.language_code;
-      if (tgLang === "ru" || tgLang === "en") setLang(tgLang);
+      // Русскоязычные локали → ru, всё остальное → en (дефолт)
+      if (tgLang === "ru" || tgLang === "uk" || tgLang === "be") setLang("ru");
     } catch (e) { console.warn("TG init:", e); }
 
     if (!API_URL) {
