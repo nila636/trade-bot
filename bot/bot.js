@@ -189,13 +189,29 @@ const L = {
     btn_language: "🌐 Сменить язык",
     btn_signal:   "🚀 Получить сигнал 🚀",
     guide:
-      "*📘 Как пользоваться TRADE BOT*\n\n" +
-      "1️⃣ Нажми *🚀 Получить сигнал* — откроется приложение.\n" +
-      "2️⃣ Выбери актив в разделе *Активы*.\n" +
-      "3️⃣ Тапни по активу — алгоритм выдаст направление *ВВЕРХ* или *ШОРТ*.\n" +
-      "4️⃣ Используй встроенный *Калькулятор* для контроля риска.\n" +
-      "5️⃣ Следи за *Новостями* — важные релизы отмечены красным.\n\n" +
-      "⚠️ Торговля сопряжена с риском.",
+      "📘 *ПОЛНОЕ РУКОВОДСТВО*\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "*🔓 КАК ПОЛУЧИТЬ ДОСТУП*\n\n" +
+      "*Шаг 1.* Подпишись на наш канал — там публикуются обновления и важные новости.\n\n" +
+      "*Шаг 2.* Нажми кнопку «🚀 Получить сигнал».\n\n" +
+      "*Шаг 3.* Зарегистрируйся на бирже *Pocket Option* по нашей партнёрской ссылке внутри приложения. Это обязательное условие бесплатного доступа.\n\n" +
+      "*Шаг 4.* После регистрации доступ откроется автоматически (обычно в течение минуты). Также придёт уведомление в этот чат.\n\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "*📱 РАЗДЕЛЫ ПРИЛОЖЕНИЯ*\n\n" +
+      "📊 *Активы* — список из 121 инструмента: валюты, OTC, криптовалюты, акции, сырьё, индексы. Реальные курсы, обновляются автоматически каждую минуту.\n\n" +
+      "✨ *Анализировать рынок* — искусственный интеллект случайно выбирает актив с высокой волатильностью и даёт сигнал на его основе (RSI + MACD + Bollinger Bands).\n\n" +
+      "🧮 *Калькулятор* — расчёт потенциальной прибыли и риска под твою сумму депозита.\n\n" +
+      "📰 *Новости* — экономические события недели, влияющие на рынок.\n\n" +
+      "⭐ *Избранное* — добавь активы в избранное, чтобы быстро находить их.\n\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "*💡 КАК ЧИТАТЬ СИГНАЛ*\n\n" +
+      "• *⬆ ВВЕРХ (BUY)* — ожидается рост цены\n" +
+      "• *⬇ ШОРТ (SELL)* — ожидается падение\n" +
+      "• *Вероятность* — уверенность алгоритма\n" +
+      "• *Экспирация* — через сколько минут проверить результат\n\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "⚠️ *Важно:* торговля на бирже сопряжена с риском потери капитала. Не рискуй деньгами, которые не готов потерять. Сигналы носят информационный характер.\n\n" +
+      "💬 Нужна помощь? Используй кнопку *Поддержка*.",
     lang_prompt:  "Выберите язык / Choose language:",
     lang_set_ru:  "✅ Язык: Русский",
     lang_set_en:  "✅ Language: English",
@@ -203,7 +219,7 @@ const L = {
   en: {
     title: "📊 *TRADE BOT*",
     welcome:
-      "Welcome to *TRADE BOT* — an AI-powered trading signals system.\n\n" +
+      "Welcome to *TRADE BOT* — an AI-powered trading signals platform.\n\n" +
       "📈 *Algorithm accuracy:* up to 87%\n" +
       "⚡ *Real-time signals*\n" +
       "🔒 *Secure access*",
@@ -214,13 +230,29 @@ const L = {
     btn_language: "🌐 Change language",
     btn_signal:   "🚀 Get signal 🚀",
     guide:
-      "*📘 How to use TRADE BOT*\n\n" +
-      "1️⃣ Tap *🚀 Get signal* — the app opens.\n" +
-      "2️⃣ Pick an asset in the *Assets* section.\n" +
-      "3️⃣ Tap the asset — you'll get *UP* or *SHORT* direction.\n" +
-      "4️⃣ Use the *Calculator* for risk control.\n" +
-      "5️⃣ Watch *News* — high-impact events are marked red.\n\n" +
-      "⚠️ Trading involves risk.",
+      "📘 *FULL USER GUIDE*\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "*🔓 HOW TO GET ACCESS*\n\n" +
+      "*Step 1.* Subscribe to our channel — we post updates and important news there.\n\n" +
+      "*Step 2.* Tap the «🚀 Get signal» button.\n\n" +
+      "*Step 3.* Register on *Pocket Option* using our partner link inside the app. This is required for free access.\n\n" +
+      "*Step 4.* Access will be granted automatically once you register (usually within a minute). You'll also get a notification in this chat.\n\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "*📱 APP SECTIONS*\n\n" +
+      "📊 *Assets* — 121 instruments: forex, OTC, crypto, stocks, commodities, indices. Real market prices, updated every minute.\n\n" +
+      "✨ *Analyze market* — AI randomly picks a high-volatility asset and gives a signal based on RSI + MACD + Bollinger Bands.\n\n" +
+      "🧮 *Calculator* — estimate potential profit and risk based on your deposit.\n\n" +
+      "📰 *News* — weekly economic events affecting the market.\n\n" +
+      "⭐ *Favorites* — save assets for quick access.\n\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "*💡 HOW TO READ A SIGNAL*\n\n" +
+      "• *⬆ UP (BUY)* — price is expected to rise\n" +
+      "• *⬇ SHORT (SELL)* — price is expected to fall\n" +
+      "• *Probability* — algorithm's confidence level\n" +
+      "• *Expiration* — check the result after X minutes\n\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "⚠️ *Important:* trading involves risk of capital loss. Do not risk money you cannot afford to lose. Signals are for informational purposes only.\n\n" +
+      "💬 Need help? Use the *Support* button.",
     lang_prompt:  "Выберите язык / Choose language:",
     lang_set_ru:  "✅ Язык: Русский",
     lang_set_en:  "✅ Language: English",
@@ -228,7 +260,7 @@ const L = {
 };
 
 const userLang = new Map();
-const getLang = (id) => userLang.get(id) || "ru";
+const getLang = (id) => userLang.get(id) || "en";  // дефолт English
 const setLang = (id, code) => userLang.set(id, code);
 
 /* ─────────────────────── KEYBOARDS ─────────────────────── */
