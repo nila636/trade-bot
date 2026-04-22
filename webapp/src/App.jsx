@@ -196,7 +196,10 @@ const STR = {
     gate_broker_step3: "3. Ввести UID ниже",
     gate_broker_btn_register: "🏦 Открыть Pocket Option",
     gate_broker_uid_placeholder: "Ваш UID (цифры)",
+    gate_broker_uid_hint: "UID обычно 6–8 цифр, можно найти в профиле Pocket Option",
+    gate_broker_uid_hint_err: "UID должен содержать 4–15 цифр",
     gate_broker_submit: "Отправить заявку",
+    gate_broker_submit_err: "Ошибка отправки. Проверьте подключение и попробуйте снова.",
     gate_broker_pending_title: "Заявка на рассмотрении",
     gate_broker_pending_desc: "Ваш UID отправлен на проверку. Обычно это занимает до 24 часов. Мы пришлём уведомление в Telegram.",
     gate_broker_rejected: "Заявка отклонена. Убедитесь, что вы зарегистрировались по нашей ссылке, и попробуйте снова.",
@@ -392,7 +395,10 @@ The rule to learn first: the market owes you nothing. A losing trade is normal, 
     gate_broker_step3: "3. Enter UID below",
     gate_broker_btn_register: "🏦 Open Pocket Option",
     gate_broker_uid_placeholder: "Your UID (numbers)",
+    gate_broker_uid_hint: "UID is usually 6–8 digits, you'll find it in your Pocket Option profile",
+    gate_broker_uid_hint_err: "UID must be 4–15 digits",
     gate_broker_submit: "Submit claim",
+    gate_broker_submit_err: "Submit failed. Check your connection and try again.",
     gate_broker_pending_title: "Claim under review",
     gate_broker_pending_desc: "Your UID has been submitted. Approval usually takes up to 24 hours. You'll receive a Telegram notification.",
     gate_broker_rejected: "Claim rejected. Make sure you registered via our link and try again.",
@@ -422,13 +428,13 @@ const TICKER_ITEMS = [
 ];
 
 const CAT_META = [
-  { key: "fiat",   Icon: Coins,     count: 28 },
-  { key: "otc",    Icon: Coins,     count: 14 },
-  { key: "crypto", Icon: Bitcoin,   count: 22 },
-  { key: "stocks", Icon: BarChart3, count: 36 },
-  { key: "comm",   Icon: Fuel,      count: 9  },
-  { key: "idx",    Icon: LineChart, count: 12 },
-  { key: "fav",    Icon: Heart,     count: 3  },
+  { key: "fiat",   Icon: Coins     },
+  { key: "otc",    Icon: Coins     },
+  { key: "crypto", Icon: Bitcoin   },
+  { key: "stocks", Icon: BarChart3 },
+  { key: "comm",   Icon: Fuel      },
+  { key: "idx",    Icon: LineChart },
+  { key: "fav",    Icon: Heart     },
 ];
 
 const ASSETS_BY_CAT = {
@@ -445,9 +451,28 @@ const ASSETS_BY_CAT = {
     { ticker: "USD/ARS OTC", catKey: "otc", yield: 88, price: 998.12,  change: 0.42, flags: ["🇺🇸","🇦🇷"] },
   ],
   crypto: [
-    { ticker: "BTC/USDT", catKey: "crypto", yield: 89, price: 68240.12, change: 1.24, flags: ["🟠","🟢"] },
-    { ticker: "ETH/USDT", catKey: "crypto", yield: 86, price: 3421.55,  change: 0.67, flags: ["🔷","🟢"] },
-    { ticker: "SOL/USDT", catKey: "crypto", yield: 84, price: 178.22,   change: -1.14,flags: ["🟣","🟢"] },
+    { ticker: "BTC/USDT",  catKey: "crypto", yield: 89, price: 68240.12, change: 1.24, flags: ["🟠","🟢"], binanceSymbol: "BTCUSDT", digits: 2 },
+    { ticker: "ETH/USDT",  catKey: "crypto", yield: 86, price: 3421.55,  change: 0.67, flags: ["🔷","🟢"], binanceSymbol: "ETHUSDT", digits: 2 },
+    { ticker: "BNB/USDT",  catKey: "crypto", yield: 84, price: 595.10,   change: 0.42, flags: ["🟡","🟢"], binanceSymbol: "BNBUSDT", digits: 2 },
+    { ticker: "SOL/USDT",  catKey: "crypto", yield: 84, price: 178.22,   change: -1.14,flags: ["🟣","🟢"], binanceSymbol: "SOLUSDT", digits: 2 },
+    { ticker: "XRP/USDT",  catKey: "crypto", yield: 82, price: 0.62,     change: 1.90, flags: ["🔵","🟢"], binanceSymbol: "XRPUSDT", digits: 4 },
+    { ticker: "ADA/USDT",  catKey: "crypto", yield: 80, price: 0.42,     change: 0.31, flags: ["🔵","🟢"], binanceSymbol: "ADAUSDT", digits: 4 },
+    { ticker: "DOGE/USDT", catKey: "crypto", yield: 81, price: 0.185,    change: 2.50, flags: ["🐕","🟢"], binanceSymbol: "DOGEUSDT",digits: 5 },
+    { ticker: "AVAX/USDT", catKey: "crypto", yield: 79, price: 34.20,    change: -0.50,flags: ["🔺","🟢"], binanceSymbol: "AVAXUSDT",digits: 2 },
+    { ticker: "TRX/USDT",  catKey: "crypto", yield: 78, price: 0.162,    change: 0.80, flags: ["🔴","🟢"], binanceSymbol: "TRXUSDT", digits: 5 },
+    { ticker: "DOT/USDT",  catKey: "crypto", yield: 77, price: 7.42,     change: -0.30,flags: ["⚪","🟢"], binanceSymbol: "DOTUSDT", digits: 3 },
+    { ticker: "LINK/USDT", catKey: "crypto", yield: 80, price: 13.55,    change: 1.10, flags: ["🔗","🟢"], binanceSymbol: "LINKUSDT",digits: 3 },
+    { ticker: "MATIC/USDT",catKey: "crypto", yield: 78, price: 0.54,     change: 0.60, flags: ["🟣","🟢"], binanceSymbol: "MATICUSDT",digits: 4 },
+    { ticker: "LTC/USDT",  catKey: "crypto", yield: 76, price: 72.15,    change: 0.25, flags: ["🔘","🟢"], binanceSymbol: "LTCUSDT", digits: 2 },
+    { ticker: "BCH/USDT",  catKey: "crypto", yield: 75, price: 345.20,   change: -0.70,flags: ["🟢","🟢"], binanceSymbol: "BCHUSDT", digits: 2 },
+    { ticker: "SHIB/USDT", catKey: "crypto", yield: 77, price: 0.000018, change: 1.80, flags: ["🐕","🟢"], binanceSymbol: "SHIBUSDT",digits: 8 },
+    { ticker: "UNI/USDT",  catKey: "crypto", yield: 76, price: 8.20,     change: 0.45, flags: ["🦄","🟢"], binanceSymbol: "UNIUSDT", digits: 3 },
+    { ticker: "ATOM/USDT", catKey: "crypto", yield: 75, price: 4.62,     change: -0.15,flags: ["⚛","🟢"],  binanceSymbol: "ATOMUSDT",digits: 3 },
+    { ticker: "XLM/USDT",  catKey: "crypto", yield: 74, price: 0.098,    change: 0.22, flags: ["🚀","🟢"], binanceSymbol: "XLMUSDT", digits: 5 },
+    { ticker: "NEAR/USDT", catKey: "crypto", yield: 76, price: 5.12,     change: 0.85, flags: ["🔵","🟢"], binanceSymbol: "NEARUSDT",digits: 3 },
+    { ticker: "APT/USDT",  catKey: "crypto", yield: 75, price: 8.90,     change: 1.40, flags: ["🔴","🟢"], binanceSymbol: "APTUSDT", digits: 3 },
+    { ticker: "FIL/USDT",  catKey: "crypto", yield: 73, price: 4.12,     change: -0.25,flags: ["🗂","🟢"],  binanceSymbol: "FILUSDT", digits: 3 },
+    { ticker: "ETC/USDT",  catKey: "crypto", yield: 72, price: 22.40,    change: 0.05, flags: ["🟢","🟢"], binanceSymbol: "ETCUSDT", digits: 2 },
   ],
   stocks: [
     { ticker: "AAPL", catKey: "stocks", yield: 76, price: 229.14, change: 0.44,  flags: ["🍎"] },
@@ -627,6 +652,79 @@ export default function TradeAppBot() {
     if (authState.session) track("app_opened");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authState.session]);
+
+  // ─── LIVE цены ───
+  // Раз в минуту тянем актуальные котировки с Binance (крипта) и Frankfurter (форекс).
+  // livePrices: Map<ticker, { price, change24h }>
+  const [livePrices, setLivePrices] = useState({});
+
+  useEffect(() => {
+    let alive = true;
+
+    async function updatePrices() {
+      // Собираем все крипто-тикеры с binanceSymbol из ASSETS_BY_CAT.crypto
+      const cryptoList = ASSETS_BY_CAT.crypto.filter(a => a.binanceSymbol);
+      const cryptoSymbols = cryptoList.map(a => `"${a.binanceSymbol}"`).join(",");
+
+      const updates = {};
+
+      // 1) Binance — одним запросом берём все цены + 24h change
+      try {
+        const r = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=[${cryptoSymbols}]`);
+        if (r.ok) {
+          const data = await r.json();
+          for (const item of data) {
+            const asset = cryptoList.find(a => a.binanceSymbol === item.symbol);
+            if (asset) {
+              updates[asset.ticker] = {
+                price: parseFloat(item.lastPrice),
+                change: parseFloat(item.priceChangePercent),
+              };
+            }
+          }
+        }
+      } catch (e) { /* ignore */ }
+
+      // 2) Frankfurter — основные форекс-пары (без OTC, они синтетика)
+      try {
+        const r = await fetch("https://api.frankfurter.app/latest?from=USD&to=EUR,GBP,CAD,CHF,JPY,AUD,NZD");
+        if (r.ok) {
+          const d = await r.json();
+          const usdTo = d.rates || {};
+          const mapping = {
+            "EUR/USD": 1 / usdTo.EUR,
+            "GBP/USD": 1 / usdTo.GBP,
+            "AUD/USD": 1 / usdTo.AUD,
+            "USD/JPY": usdTo.JPY,
+            "USD/CHF": usdTo.CHF,
+            "USD/CAD": usdTo.CAD,
+            "EUR/CAD": (1 / usdTo.EUR) * usdTo.CAD,
+            "GBP/JPY": (1 / usdTo.GBP) * usdTo.JPY,
+          };
+          for (const [ticker, price] of Object.entries(mapping)) {
+            if (price && !isNaN(price)) {
+              updates[ticker] = { price, change: updates[ticker]?.change ?? 0 };
+            }
+          }
+        }
+      } catch (e) { /* ignore */ }
+
+      if (alive && Object.keys(updates).length) {
+        setLivePrices(prev => ({ ...prev, ...updates }));
+      }
+    }
+
+    updatePrices();
+    const id = setInterval(updatePrices, 60_000); // раз в минуту
+    return () => { alive = false; clearInterval(id); };
+  }, []);
+
+  // Возвращает актуальный ассет с подставленной live-ценой (если есть)
+  const withLivePrice = (asset) => {
+    const live = livePrices[asset.ticker];
+    if (!live) return asset;
+    return { ...asset, price: live.price, change: live.change };
+  };
 
   const toggleFav = tk => {
     setFavs(prev => {
@@ -1009,14 +1107,31 @@ export default function TradeAppBot() {
         {/* TICKER */}
         <div className="relative z-10 mt-3 overflow-hidden border-y border-white/5 bg-black/40">
           <div className="flex ticker-track whitespace-nowrap py-2">
-            {[...TICKER_ITEMS, ...TICKER_ITEMS].map((it, i) => (
-              <div key={i} className="flex items-center gap-2 px-5 shrink-0">
-                <span className="text-[11px] text-neutral-400 font-semibold tracking-wider">{it.s}</span>
-                <span className="text-[11px] mono text-neutral-200">{it.p}</span>
-                <span className="text-[11px] font-bold text-yellow-400">{it.y}</span>
-                <span className="w-1 h-1 rounded-full bg-neutral-700" />
-              </div>
-            ))}
+            {(() => {
+              // Динамический тикер: берём live-цены если есть, иначе fallback
+              const tickerPairs = [
+                { s: "BTC/USDT", fallback: "68240.12", y: "89%", digits: 2 },
+                { s: "ETH/USDT", fallback: "3421.55",  y: "86%", digits: 2 },
+                { s: "SOL/USDT", fallback: "178.22",   y: "84%", digits: 2 },
+                { s: "EUR/USD",  fallback: "1.08412",  y: "87%", digits: 5 },
+                { s: "GBP/JPY",  fallback: "198.430",  y: "71%", digits: 3 },
+                { s: "USD/JPY",  fallback: "151.22",   y: "85%", digits: 3 },
+                { s: "XAU/USD",  fallback: "2651.40",  y: "91%", digits: 2 },
+              ];
+              const items = tickerPairs.map(tp => ({
+                s: tp.s,
+                p: livePrices[tp.s]?.price ? livePrices[tp.s].price.toFixed(tp.digits) : tp.fallback,
+                y: tp.y,
+              }));
+              return [...items, ...items].map((it, i) => (
+                <div key={i} className="flex items-center gap-2 px-5 shrink-0">
+                  <span className="text-[11px] text-neutral-400 font-semibold tracking-wider">{it.s}</span>
+                  <span className="text-[11px] mono text-neutral-200">{it.p}</span>
+                  <span className="text-[11px] font-bold text-yellow-400">{it.y}</span>
+                  <span className="w-1 h-1 rounded-full bg-neutral-700" />
+                </div>
+              ));
+            })()}
           </div>
         </div>
 
@@ -1035,7 +1150,7 @@ export default function TradeAppBot() {
         {!gateMode && <main className="relative z-10 px-4 mt-5 space-y-3">
           <AccordionBlock
             icon={<BarChart3 size={18} />} title={t.blocks.assets.title}
-            count={t.blocks.assets.sub} open={openBlock === "assets"}
+            count={`${Object.values(ASSETS_BY_CAT).filter(l => l !== ASSETS_BY_CAT.fav).reduce((s,l)=>s+l.length,0)} ${t.assets_count_suffix}`} open={openBlock === "assets"}
             onToggle={() => setOpenBlock(openBlock === "assets" ? null : "assets")}
           >
             <div className="space-y-2 mt-3">
@@ -1054,7 +1169,7 @@ export default function TradeAppBot() {
                         </div>
                         <div>
                           <div className="text-sm font-bold">{t.cats[c.key]}</div>
-                          <div className="text-[10px] text-neutral-500">{c.count} {t.assets_count_suffix}</div>
+                          <div className="text-[10px] text-neutral-500">{list.length} {t.assets_count_suffix}</div>
                         </div>
                       </div>
                       <ChevronDown size={16} className={`text-neutral-500 transition-transform ${isOpen ? "rotate-180" : ""}`} />
@@ -1063,15 +1178,18 @@ export default function TradeAppBot() {
                       <div className="px-2 pb-2 space-y-1 slide-up">
                         {list
                           .filter(a => !search || a.ticker.toLowerCase().includes(search.toLowerCase()))
-                          .map(a => (
-                            <AssetRow
-                              key={a.ticker + c.key}
-                              asset={a}
-                              fav={favs.has(a.ticker)}
-                              onFav={() => toggleFav(a.ticker)}
-                              onClick={() => analyzeAsset(a)}
-                            />
-                          ))}
+                          .map(a => {
+                            const asset = withLivePrice(a);
+                            return (
+                              <AssetRow
+                                key={a.ticker + c.key}
+                                asset={asset}
+                                fav={favs.has(a.ticker)}
+                                onFav={() => toggleFav(a.ticker)}
+                                onClick={() => analyzeAsset(asset)}
+                              />
+                            );
+                          })}
                       </div>
                     )}
                   </div>
@@ -1502,7 +1620,11 @@ function AssetRow({ asset, fav, onFav, onClick }) {
         </div>
       </div>
       <div className="text-right">
-        <div className="text-sm mono font-semibold">{asset.price}</div>
+        <div className="text-sm mono font-semibold">
+          {typeof asset.price === "number"
+            ? asset.price.toFixed(asset.digits ?? (asset.price < 0.001 ? 8 : asset.price < 1 ? 5 : asset.price < 100 ? 3 : 2))
+            : asset.price}
+        </div>
         <div className={`text-[10px] mono font-bold ${up ? "text-emerald-400" : "text-rose-400"}`}>
           {up ? "+" : ""}{fmt(asset.change, 2)}%
         </div>
@@ -1558,6 +1680,7 @@ function Modal({ children, onClose }) {
 function AccessGate({ mode, t, error, tgId, onRecheck, onClaim }) {
   const [uid, setUid] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   // Добавляем к реф-ссылке sub_id1 с telegram ID (как требует Pocket Partners),
   // а также дублируем в sub_id и click_id на случай разных конфигураций постбека.
@@ -1566,11 +1689,15 @@ function AccessGate({ mode, t, error, tgId, onRecheck, onClaim }) {
     ? (BROKER_URL + (BROKER_URL.includes("?") ? "&" : "?") + `sub_id1=${tgId}&sub_id=${tgId}&click_id=${tgId}`)
     : BROKER_URL;
 
+  const uidValid = /^\d{4,15}$/.test(uid.trim());
+
   const handleSubmit = async () => {
-    if (!uid.trim() || !/^\d{5,15}$/.test(uid.trim())) return;
+    if (!uidValid || submitting) return;
+    setSubmitError("");
     setSubmitting(true);
-    await onClaim(uid.trim());
+    const ok = await onClaim(uid.trim());
     setSubmitting(false);
+    if (!ok) setSubmitError(t.gate_broker_submit_err);
   };
 
   return (
@@ -1642,14 +1769,23 @@ function AccessGate({ mode, t, error, tgId, onRecheck, onClaim }) {
               type="text"
               inputMode="numeric"
               value={uid}
-              onChange={e => setUid(e.target.value.replace(/\D/g, "").slice(0, 15))}
+              onChange={e => { setUid(e.target.value.replace(/\D/g, "").slice(0, 15)); setSubmitError(""); }}
+              onKeyDown={e => { if (e.key === "Enter") handleSubmit(); }}
               placeholder={t.gate_broker_uid_placeholder}
-              className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm mono font-bold focus:outline-none focus:border-yellow-500/40 mb-2"
+              className={`w-full bg-black/50 border rounded-xl px-4 py-3 text-sm mono font-bold focus:outline-none mb-1 ${
+                uid && !uidValid ? "border-rose-500/50 focus:border-rose-500" : "border-white/10 focus:border-yellow-500/40"
+              }`}
             />
+            <div className="text-[10px] text-neutral-500 mb-2 px-1">
+              {uid && !uidValid ? t.gate_broker_uid_hint_err : t.gate_broker_uid_hint}
+            </div>
+            {submitError && (
+              <div className="text-xs text-rose-400 mb-2 px-1">{submitError}</div>
+            )}
             <button
               onClick={handleSubmit}
-              disabled={!uid || submitting}
-              className="w-full py-3 rounded-xl bg-neutral-800 border border-white/10 font-bold text-sm hover:bg-neutral-700 disabled:opacity-50"
+              disabled={!uidValid || submitting}
+              className="w-full py-3 rounded-xl bg-neutral-800 border border-white/10 font-bold text-sm hover:bg-neutral-700 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {submitting ? "..." : t.gate_broker_submit}
             </button>
