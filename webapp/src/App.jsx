@@ -451,28 +451,28 @@ const ASSETS_BY_CAT = {
     { ticker: "USD/ARS OTC", catKey: "otc", yield: 88, price: 998.12,  change: 0.42, flags: ["🇺🇸","🇦🇷"] },
   ],
   crypto: [
-    { ticker: "BTC/USDT",  catKey: "crypto", yield: 89, price: 68240.12, change: 1.24, flags: ["🟠","🟢"], binanceSymbol: "BTCUSDT", digits: 2 },
-    { ticker: "ETH/USDT",  catKey: "crypto", yield: 86, price: 3421.55,  change: 0.67, flags: ["🔷","🟢"], binanceSymbol: "ETHUSDT", digits: 2 },
-    { ticker: "BNB/USDT",  catKey: "crypto", yield: 84, price: 595.10,   change: 0.42, flags: ["🟡","🟢"], binanceSymbol: "BNBUSDT", digits: 2 },
-    { ticker: "SOL/USDT",  catKey: "crypto", yield: 84, price: 178.22,   change: -1.14,flags: ["🟣","🟢"], binanceSymbol: "SOLUSDT", digits: 2 },
-    { ticker: "XRP/USDT",  catKey: "crypto", yield: 82, price: 0.62,     change: 1.90, flags: ["🔵","🟢"], binanceSymbol: "XRPUSDT", digits: 4 },
-    { ticker: "ADA/USDT",  catKey: "crypto", yield: 80, price: 0.42,     change: 0.31, flags: ["🔵","🟢"], binanceSymbol: "ADAUSDT", digits: 4 },
-    { ticker: "DOGE/USDT", catKey: "crypto", yield: 81, price: 0.185,    change: 2.50, flags: ["🐕","🟢"], binanceSymbol: "DOGEUSDT",digits: 5 },
-    { ticker: "AVAX/USDT", catKey: "crypto", yield: 79, price: 34.20,    change: -0.50,flags: ["🔺","🟢"], binanceSymbol: "AVAXUSDT",digits: 2 },
-    { ticker: "TRX/USDT",  catKey: "crypto", yield: 78, price: 0.162,    change: 0.80, flags: ["🔴","🟢"], binanceSymbol: "TRXUSDT", digits: 5 },
-    { ticker: "DOT/USDT",  catKey: "crypto", yield: 77, price: 7.42,     change: -0.30,flags: ["⚪","🟢"], binanceSymbol: "DOTUSDT", digits: 3 },
-    { ticker: "LINK/USDT", catKey: "crypto", yield: 80, price: 13.55,    change: 1.10, flags: ["🔗","🟢"], binanceSymbol: "LINKUSDT",digits: 3 },
-    { ticker: "MATIC/USDT",catKey: "crypto", yield: 78, price: 0.54,     change: 0.60, flags: ["🟣","🟢"], binanceSymbol: "MATICUSDT",digits: 4 },
-    { ticker: "LTC/USDT",  catKey: "crypto", yield: 76, price: 72.15,    change: 0.25, flags: ["🔘","🟢"], binanceSymbol: "LTCUSDT", digits: 2 },
-    { ticker: "BCH/USDT",  catKey: "crypto", yield: 75, price: 345.20,   change: -0.70,flags: ["🟢","🟢"], binanceSymbol: "BCHUSDT", digits: 2 },
-    { ticker: "SHIB/USDT", catKey: "crypto", yield: 77, price: 0.000018, change: 1.80, flags: ["🐕","🟢"], binanceSymbol: "SHIBUSDT",digits: 8 },
-    { ticker: "UNI/USDT",  catKey: "crypto", yield: 76, price: 8.20,     change: 0.45, flags: ["🦄","🟢"], binanceSymbol: "UNIUSDT", digits: 3 },
-    { ticker: "ATOM/USDT", catKey: "crypto", yield: 75, price: 4.62,     change: -0.15,flags: ["⚛","🟢"],  binanceSymbol: "ATOMUSDT",digits: 3 },
-    { ticker: "XLM/USDT",  catKey: "crypto", yield: 74, price: 0.098,    change: 0.22, flags: ["🚀","🟢"], binanceSymbol: "XLMUSDT", digits: 5 },
-    { ticker: "NEAR/USDT", catKey: "crypto", yield: 76, price: 5.12,     change: 0.85, flags: ["🔵","🟢"], binanceSymbol: "NEARUSDT",digits: 3 },
-    { ticker: "APT/USDT",  catKey: "crypto", yield: 75, price: 8.90,     change: 1.40, flags: ["🔴","🟢"], binanceSymbol: "APTUSDT", digits: 3 },
-    { ticker: "FIL/USDT",  catKey: "crypto", yield: 73, price: 4.12,     change: -0.25,flags: ["🗂","🟢"],  binanceSymbol: "FILUSDT", digits: 3 },
-    { ticker: "ETC/USDT",  catKey: "crypto", yield: 72, price: 22.40,    change: 0.05, flags: ["🟢","🟢"], binanceSymbol: "ETCUSDT", digits: 2 },
+    { ticker: "BTC/USDT",  catKey: "crypto", yield: 89, price: 68240.12, change: 1.24, flags: ["🟠","🟢"], binanceSymbol: "BTCUSDT",  digits: 2, iconUrl: "https://assets.coincap.io/assets/icons/btc@2x.png" },
+    { ticker: "ETH/USDT",  catKey: "crypto", yield: 86, price: 3421.55,  change: 0.67, flags: ["🔷","🟢"], binanceSymbol: "ETHUSDT",  digits: 2, iconUrl: "https://assets.coincap.io/assets/icons/eth@2x.png" },
+    { ticker: "BNB/USDT",  catKey: "crypto", yield: 84, price: 595.10,   change: 0.42, flags: ["🟡","🟢"], binanceSymbol: "BNBUSDT",  digits: 2, iconUrl: "https://assets.coincap.io/assets/icons/bnb@2x.png" },
+    { ticker: "SOL/USDT",  catKey: "crypto", yield: 84, price: 178.22,   change: -1.14,flags: ["🟣","🟢"], binanceSymbol: "SOLUSDT",  digits: 2, iconUrl: "https://assets.coincap.io/assets/icons/sol@2x.png" },
+    { ticker: "XRP/USDT",  catKey: "crypto", yield: 82, price: 0.62,     change: 1.90, flags: ["🔵","🟢"], binanceSymbol: "XRPUSDT",  digits: 4, iconUrl: "https://assets.coincap.io/assets/icons/xrp@2x.png" },
+    { ticker: "ADA/USDT",  catKey: "crypto", yield: 80, price: 0.42,     change: 0.31, flags: ["🔵","🟢"], binanceSymbol: "ADAUSDT",  digits: 4, iconUrl: "https://assets.coincap.io/assets/icons/ada@2x.png" },
+    { ticker: "DOGE/USDT", catKey: "crypto", yield: 81, price: 0.185,    change: 2.50, flags: ["🐕","🟢"], binanceSymbol: "DOGEUSDT", digits: 5, iconUrl: "https://assets.coincap.io/assets/icons/doge@2x.png" },
+    { ticker: "AVAX/USDT", catKey: "crypto", yield: 79, price: 34.20,    change: -0.50,flags: ["🔺","🟢"], binanceSymbol: "AVAXUSDT", digits: 2, iconUrl: "https://assets.coincap.io/assets/icons/avax@2x.png" },
+    { ticker: "TRX/USDT",  catKey: "crypto", yield: 78, price: 0.162,    change: 0.80, flags: ["🔴","🟢"], binanceSymbol: "TRXUSDT",  digits: 5, iconUrl: "https://assets.coincap.io/assets/icons/trx@2x.png" },
+    { ticker: "DOT/USDT",  catKey: "crypto", yield: 77, price: 7.42,     change: -0.30,flags: ["⚪","🟢"], binanceSymbol: "DOTUSDT",  digits: 3, iconUrl: "https://assets.coincap.io/assets/icons/dot@2x.png" },
+    { ticker: "LINK/USDT", catKey: "crypto", yield: 80, price: 13.55,    change: 1.10, flags: ["🔗","🟢"], binanceSymbol: "LINKUSDT", digits: 3, iconUrl: "https://assets.coincap.io/assets/icons/link@2x.png" },
+    { ticker: "MATIC/USDT",catKey: "crypto", yield: 78, price: 0.54,     change: 0.60, flags: ["🟣","🟢"], binanceSymbol: "MATICUSDT",digits: 4, iconUrl: "https://assets.coincap.io/assets/icons/matic@2x.png" },
+    { ticker: "LTC/USDT",  catKey: "crypto", yield: 76, price: 72.15,    change: 0.25, flags: ["🔘","🟢"], binanceSymbol: "LTCUSDT",  digits: 2, iconUrl: "https://assets.coincap.io/assets/icons/ltc@2x.png" },
+    { ticker: "BCH/USDT",  catKey: "crypto", yield: 75, price: 345.20,   change: -0.70,flags: ["🟢","🟢"], binanceSymbol: "BCHUSDT",  digits: 2, iconUrl: "https://assets.coincap.io/assets/icons/bch@2x.png" },
+    { ticker: "SHIB/USDT", catKey: "crypto", yield: 77, price: 0.000018, change: 1.80, flags: ["🐕","🟢"], binanceSymbol: "SHIBUSDT", digits: 8, iconUrl: "https://assets.coincap.io/assets/icons/shib@2x.png" },
+    { ticker: "UNI/USDT",  catKey: "crypto", yield: 76, price: 8.20,     change: 0.45, flags: ["🦄","🟢"], binanceSymbol: "UNIUSDT",  digits: 3, iconUrl: "https://assets.coincap.io/assets/icons/uni@2x.png" },
+    { ticker: "ATOM/USDT", catKey: "crypto", yield: 75, price: 4.62,     change: -0.15,flags: ["⚛","🟢"],  binanceSymbol: "ATOMUSDT", digits: 3, iconUrl: "https://assets.coincap.io/assets/icons/atom@2x.png" },
+    { ticker: "XLM/USDT",  catKey: "crypto", yield: 74, price: 0.098,    change: 0.22, flags: ["🚀","🟢"], binanceSymbol: "XLMUSDT",  digits: 5, iconUrl: "https://assets.coincap.io/assets/icons/xlm@2x.png" },
+    { ticker: "NEAR/USDT", catKey: "crypto", yield: 76, price: 5.12,     change: 0.85, flags: ["🔵","🟢"], binanceSymbol: "NEARUSDT", digits: 3, iconUrl: "https://assets.coincap.io/assets/icons/near@2x.png" },
+    { ticker: "APT/USDT",  catKey: "crypto", yield: 75, price: 8.90,     change: 1.40, flags: ["🔴","🟢"], binanceSymbol: "APTUSDT",  digits: 3, iconUrl: "https://assets.coincap.io/assets/icons/apt@2x.png" },
+    { ticker: "FIL/USDT",  catKey: "crypto", yield: 73, price: 4.12,     change: -0.25,flags: ["🗂","🟢"],  binanceSymbol: "FILUSDT",  digits: 3, iconUrl: "https://assets.coincap.io/assets/icons/fil@2x.png" },
+    { ticker: "ETC/USDT",  catKey: "crypto", yield: 72, price: 22.40,    change: 0.05, flags: ["🟢","🟢"], binanceSymbol: "ETCUSDT",  digits: 2, iconUrl: "https://assets.coincap.io/assets/icons/etc@2x.png" },
   ],
   stocks: [
     { ticker: "AAPL", catKey: "stocks", yield: 76, price: 229.14, change: 0.44,  flags: ["🍎"] },
@@ -480,9 +480,15 @@ const ASSETS_BY_CAT = {
     { ticker: "NVDA", catKey: "stocks", yield: 81, price: 141.22, change: 2.10,  flags: ["🖥️"] },
   ],
   comm: [
-    { ticker: "XAU/USD", catKey: "comm", yield: 91, price: 2651.40, change: 0.55, flags: ["🥇"] },
-    { ticker: "XAG/USD", catKey: "comm", yield: 83, price: 31.28,   change: 0.12, flags: ["🥈"] },
-    { ticker: "WTI",     catKey: "comm", yield: 77, price: 70.41,   change: -0.91,flags: ["🛢"] },
+    { ticker: "XAU/USD",  catKey: "comm", yield: 91, price: 2651.40, change: 0.55, flags: ["🥇"], customIcon: "gold",     digits: 2 },
+    { ticker: "XAG/USD",  catKey: "comm", yield: 83, price: 31.28,   change: 0.12, flags: ["🥈"], customIcon: "silver",   digits: 3 },
+    { ticker: "XPT/USD",  catKey: "comm", yield: 80, price: 945.20,  change: -0.30,flags: ["💎"], customIcon: "platinum", digits: 2 },
+    { ticker: "XPD/USD",  catKey: "comm", yield: 78, price: 1022.50, change: 0.45, flags: ["💠"], customIcon: "palladium",digits: 2 },
+    { ticker: "WTI",      catKey: "comm", yield: 77, price: 70.41,   change: -0.91,flags: ["🛢"], customIcon: "oil",      digits: 2 },
+    { ticker: "BRENT",    catKey: "comm", yield: 76, price: 74.85,   change: -0.75,flags: ["🛢"], customIcon: "oil",      digits: 2 },
+    { ticker: "NATGAS",   catKey: "comm", yield: 74, price: 2.85,    change: 1.20, flags: ["🔥"], customIcon: "gas",      digits: 3 },
+    { ticker: "COPPER",   catKey: "comm", yield: 72, price: 4.12,    change: 0.35, flags: ["🟤"], customIcon: "copper",   digits: 3 },
+    { ticker: "COFFEE",   catKey: "comm", yield: 71, price: 2.34,    change: 0.80, flags: ["☕"], customIcon: "coffee",   digits: 2 },
   ],
   idx: [
     { ticker: "SPX500", catKey: "idx", yield: 80, price: 5810.22, change: 0.33, flags: ["🇺🇸"] },
@@ -1597,6 +1603,79 @@ function AccordionBlock({ icon, title, count, open, onToggle, children }) {
   );
 }
 
+function CommodityIcon({ type }) {
+  // Используем градиентные круги + inline SVG-символы
+  const cfg = {
+    gold: {
+      bg: "radial-gradient(circle at 30% 30%, #fde047 0%, #eab308 60%, #854d0e 100%)",
+      ring: "rgba(250,204,21,0.5)",
+      symbol: <text x="12" y="17" textAnchor="middle" fontSize="11" fontWeight="900" fill="#422006">Au</text>,
+    },
+    silver: {
+      bg: "radial-gradient(circle at 30% 30%, #f1f5f9 0%, #94a3b8 60%, #475569 100%)",
+      ring: "rgba(203,213,225,0.5)",
+      symbol: <text x="12" y="17" textAnchor="middle" fontSize="11" fontWeight="900" fill="#1e293b">Ag</text>,
+    },
+    platinum: {
+      bg: "radial-gradient(circle at 30% 30%, #f1f5f9 0%, #cbd5e1 60%, #64748b 100%)",
+      ring: "rgba(226,232,240,0.6)",
+      symbol: <text x="12" y="17" textAnchor="middle" fontSize="10" fontWeight="900" fill="#1e293b">Pt</text>,
+    },
+    palladium: {
+      bg: "radial-gradient(circle at 30% 30%, #e0e7ff 0%, #a5b4fc 60%, #4338ca 100%)",
+      ring: "rgba(165,180,252,0.5)",
+      symbol: <text x="12" y="17" textAnchor="middle" fontSize="10" fontWeight="900" fill="#1e1b4b">Pd</text>,
+    },
+    copper: {
+      bg: "radial-gradient(circle at 30% 30%, #fed7aa 0%, #ea580c 60%, #7c2d12 100%)",
+      ring: "rgba(251,146,60,0.5)",
+      symbol: <text x="12" y="17" textAnchor="middle" fontSize="10" fontWeight="900" fill="#431407">Cu</text>,
+    },
+    oil: {
+      bg: "radial-gradient(circle at 30% 30%, #525252 0%, #171717 60%, #000 100%)",
+      ring: "rgba(82,82,82,0.5)",
+      symbol: (
+        <>
+          {/* бочка */}
+          <rect x="7" y="6" width="10" height="12" rx="1" fill="#1a1a1a" stroke="#525252" strokeWidth="0.5" />
+          <line x1="7" y1="10" x2="17" y2="10" stroke="#737373" strokeWidth="0.4" />
+          <line x1="7" y1="14" x2="17" y2="14" stroke="#737373" strokeWidth="0.4" />
+          <text x="12" y="14.5" textAnchor="middle" fontSize="3.5" fontWeight="900" fill="#fbbf24">OIL</text>
+        </>
+      ),
+    },
+    gas: {
+      bg: "radial-gradient(circle at 30% 30%, #fde68a 0%, #f59e0b 60%, #b45309 100%)",
+      ring: "rgba(251,191,36,0.5)",
+      symbol: (
+        <path d="M12 5 Q8 10 10 14 Q12 12 12 14 Q14 10 12 5 Z" fill="#fff" opacity="0.95" />
+      ),
+    },
+    coffee: {
+      bg: "radial-gradient(circle at 30% 30%, #a16207 0%, #713f12 60%, #422006 100%)",
+      ring: "rgba(161,98,7,0.5)",
+      symbol: (
+        <>
+          <rect x="7" y="9" width="9" height="7" rx="0.5" fill="#fff" opacity="0.9" />
+          <path d="M16 10 Q18 10 18 12 T16 14" fill="none" stroke="#fff" strokeWidth="0.6" opacity="0.9" />
+          <path d="M9 6 Q10 7 9.5 8.5 M11 5.5 Q12 7 11.5 8.5 M13 6 Q14 7 13.5 8.5" fill="none" stroke="#fff" strokeWidth="0.5" opacity="0.7" />
+        </>
+      ),
+    },
+  };
+  const c = cfg[type] || cfg.gold;
+  return (
+    <div
+      className="w-9 h-9 rounded-full shadow-inner flex items-center justify-center"
+      style={{ background: c.bg, boxShadow: `0 0 12px ${c.ring}, inset 0 0 6px rgba(0,0,0,0.3)` }}
+    >
+      <svg viewBox="0 0 24 24" width="26" height="26">
+        {c.symbol}
+      </svg>
+    </div>
+  );
+}
+
 function AssetRow({ asset, fav, onFav, onClick }) {
   const { t } = useT();
   const up = asset.change >= 0;
@@ -1605,13 +1684,28 @@ function AssetRow({ asset, fav, onFav, onClick }) {
       onClick={onClick}
       className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/5 active:bg-yellow-500/10 transition text-left group"
     >
-      <div className="relative w-10 h-10 shrink-0">
-        {asset.flags.map((f, i) => (
-          <div key={i}
-            className="absolute w-7 h-7 rounded-full bg-neutral-800 border border-white/10 flex items-center justify-center text-sm"
-            style={{ left: i === 0 ? 0 : 14, top: i === 0 ? 0 : 10, zIndex: 2 - i }}
-          >{f}</div>
-        ))}
+      <div className="relative w-10 h-10 shrink-0 flex items-center justify-center">
+        {asset.iconUrl ? (
+          // Крипто: реальный логотип с CoinCap CDN
+          <img
+            src={asset.iconUrl}
+            alt={asset.ticker}
+            className="w-9 h-9 rounded-full bg-neutral-900 p-0.5 object-contain"
+            loading="lazy"
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+          />
+        ) : asset.customIcon ? (
+          // Сырьё: кастомная SVG-иконка
+          <CommodityIcon type={asset.customIcon} />
+        ) : (
+          // Fallback: эмодзи/флаги (для fiat, otc, stocks, idx)
+          asset.flags.map((f, i) => (
+            <div key={i}
+              className="absolute w-7 h-7 rounded-full bg-neutral-800 border border-white/10 flex items-center justify-center text-sm"
+              style={{ left: i === 0 ? 0 : 14, top: i === 0 ? 0 : 10, zIndex: 2 - i }}
+            >{f}</div>
+          ))
+        )}
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-sm font-bold truncate group-hover:text-yellow-400 transition-colors">{asset.ticker}</div>
