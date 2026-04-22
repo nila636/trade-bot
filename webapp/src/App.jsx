@@ -511,42 +511,42 @@ const ASSETS_BY_CAT = {
     { ticker: "ETC/USDT",  catKey: "crypto", yield: 72, price: 22.40,    change: 0.05, flags: ["🟢","🟢"], binanceSymbol: "ETCUSDT",  digits: 2, iconUrl: "https://assets.coincap.io/assets/icons/etc@2x.png" },
   ],
   stocks: [
-    { ticker: "AAPL",  catKey: "stocks", yield: 76, price: 229.14,  change: 0.44,  flags: ["🍎"], iconUrl: "https://logo.clearbit.com/apple.com",          digits: 2 },
-    { ticker: "MSFT",  catKey: "stocks", yield: 78, price: 415.75,  change: 0.82,  flags: ["🪟"], iconUrl: "https://logo.clearbit.com/microsoft.com",      digits: 2 },
-    { ticker: "GOOGL", catKey: "stocks", yield: 77, price: 174.20,  change: 0.55,  flags: ["🔍"], iconUrl: "https://logo.clearbit.com/google.com",         digits: 2 },
-    { ticker: "AMZN",  catKey: "stocks", yield: 79, price: 195.44,  change: -0.30, flags: ["📦"], iconUrl: "https://logo.clearbit.com/amazon.com",         digits: 2 },
-    { ticker: "META",  catKey: "stocks", yield: 78, price: 572.18,  change: 1.12,  flags: ["👥"], iconUrl: "https://logo.clearbit.com/meta.com",           digits: 2 },
-    { ticker: "TSLA",  catKey: "stocks", yield: 72, price: 251.80,  change: -0.87, flags: ["🚗"], iconUrl: "https://logo.clearbit.com/tesla.com",          digits: 2 },
-    { ticker: "NVDA",  catKey: "stocks", yield: 81, price: 141.22,  change: 2.10,  flags: ["🖥️"], iconUrl: "https://logo.clearbit.com/nvidia.com",         digits: 2 },
-    { ticker: "NFLX",  catKey: "stocks", yield: 74, price: 732.50,  change: 0.98,  flags: ["🎬"], iconUrl: "https://logo.clearbit.com/netflix.com",        digits: 2 },
-    { ticker: "JPM",   catKey: "stocks", yield: 70, price: 223.85,  change: 0.18,  flags: ["🏦"], iconUrl: "https://logo.clearbit.com/jpmorganchase.com",  digits: 2 },
-    { ticker: "V",     catKey: "stocks", yield: 72, price: 292.10,  change: 0.25,  flags: ["💳"], iconUrl: "https://logo.clearbit.com/visa.com",           digits: 2 },
-    { ticker: "MA",    catKey: "stocks", yield: 71, price: 508.45,  change: 0.32,  flags: ["💳"], iconUrl: "https://logo.clearbit.com/mastercard.com",     digits: 2 },
-    { ticker: "PYPL",  catKey: "stocks", yield: 73, price: 79.20,   change: -0.42, flags: ["💸"], iconUrl: "https://logo.clearbit.com/paypal.com",         digits: 2 },
-    { ticker: "DIS",   catKey: "stocks", yield: 69, price: 97.15,   change: 0.12,  flags: ["🎡"], iconUrl: "https://logo.clearbit.com/disney.com",         digits: 2 },
-    { ticker: "NKE",   catKey: "stocks", yield: 70, price: 78.45,   change: -0.55, flags: ["👟"], iconUrl: "https://logo.clearbit.com/nike.com",           digits: 2 },
-    { ticker: "MCD",   catKey: "stocks", yield: 68, price: 294.80,  change: 0.22,  flags: ["🍔"], iconUrl: "https://logo.clearbit.com/mcdonalds.com",      digits: 2 },
-    { ticker: "KO",    catKey: "stocks", yield: 66, price: 65.42,   change: 0.08,  flags: ["🥤"], iconUrl: "https://logo.clearbit.com/coca-cola.com",      digits: 2 },
-    { ticker: "PEP",   catKey: "stocks", yield: 66, price: 158.90,  change: 0.04,  flags: ["🥤"], iconUrl: "https://logo.clearbit.com/pepsico.com",        digits: 2 },
-    { ticker: "SBUX",  catKey: "stocks", yield: 69, price: 96.15,   change: -0.22, flags: ["☕"], iconUrl: "https://logo.clearbit.com/starbucks.com",       digits: 2 },
-    { ticker: "BA",    catKey: "stocks", yield: 67, price: 154.20,  change: -1.15, flags: ["✈️"], iconUrl: "https://logo.clearbit.com/boeing.com",         digits: 2 },
-    { ticker: "INTC",  catKey: "stocks", yield: 68, price: 23.80,   change: -0.65, flags: ["🖥️"], iconUrl: "https://logo.clearbit.com/intel.com",          digits: 2 },
-    { ticker: "AMD",   catKey: "stocks", yield: 75, price: 158.40,  change: 1.45,  flags: ["🖥️"], iconUrl: "https://logo.clearbit.com/amd.com",            digits: 2 },
-    { ticker: "CSCO",  catKey: "stocks", yield: 67, price: 58.20,   change: 0.12,  flags: ["🌐"], iconUrl: "https://logo.clearbit.com/cisco.com",          digits: 2 },
-    { ticker: "ORCL",  catKey: "stocks", yield: 71, price: 180.15,  change: 0.38,  flags: ["🗄️"], iconUrl: "https://logo.clearbit.com/oracle.com",          digits: 2 },
-    { ticker: "IBM",   catKey: "stocks", yield: 68, price: 215.70,  change: -0.18, flags: ["💼"], iconUrl: "https://logo.clearbit.com/ibm.com",            digits: 2 },
-    { ticker: "ADBE",  catKey: "stocks", yield: 73, price: 485.20,  change: 0.55,  flags: ["🎨"], iconUrl: "https://logo.clearbit.com/adobe.com",          digits: 2 },
-    { ticker: "CRM",   catKey: "stocks", yield: 72, price: 328.45,  change: 0.28,  flags: ["☁️"], iconUrl: "https://logo.clearbit.com/salesforce.com",      digits: 2 },
-    { ticker: "UBER",  catKey: "stocks", yield: 74, price: 72.50,   change: 0.95,  flags: ["🚕"], iconUrl: "https://logo.clearbit.com/uber.com",           digits: 2 },
-    { ticker: "ABNB",  catKey: "stocks", yield: 73, price: 135.80,  change: -0.45, flags: ["🏠"], iconUrl: "https://logo.clearbit.com/airbnb.com",         digits: 2 },
-    { ticker: "SHOP",  catKey: "stocks", yield: 75, price: 109.20,  change: 1.20,  flags: ["🛒"], iconUrl: "https://logo.clearbit.com/shopify.com",        digits: 2 },
-    { ticker: "SPOT",  catKey: "stocks", yield: 73, price: 384.60,  change: 0.68,  flags: ["🎵"], iconUrl: "https://logo.clearbit.com/spotify.com",        digits: 2 },
-    { ticker: "BABA",  catKey: "stocks", yield: 74, price: 95.40,   change: 1.55,  flags: ["🛍️"], iconUrl: "https://logo.clearbit.com/alibaba.com",        digits: 2 },
-    { ticker: "WMT",   catKey: "stocks", yield: 66, price: 82.15,   change: 0.08,  flags: ["🛒"], iconUrl: "https://logo.clearbit.com/walmart.com",        digits: 2 },
-    { ticker: "XOM",   catKey: "stocks", yield: 68, price: 117.50,  change: -0.32, flags: ["⛽"], iconUrl: "https://logo.clearbit.com/exxonmobil.com",      digits: 2 },
-    { ticker: "CVX",   catKey: "stocks", yield: 68, price: 159.80,  change: -0.22, flags: ["⛽"], iconUrl: "https://logo.clearbit.com/chevron.com",        digits: 2 },
-    { ticker: "PFE",   catKey: "stocks", yield: 69, price: 28.45,   change: 0.18,  flags: ["💊"], iconUrl: "https://logo.clearbit.com/pfizer.com",         digits: 2 },
-    { ticker: "COIN",  catKey: "stocks", yield: 77, price: 245.30,  change: 2.10,  flags: ["🪙"], iconUrl: "https://logo.clearbit.com/coinbase.com",       digits: 2 },
+    { ticker: "AAPL",  catKey: "stocks", yield: 76, price: 229.14,  change: 0.44,  flags: ["🍎"], iconUrl: "https://financialmodelingprep.com/image-stock/AAPL.png",  brandColor: "#1f1f1f", digits: 2 },
+    { ticker: "MSFT",  catKey: "stocks", yield: 78, price: 415.75,  change: 0.82,  flags: ["🪟"], iconUrl: "https://financialmodelingprep.com/image-stock/MSFT.png",  brandColor: "#0078d4", digits: 2 },
+    { ticker: "GOOGL", catKey: "stocks", yield: 77, price: 174.20,  change: 0.55,  flags: ["🔍"], iconUrl: "https://financialmodelingprep.com/image-stock/GOOGL.png", brandColor: "#4285f4", digits: 2 },
+    { ticker: "AMZN",  catKey: "stocks", yield: 79, price: 195.44,  change: -0.30, flags: ["📦"], iconUrl: "https://financialmodelingprep.com/image-stock/AMZN.png",  brandColor: "#ff9900", digits: 2 },
+    { ticker: "META",  catKey: "stocks", yield: 78, price: 572.18,  change: 1.12,  flags: ["👥"], iconUrl: "https://financialmodelingprep.com/image-stock/META.png",  brandColor: "#1877f2", digits: 2 },
+    { ticker: "TSLA",  catKey: "stocks", yield: 72, price: 251.80,  change: -0.87, flags: ["🚗"], iconUrl: "https://financialmodelingprep.com/image-stock/TSLA.png",  brandColor: "#cc0000", digits: 2 },
+    { ticker: "NVDA",  catKey: "stocks", yield: 81, price: 141.22,  change: 2.10,  flags: ["🖥️"], iconUrl: "https://financialmodelingprep.com/image-stock/NVDA.png",  brandColor: "#76b900", digits: 2 },
+    { ticker: "NFLX",  catKey: "stocks", yield: 74, price: 732.50,  change: 0.98,  flags: ["🎬"], iconUrl: "https://financialmodelingprep.com/image-stock/NFLX.png",  brandColor: "#e50914", digits: 2 },
+    { ticker: "JPM",   catKey: "stocks", yield: 70, price: 223.85,  change: 0.18,  flags: ["🏦"], iconUrl: "https://financialmodelingprep.com/image-stock/JPM.png",   brandColor: "#003594", digits: 2 },
+    { ticker: "V",     catKey: "stocks", yield: 72, price: 292.10,  change: 0.25,  flags: ["💳"], iconUrl: "https://financialmodelingprep.com/image-stock/V.png",     brandColor: "#1a1f71", digits: 2 },
+    { ticker: "MA",    catKey: "stocks", yield: 71, price: 508.45,  change: 0.32,  flags: ["💳"], iconUrl: "https://financialmodelingprep.com/image-stock/MA.png",    brandColor: "#eb001b", digits: 2 },
+    { ticker: "PYPL",  catKey: "stocks", yield: 73, price: 79.20,   change: -0.42, flags: ["💸"], iconUrl: "https://financialmodelingprep.com/image-stock/PYPL.png",  brandColor: "#003087", digits: 2 },
+    { ticker: "DIS",   catKey: "stocks", yield: 69, price: 97.15,   change: 0.12,  flags: ["🎡"], iconUrl: "https://financialmodelingprep.com/image-stock/DIS.png",   brandColor: "#013087", digits: 2 },
+    { ticker: "NKE",   catKey: "stocks", yield: 70, price: 78.45,   change: -0.55, flags: ["👟"], iconUrl: "https://financialmodelingprep.com/image-stock/NKE.png",   brandColor: "#111111", digits: 2 },
+    { ticker: "MCD",   catKey: "stocks", yield: 68, price: 294.80,  change: 0.22,  flags: ["🍔"], iconUrl: "https://financialmodelingprep.com/image-stock/MCD.png",   brandColor: "#ffc72c", digits: 2 },
+    { ticker: "KO",    catKey: "stocks", yield: 66, price: 65.42,   change: 0.08,  flags: ["🥤"], iconUrl: "https://financialmodelingprep.com/image-stock/KO.png",    brandColor: "#f40009", digits: 2 },
+    { ticker: "PEP",   catKey: "stocks", yield: 66, price: 158.90,  change: 0.04,  flags: ["🥤"], iconUrl: "https://financialmodelingprep.com/image-stock/PEP.png",   brandColor: "#004b93", digits: 2 },
+    { ticker: "SBUX",  catKey: "stocks", yield: 69, price: 96.15,   change: -0.22, flags: ["☕"], iconUrl: "https://financialmodelingprep.com/image-stock/SBUX.png",  brandColor: "#006241", digits: 2 },
+    { ticker: "BA",    catKey: "stocks", yield: 67, price: 154.20,  change: -1.15, flags: ["✈️"], iconUrl: "https://financialmodelingprep.com/image-stock/BA.png",    brandColor: "#0039a6", digits: 2 },
+    { ticker: "INTC",  catKey: "stocks", yield: 68, price: 23.80,   change: -0.65, flags: ["🖥️"], iconUrl: "https://financialmodelingprep.com/image-stock/INTC.png",  brandColor: "#0071c5", digits: 2 },
+    { ticker: "AMD",   catKey: "stocks", yield: 75, price: 158.40,  change: 1.45,  flags: ["🖥️"], iconUrl: "https://financialmodelingprep.com/image-stock/AMD.png",   brandColor: "#000000", digits: 2 },
+    { ticker: "CSCO",  catKey: "stocks", yield: 67, price: 58.20,   change: 0.12,  flags: ["🌐"], iconUrl: "https://financialmodelingprep.com/image-stock/CSCO.png",  brandColor: "#1ba0d7", digits: 2 },
+    { ticker: "ORCL",  catKey: "stocks", yield: 71, price: 180.15,  change: 0.38,  flags: ["🗄️"], iconUrl: "https://financialmodelingprep.com/image-stock/ORCL.png",  brandColor: "#c74634", digits: 2 },
+    { ticker: "IBM",   catKey: "stocks", yield: 68, price: 215.70,  change: -0.18, flags: ["💼"], iconUrl: "https://financialmodelingprep.com/image-stock/IBM.png",   brandColor: "#054ada", digits: 2 },
+    { ticker: "ADBE",  catKey: "stocks", yield: 73, price: 485.20,  change: 0.55,  flags: ["🎨"], iconUrl: "https://financialmodelingprep.com/image-stock/ADBE.png",  brandColor: "#ff0000", digits: 2 },
+    { ticker: "CRM",   catKey: "stocks", yield: 72, price: 328.45,  change: 0.28,  flags: ["☁️"], iconUrl: "https://financialmodelingprep.com/image-stock/CRM.png",   brandColor: "#00a1e0", digits: 2 },
+    { ticker: "UBER",  catKey: "stocks", yield: 74, price: 72.50,   change: 0.95,  flags: ["🚕"], iconUrl: "https://financialmodelingprep.com/image-stock/UBER.png",  brandColor: "#000000", digits: 2 },
+    { ticker: "ABNB",  catKey: "stocks", yield: 73, price: 135.80,  change: -0.45, flags: ["🏠"], iconUrl: "https://financialmodelingprep.com/image-stock/ABNB.png",  brandColor: "#ff5a5f", digits: 2 },
+    { ticker: "SHOP",  catKey: "stocks", yield: 75, price: 109.20,  change: 1.20,  flags: ["🛒"], iconUrl: "https://financialmodelingprep.com/image-stock/SHOP.png",  brandColor: "#7ab55c", digits: 2 },
+    { ticker: "SPOT",  catKey: "stocks", yield: 73, price: 384.60,  change: 0.68,  flags: ["🎵"], iconUrl: "https://financialmodelingprep.com/image-stock/SPOT.png",  brandColor: "#1db954", digits: 2 },
+    { ticker: "BABA",  catKey: "stocks", yield: 74, price: 95.40,   change: 1.55,  flags: ["🛍️"], iconUrl: "https://financialmodelingprep.com/image-stock/BABA.png",  brandColor: "#ff6a00", digits: 2 },
+    { ticker: "WMT",   catKey: "stocks", yield: 66, price: 82.15,   change: 0.08,  flags: ["🛒"], iconUrl: "https://financialmodelingprep.com/image-stock/WMT.png",   brandColor: "#0071dc", digits: 2 },
+    { ticker: "XOM",   catKey: "stocks", yield: 68, price: 117.50,  change: -0.32, flags: ["⛽"], iconUrl: "https://financialmodelingprep.com/image-stock/XOM.png",   brandColor: "#e32e2e", digits: 2 },
+    { ticker: "CVX",   catKey: "stocks", yield: 68, price: 159.80,  change: -0.22, flags: ["⛽"], iconUrl: "https://financialmodelingprep.com/image-stock/CVX.png",   brandColor: "#005db9", digits: 2 },
+    { ticker: "PFE",   catKey: "stocks", yield: 69, price: 28.45,   change: 0.18,  flags: ["💊"], iconUrl: "https://financialmodelingprep.com/image-stock/PFE.png",   brandColor: "#0075be", digits: 2 },
+    { ticker: "COIN",  catKey: "stocks", yield: 77, price: 245.30,  change: 2.10,  flags: ["🪙"], iconUrl: "https://financialmodelingprep.com/image-stock/COIN.png",  brandColor: "#0052ff", digits: 2 },
   ],
   comm: [
     { ticker: "XAU/USD",  catKey: "comm", yield: 91, price: 2651.40, change: 0.55, flags: ["🥇"], customIcon: "gold",     digits: 2 },
@@ -1755,6 +1755,86 @@ function CommodityIcon({ type }) {
   );
 }
 
+// Красивый fallback для акций: первая буква на градиенте фирменного цвета
+function StockLetterIcon({ ticker, brandColor }) {
+  const letter = ticker.charAt(0);
+  const bg = brandColor || "#525252";
+  return (
+    <div
+      className="w-9 h-9 rounded-full flex items-center justify-center font-black text-white text-sm shadow"
+      style={{
+        background: `linear-gradient(135deg, ${bg} 0%, ${bg}dd 100%)`,
+        boxShadow: `0 2px 8px ${bg}40, inset 0 1px 0 rgba(255,255,255,0.15)`,
+      }}
+    >
+      {letter}
+    </div>
+  );
+}
+
+// Универсальная иконка актива — выбирает правильный тип рендера и обрабатывает ошибки загрузки.
+function AssetIcon({ asset }) {
+  const [imgError, setImgError] = useState(false);
+
+  // 1) Два флага (FX / OTC)
+  if (asset.flagUrls && asset.flagUrls.length >= 2) {
+    return (
+      <>
+        {asset.flagUrls.map((url, i) => (
+          <div
+            key={i}
+            className="absolute w-7 h-7 rounded-full bg-neutral-800 border border-white/20 overflow-hidden shadow"
+            style={{ left: i === 0 ? 0 : 14, top: i === 0 ? 0 : 8, zIndex: 2 - i }}
+          >
+            <img
+              src={url}
+              alt=""
+              className="w-full h-full object-cover"
+              loading="lazy"
+              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            />
+          </div>
+        ))}
+      </>
+    );
+  }
+
+  // 2) Одиночная картинка (крипта / акции / индексы с одним флагом)
+  if (asset.iconUrl && !imgError) {
+    return (
+      <img
+        src={asset.iconUrl}
+        alt={asset.ticker}
+        className="w-9 h-9 rounded-full bg-white object-contain shadow"
+        loading="lazy"
+        onError={() => setImgError(true)}
+      />
+    );
+  }
+
+  // 3) Кастомная SVG (сырьё)
+  if (asset.customIcon) {
+    return <CommodityIcon type={asset.customIcon} />;
+  }
+
+  // 4) Fallback — для акций красивая буква, для остальных эмодзи
+  if (asset.catKey === "stocks") {
+    return <StockLetterIcon ticker={asset.ticker} brandColor={asset.brandColor} />;
+  }
+
+  return (
+    <>
+      {(asset.flags || []).map((f, i) => (
+        <div
+          key={i}
+          className="absolute w-7 h-7 rounded-full bg-neutral-800 border border-white/10 flex items-center justify-center text-sm"
+          style={{ left: i === 0 ? 0 : 14, top: i === 0 ? 0 : 10, zIndex: 2 - i }}
+        >{f}</div>
+      ))}
+    </>
+  );
+}
+
 function AssetRow({ asset, fav, onFav, onClick }) {
   const { t } = useT();
   const up = asset.change >= 0;
@@ -1764,37 +1844,7 @@ function AssetRow({ asset, fav, onFav, onClick }) {
       className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/5 active:bg-yellow-500/10 transition text-left group"
     >
       <div className="relative w-11 h-10 shrink-0 flex items-center justify-center">
-        {asset.flagUrls && asset.flagUrls.length >= 2 ? (
-          // Фиат / OTC / индексы — два перекрывающихся флага
-          asset.flagUrls.map((url, i) => (
-            <div key={i}
-              className="absolute w-7 h-7 rounded-full bg-neutral-800 border border-white/20 overflow-hidden shadow"
-              style={{ left: i === 0 ? 0 : 14, top: i === 0 ? 0 : 8, zIndex: 2 - i }}
-            >
-              <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e)=>{e.currentTarget.style.display='none';}} />
-            </div>
-          ))
-        ) : asset.iconUrl ? (
-          // Крипто / акции / одиночный флаг для индексов
-          <img
-            src={asset.iconUrl}
-            alt={asset.ticker}
-            className="w-9 h-9 rounded-full bg-white object-contain shadow"
-            loading="lazy"
-            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-          />
-        ) : asset.customIcon ? (
-          // Сырьё — кастомный SVG
-          <CommodityIcon type={asset.customIcon} />
-        ) : (
-          // Fallback — эмодзи
-          (asset.flags || []).map((f, i) => (
-            <div key={i}
-              className="absolute w-7 h-7 rounded-full bg-neutral-800 border border-white/10 flex items-center justify-center text-sm"
-              style={{ left: i === 0 ? 0 : 14, top: i === 0 ? 0 : 10, zIndex: 2 - i }}
-            >{f}</div>
-          ))
-        )}
+        <AssetIcon asset={asset} />
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-sm font-bold truncate group-hover:text-yellow-400 transition-colors">{asset.ticker}</div>
