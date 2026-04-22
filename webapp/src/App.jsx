@@ -675,11 +675,30 @@ export default function TradeAppBot() {
     await sleep(1200);
     if (!ok()) return;
 
-    // 6) Результат
-    const direction = Math.random() > 0.5 ? "BUY" : "SELL";
+    // 6) Результат — пробуем получить честный сигнал с бэка (RSI/MACD/Bollinger)
+    let direction = Math.random() > 0.5 ? "BUY" : "SELL";
+    let confidence = 0.5;
+    let isReal = false;
+    try {
+      if (API_URL && authState.session) {
+        const r = await fetch(`${API_URL}/api/analyze`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Session": authState.session },
+          body: JSON.stringify({ pair }),
+        });
+        if (r.ok) {
+          const d = await r.json();
+          if (d.direction) {
+            direction = d.direction;
+            confidence = d.confidence ?? 0.5;
+            isReal = !!d.real;
+          }
+        }
+      }
+    } catch (e) { /* fallback на рандом */ }
     const startMs = Date.now();
     const validUntil = startMs + expirationMin * 60 * 1000;
-    setScan(s => ({ ...s, stage: "result", direction, startMs, validUntil }));
+    setScan(s => ({ ...s, stage: "result", direction, confidence, isReal, startMs, validUntil }));
   };
 
   // Мерцание последнего разряда цены — пока идёт анализ (до стадии result)
@@ -1006,6 +1025,7 @@ export default function TradeAppBot() {
             mode={gateMode}
             t={t}
             error={authState.error}
+            tgId={typeof window !== "undefined" ? (window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null) : null}
             onRecheck={recheckAuth}
             onClaim={submitBrokerClaim}
           />
@@ -1535,9 +1555,16 @@ function Modal({ children, onClose }) {
 
 /* ────────────────────────── ACCESS GATE ────────────────────────── */
 
-function AccessGate({ mode, t, error, onRecheck, onClaim }) {
+function AccessGate({ mode, t, error, tgId, onRecheck, onClaim }) {
   const [uid, setUid] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  // Добавляем к реф-ссылке sub_id1 с telegram ID (как требует Pocket Partners),
+  // а также дублируем в sub_id и click_id на случай разных конфигураций постбека.
+  // Backend webhook ловит любой из этих вариантов.
+  const brokerHref = tgId
+    ? (BROKER_URL + (BROKER_URL.includes("?") ? "&" : "?") + `sub_id1=${tgId}&sub_id=${tgId}&click_id=${tgId}`)
+    : BROKER_URL;
 
   const handleSubmit = async () => {
     if (!uid.trim() || !/^\d{5,15}$/.test(uid.trim())) return;
@@ -1604,7 +1631,7 @@ function AccessGate({ mode, t, error, onRecheck, onClaim }) {
               <div className="flex items-center gap-2"><span className="text-yellow-400">→</span> {t.gate_broker_step3}</div>
             </div>
             <a
-              href={BROKER_URL}
+              href={brokerHref}
               target="_blank"
               rel="noreferrer"
               className="block w-full text-center gold-grad text-black font-extrabold py-3 rounded-xl text-sm mb-3"
