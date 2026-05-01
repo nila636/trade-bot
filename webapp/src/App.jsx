@@ -407,7 +407,446 @@ The rule to learn first: the market owes you nothing. A losing trade is normal, 
   },
 };
 
-const LangCtx = createContext({ lang: "ru", t: STR.ru, setLang: () => {} });
+/* ─── Дополнительные языки (es, pt, tr, vi, id, hi).
+ *     Содержат только критичные ключи; всё остальное (edu, indicators, books, calc)
+ *     берётся из en через Proxy-fallback ниже.
+ *     Это позволяет иметь нативный UI на 8 языках без дублирования 200 строк × 6.    */
+
+STR.es = {
+  brand_top: "TRADE", brand_bottom: "BOT", status: "ESTÁNDAR",
+  search: "Buscar activo...",
+  lang_title: "Idioma", lang_ru: "Русский", lang_en: "English",
+  blocks: {
+    assets: { title: "ACTIVOS",     sub: "121 instrumentos" },
+    edu:    { title: "EDUCACIÓN",   sub: "5 módulos + libros" },
+    calc:   { title: "CALCULADORA", sub: "Martingala + riesgo" },
+    news:   { title: "NOTICIAS",    sub: "Calendario · 14 hoy" },
+    ind:    { title: "INDICADORES", sub: "6 clásicos" },
+  },
+  assets_count_suffix: "activos",
+  cats: { fiat: "Divisas", otc: "Divisas OTC", crypto: "Criptomonedas", stocks: "Acciones", comm: "Materias primas", idx: "Índices", fav: "Favoritos" },
+  cat_short: { fiat: "💵 FX", otc: "💵 OTC", crypto: "₿ Cripto", stocks: "📊 Acciones", comm: "🛢 Materias", idx: "📈 Índices", fav: "⭐ Favoritos" },
+  edu_tabs: { basics: "Básicos de trading", books: "Libros" },
+  news_cols: { time: "Hora", prio: "Imp.", left: "Falta", event: "Evento" },
+  news_time_fmt: (h, m) => `${h}h ${m}m`,
+  calc: {
+    deposit: "Depósito ($)", first_pct: "Primera operación (%)", coef: "Coeficiente",
+    steps: "Cubrir niveles", payout: "Pago (%)",
+    first_bet: "Primera apuesta", total_risk: "Riesgo total", risk_pct: "% del depósito",
+    col_step: "Paso", col_bet: "Apuesta", col_profit: "Ganancia",
+    sim_title: "SIMULACIÓN · 100 OPERACIONES", winrate: "Tasa de éxito (%)", run: "EJECUTAR",
+    balance: "Balance", wins: "Ganadas", blowups: "Pérdidas totales", recommendation: "RECOMENDACIÓN",
+    rec_bad: (wr, n, safe, newSteps) => `Con ${wr}% de éxito, perdiste el depósito ${n} vez/veces. Reduce la primera apuesta a ≈${safe}% o pasos a ${newSteps}.`,
+    rec_ok: (safe, dd) => `La grilla sobrevivió. Apuesta inicial segura: ≈${safe}%. Drawdown máx: ${dd}%.`,
+  },
+  analyze_market: "ANALIZAR MERCADO", analyze_loading: "EJECUTANDO ALGORITMO...",
+  scanning: "ESCANEANDO MERCADO...", analyzing_signal: "ANALIZANDO SEÑAL...",
+  analyzing_volatility: "ANALIZANDO VOLATILIDAD...", finalizing: "FINALIZANDO PRONÓSTICO...",
+  buy: "COMPRAR", sell: "VENDER", market: "Mercado", time_label: "Tiempo",
+  valid_until: "Válido hasta", retry: "Reintentar", back: "Atrás",
+  tag_signal_ai: "SEÑAL DE IA", tag_signal: "SEÑAL", tag_edu: "EDUCACIÓN",
+  tag_ind: "INDICADOR", tag_asset_analysis: "ANÁLISIS DE ACTIVO",
+  dir_up: "ARRIBA", dir_down: "ABAJO",
+  probability: "Probabilidad", expiration: "Expiración",
+  entry: "Entrada", target: "Objetivo", accept_signal: "ACEPTAR SEÑAL",
+  processing: "Algoritmo de IA procesando datos...",
+  step_volatility: "› verificando volatilidad",
+  step_rsi: "› calculando RSI + MACD",
+  step_patterns: "› patrones de velas",
+  demo_note: "⚠ Señal demo. En producción es la salida de un modelo ML.",
+  demo_note_market: "⚠ Señal demo. En producción es la salida de un modelo ML/API.",
+  gate_loading: "Verificando acceso...",
+  gate_channel_title: "Suscríbete al canal",
+  gate_channel_desc: "Para acceder a las señales, suscríbete a nuestro canal de análisis.",
+  gate_channel_btn: "📣 Abrir canal", gate_check_btn: "Me suscribí, verificar",
+  gate_broker_title: "Regístrate en Pocket Option",
+  gate_broker_desc: "Para acceso completo, regístrate en Pocket Option vía nuestro enlace e introduce tu ID abajo.",
+  gate_broker_step1: "1. Regístrate en el broker",
+  gate_broker_step2: "2. Encuentra tu UID en perfil",
+  gate_broker_step3: "3. Introduce el UID abajo",
+  gate_broker_btn_register: "🏦 Abrir Pocket Option",
+  gate_broker_uid_placeholder: "Tu UID (números)",
+  gate_broker_uid_hint: "UID suele tener 6–8 dígitos, lo encuentras en tu perfil de Pocket Option",
+  gate_broker_uid_hint_err: "UID debe tener 4–15 dígitos",
+  gate_broker_submit: "Enviar solicitud",
+  gate_broker_submit_err: "Error al enviar. Verifica conexión.",
+  gate_broker_pending_title: "Solicitud en revisión",
+  gate_broker_pending_desc: "Tu UID fue enviado. Aprobación toma hasta 24h. Recibirás notificación.",
+  gate_broker_rejected: "Solicitud rechazada. Verifica que te registraste via nuestro enlace.",
+  gate_error: "Error de acceso", gate_retry: "Reintentar",
+  // Таймфреймы
+  timeframe_title: "Elige el tiempo de expiración",
+  timeframe_subtitle: "¿Cuándo verificar el resultado?",
+  // 10s/30s/1m/3m/5m/10m — оставим латинские шорты
+};
+
+STR.pt = {
+  brand_top: "TRADE", brand_bottom: "BOT", status: "PADRÃO",
+  search: "Buscar ativo...",
+  lang_title: "Idioma", lang_ru: "Русский", lang_en: "English",
+  blocks: {
+    assets: { title: "ATIVOS",      sub: "121 instrumentos" },
+    edu:    { title: "EDUCAÇÃO",    sub: "5 módulos + livros" },
+    calc:   { title: "CALCULADORA", sub: "Martingale + risco" },
+    news:   { title: "NOTÍCIAS",    sub: "Calendário · 14 hoje" },
+    ind:    { title: "INDICADORES", sub: "6 clássicos" },
+  },
+  assets_count_suffix: "ativos",
+  cats: { fiat: "Moedas", otc: "Moedas OTC", crypto: "Criptomoedas", stocks: "Ações", comm: "Commodities", idx: "Índices", fav: "Favoritos" },
+  cat_short: { fiat: "💵 FX", otc: "💵 OTC", crypto: "₿ Cripto", stocks: "📊 Ações", comm: "🛢 Commod.", idx: "📈 Índices", fav: "⭐ Favoritos" },
+  edu_tabs: { basics: "Fundamentos", books: "Livros" },
+  news_cols: { time: "Hora", prio: "Imp.", left: "Falta", event: "Evento" },
+  news_time_fmt: (h, m) => `${h}h ${m}m`,
+  calc: {
+    deposit: "Depósito ($)", first_pct: "Primeira operação (%)", coef: "Coeficiente",
+    steps: "Sobreposições", payout: "Payout (%)",
+    first_bet: "Primeira aposta", total_risk: "Risco total", risk_pct: "% do depósito",
+    col_step: "Passo", col_bet: "Aposta", col_profit: "Lucro",
+    sim_title: "SIMULAÇÃO · 100 OPERAÇÕES", winrate: "Taxa de acerto (%)", run: "EXECUTAR",
+    balance: "Saldo", wins: "Ganhos", blowups: "Perdas totais", recommendation: "RECOMENDAÇÃO",
+    rec_bad: (wr, n, safe, newSteps) => `Com ${wr}% de acerto, perdeste depósito ${n}x. Reduz aposta inicial para ≈${safe}% ou passos para ${newSteps}.`,
+    rec_ok: (safe, dd) => `A grade sobreviveu. Aposta inicial segura: ≈${safe}%. Drawdown máx: ${dd}%.`,
+  },
+  analyze_market: "ANALISAR MERCADO", analyze_loading: "EXECUTANDO ALGORITMO...",
+  scanning: "ESCANEANDO MERCADO...", analyzing_signal: "ANALISANDO SINAL...",
+  analyzing_volatility: "ANALISANDO VOLATILIDADE...", finalizing: "FINALIZANDO PREVISÃO...",
+  buy: "COMPRAR", sell: "VENDER", market: "Mercado", time_label: "Tempo",
+  valid_until: "Válido até", retry: "Tentar novamente", back: "Voltar",
+  tag_signal_ai: "SINAL DE IA", tag_signal: "SINAL", tag_edu: "EDUCAÇÃO",
+  tag_ind: "INDICADOR", tag_asset_analysis: "ANÁLISE DE ATIVO",
+  dir_up: "CIMA", dir_down: "BAIXO",
+  probability: "Probabilidade", expiration: "Expiração",
+  entry: "Entrada", target: "Alvo", accept_signal: "ACEITAR SINAL",
+  processing: "Algoritmo de IA processando dados...",
+  step_volatility: "› verificando volatilidade",
+  step_rsi: "› calculando RSI + MACD",
+  step_patterns: "› padrões de velas",
+  demo_note: "⚠ Sinal demo. Em produção é saída de modelo ML.",
+  demo_note_market: "⚠ Sinal demo. Em produção é saída de modelo ML/API.",
+  gate_loading: "Verificando acesso...",
+  gate_channel_title: "Inscreva-se no canal",
+  gate_channel_desc: "Para acessar os sinais, inscreva-se no nosso canal de análise.",
+  gate_channel_btn: "📣 Abrir canal", gate_check_btn: "Me inscrevi, verificar",
+  gate_broker_title: "Cadastre-se na Pocket Option",
+  gate_broker_desc: "Para acesso completo, cadastre-se na Pocket Option pelo nosso link e insira seu ID abaixo.",
+  gate_broker_step1: "1. Cadastre-se no broker",
+  gate_broker_step2: "2. Encontre seu UID no perfil",
+  gate_broker_step3: "3. Insira o UID abaixo",
+  gate_broker_btn_register: "🏦 Abrir Pocket Option",
+  gate_broker_uid_placeholder: "Seu UID (números)",
+  gate_broker_uid_hint: "UID geralmente tem 6–8 dígitos, encontre no seu perfil Pocket Option",
+  gate_broker_uid_hint_err: "UID deve ter 4–15 dígitos",
+  gate_broker_submit: "Enviar pedido",
+  gate_broker_submit_err: "Falha ao enviar. Verifique conexão.",
+  gate_broker_pending_title: "Pedido em análise",
+  gate_broker_pending_desc: "Seu UID foi enviado. Aprovação leva até 24h. Você receberá notificação.",
+  gate_broker_rejected: "Pedido rejeitado. Verifique que se cadastrou pelo nosso link.",
+  gate_error: "Erro de acesso", gate_retry: "Tentar novamente",
+  timeframe_title: "Escolha o tempo de expiração",
+  timeframe_subtitle: "Quando verificar o resultado?",
+};
+
+STR.tr = {
+  brand_top: "TRADE", brand_bottom: "BOT", status: "STANDART",
+  search: "Varlık ara...",
+  lang_title: "Dil", lang_ru: "Русский", lang_en: "English",
+  blocks: {
+    assets: { title: "VARLIKLAR",   sub: "121 araç" },
+    edu:    { title: "EĞİTİM",      sub: "5 modül + kitaplar" },
+    calc:   { title: "HESAPLAYICI", sub: "Martingale + risk" },
+    news:   { title: "HABERLER",    sub: "Takvim · bugün 14" },
+    ind:    { title: "GÖSTERGELER", sub: "6 klasik" },
+  },
+  assets_count_suffix: "varlık",
+  cats: { fiat: "Dövizler", otc: "OTC Dövizler", crypto: "Kriptolar", stocks: "Hisseler", comm: "Emtialar", idx: "Endeksler", fav: "Favoriler" },
+  cat_short: { fiat: "💵 FX", otc: "💵 OTC", crypto: "₿ Kripto", stocks: "📊 Hisse", comm: "🛢 Emtia", idx: "📈 Endeks", fav: "⭐ Favori" },
+  edu_tabs: { basics: "Temeller", books: "Kitaplar" },
+  news_cols: { time: "Saat", prio: "Önem", left: "Kalan", event: "Olay" },
+  news_time_fmt: (h, m) => `${h}sa ${m}dk`,
+  calc: {
+    deposit: "Mevduat ($)", first_pct: "İlk işlem (%)", coef: "Katsayı",
+    steps: "Üst üste", payout: "Ödeme (%)",
+    first_bet: "İlk bahis", total_risk: "Toplam risk", risk_pct: "Mevduatın %",
+    col_step: "Adım", col_bet: "Bahis", col_profit: "Kâr",
+    sim_title: "SİMÜLASYON · 100 İŞLEM", winrate: "Başarı oranı (%)", run: "ÇALIŞTIR",
+    balance: "Bakiye", wins: "Kazanım", blowups: "Toplam kayıp", recommendation: "ÖNERİ",
+    rec_bad: (wr, n, safe, newSteps) => `${wr}% başarıyla mevduatı ${n} kez kaybettin. İlk bahsi ≈${safe}%'e veya adımları ${newSteps}'e indir.`,
+    rec_ok: (safe, dd) => `Izgara hayatta kaldı. Güvenli ilk bahis: ≈${safe}%. Maks geri çekilme: ${dd}%.`,
+  },
+  analyze_market: "PİYASAYI ANALİZ ET", analyze_loading: "ALGORİTMA ÇALIŞIYOR...",
+  scanning: "PİYASA TARANIYOR...", analyzing_signal: "SİNYAL ANALİZ EDİLİYOR...",
+  analyzing_volatility: "VOLATİLİTE ANALİZ EDİLİYOR...", finalizing: "TAHMİN TAMAMLANIYOR...",
+  buy: "AL", sell: "SAT", market: "Piyasa", time_label: "Süre",
+  valid_until: "Geçerli", retry: "Tekrar", back: "Geri",
+  tag_signal_ai: "AI SİNYALİ", tag_signal: "SİNYAL", tag_edu: "EĞİTİM",
+  tag_ind: "GÖSTERGE", tag_asset_analysis: "VARLIK ANALİZİ",
+  dir_up: "YUKARI", dir_down: "AŞAĞI",
+  probability: "Olasılık", expiration: "Vade",
+  entry: "Giriş", target: "Hedef", accept_signal: "SİNYALİ KABUL ET",
+  processing: "AI algoritması veri işliyor...",
+  step_volatility: "› volatilite kontrol",
+  step_rsi: "› RSI + MACD hesabı",
+  step_patterns: "› mum desenleri",
+  demo_note: "⚠ Demo sinyal. Üretimde ML modelinin çıktısı.",
+  demo_note_market: "⚠ Demo sinyal. Üretimde ML/API çıktısı.",
+  gate_loading: "Erişim kontrol ediliyor...",
+  gate_channel_title: "Kanala abone ol",
+  gate_channel_desc: "Sinyallere erişmek için analiz kanalımıza abone ol.",
+  gate_channel_btn: "📣 Kanalı aç", gate_check_btn: "Abone oldum, kontrol et",
+  gate_broker_title: "Pocket Option'a kaydol",
+  gate_broker_desc: "Tam erişim için ortak bağlantımızla Pocket Option'a kaydol ve ID'ni gir.",
+  gate_broker_step1: "1. Broker'a kaydol",
+  gate_broker_step2: "2. Profilden UID'yi bul",
+  gate_broker_step3: "3. UID'yi aşağı gir",
+  gate_broker_btn_register: "🏦 Pocket Option'u aç",
+  gate_broker_uid_placeholder: "UID'n (sayılar)",
+  gate_broker_uid_hint: "UID genelde 6–8 hane, Pocket Option profilindesin",
+  gate_broker_uid_hint_err: "UID 4–15 hane olmalı",
+  gate_broker_submit: "Talep gönder",
+  gate_broker_submit_err: "Gönderim hatası. Bağlantıyı kontrol et.",
+  gate_broker_pending_title: "Talep inceleniyor",
+  gate_broker_pending_desc: "UID gönderildi. Onay 24 saat. Bildirim alacaksın.",
+  gate_broker_rejected: "Talep reddedildi. Bağlantımızla kaydolduğundan emin ol.",
+  gate_error: "Erişim hatası", gate_retry: "Tekrar dene",
+  timeframe_title: "Vade süresini seç",
+  timeframe_subtitle: "Sonucu ne zaman kontrol etmeli?",
+};
+
+STR.vi = {
+  brand_top: "TRADE", brand_bottom: "BOT", status: "TIÊU CHUẨN",
+  search: "Tìm tài sản...",
+  lang_title: "Ngôn ngữ", lang_ru: "Русский", lang_en: "English",
+  blocks: {
+    assets: { title: "TÀI SẢN",     sub: "121 công cụ" },
+    edu:    { title: "GIÁO DỤC",    sub: "5 mô-đun + sách" },
+    calc:   { title: "MÁY TÍNH",    sub: "Martingale + rủi ro" },
+    news:   { title: "TIN TỨC",     sub: "Lịch · 14 hôm nay" },
+    ind:    { title: "CHỈ BÁO",     sub: "6 cổ điển" },
+  },
+  assets_count_suffix: "tài sản",
+  cats: { fiat: "Tiền tệ", otc: "Tiền tệ OTC", crypto: "Tiền điện tử", stocks: "Cổ phiếu", comm: "Hàng hóa", idx: "Chỉ số", fav: "Yêu thích" },
+  cat_short: { fiat: "💵 FX", otc: "💵 OTC", crypto: "₿ Crypto", stocks: "📊 CP", comm: "🛢 HH", idx: "📈 CS", fav: "⭐ YT" },
+  edu_tabs: { basics: "Cơ bản", books: "Sách" },
+  news_cols: { time: "Giờ", prio: "QT", left: "Còn", event: "Sự kiện" },
+  news_time_fmt: (h, m) => `${h}h ${m}p`,
+  calc: {
+    deposit: "Tiền gửi ($)", first_pct: "Lệnh đầu (%)", coef: "Hệ số",
+    steps: "Số tầng", payout: "Trả thưởng (%)",
+    first_bet: "Cược đầu", total_risk: "Tổng rủi ro", risk_pct: "% tiền gửi",
+    col_step: "Bước", col_bet: "Cược", col_profit: "Lãi",
+    sim_title: "MÔ PHỎNG · 100 LỆNH", winrate: "Tỷ lệ thắng (%)", run: "CHẠY",
+    balance: "Số dư", wins: "Thắng", blowups: "Cháy TK", recommendation: "ĐỀ XUẤT",
+    rec_bad: (wr, n, safe, newSteps) => `Với ${wr}% thắng, cháy TK ${n} lần. Giảm cược đầu xuống ≈${safe}% hoặc tầng còn ${newSteps}.`,
+    rec_ok: (safe, dd) => `Lưới sống sót. Cược đầu an toàn: ≈${safe}%. Drawdown tối đa: ${dd}%.`,
+  },
+  analyze_market: "PHÂN TÍCH THỊ TRƯỜNG", analyze_loading: "ĐANG CHẠY THUẬT TOÁN...",
+  scanning: "ĐANG QUÉT THỊ TRƯỜNG...", analyzing_signal: "ĐANG PHÂN TÍCH TÍN HIỆU...",
+  analyzing_volatility: "ĐANG PHÂN TÍCH BIẾN ĐỘNG...", finalizing: "ĐANG HOÀN TẤT DỰ BÁO...",
+  buy: "MUA", sell: "BÁN", market: "Thị trường", time_label: "Thời gian",
+  valid_until: "Hiệu lực đến", retry: "Thử lại", back: "Quay lại",
+  tag_signal_ai: "TÍN HIỆU AI", tag_signal: "TÍN HIỆU", tag_edu: "GIÁO DỤC",
+  tag_ind: "CHỈ BÁO", tag_asset_analysis: "PHÂN TÍCH TÀI SẢN",
+  dir_up: "LÊN", dir_down: "XUỐNG",
+  probability: "Xác suất", expiration: "Hết hạn",
+  entry: "Vào", target: "Mục tiêu", accept_signal: "CHẤP NHẬN TÍN HIỆU",
+  processing: "Thuật toán AI đang xử lý dữ liệu...",
+  step_volatility: "› kiểm tra biến động",
+  step_rsi: "› tính RSI + MACD",
+  step_patterns: "› mẫu nến",
+  demo_note: "⚠ Tín hiệu demo. Sản phẩm thật là đầu ra mô hình ML.",
+  demo_note_market: "⚠ Tín hiệu demo. Sản phẩm thật là đầu ra ML/API.",
+  gate_loading: "Đang kiểm tra quyền...",
+  gate_channel_title: "Đăng ký kênh",
+  gate_channel_desc: "Để nhận tín hiệu, hãy đăng ký kênh phân tích.",
+  gate_channel_btn: "📣 Mở kênh", gate_check_btn: "Đã đăng ký, kiểm tra",
+  gate_broker_title: "Đăng ký Pocket Option",
+  gate_broker_desc: "Để truy cập đầy đủ, đăng ký Pocket Option qua link đối tác và nhập ID.",
+  gate_broker_step1: "1. Đăng ký broker",
+  gate_broker_step2: "2. Tìm UID trong hồ sơ",
+  gate_broker_step3: "3. Nhập UID bên dưới",
+  gate_broker_btn_register: "🏦 Mở Pocket Option",
+  gate_broker_uid_placeholder: "UID của bạn (số)",
+  gate_broker_uid_hint: "UID thường 6–8 chữ số, ở hồ sơ Pocket Option",
+  gate_broker_uid_hint_err: "UID phải có 4–15 chữ số",
+  gate_broker_submit: "Gửi yêu cầu",
+  gate_broker_submit_err: "Gửi lỗi. Kiểm tra kết nối.",
+  gate_broker_pending_title: "Yêu cầu đang xét duyệt",
+  gate_broker_pending_desc: "UID đã gửi. Duyệt trong 24h. Bạn sẽ nhận thông báo.",
+  gate_broker_rejected: "Yêu cầu bị từ chối. Đảm bảo bạn đăng ký qua link.",
+  gate_error: "Lỗi truy cập", gate_retry: "Thử lại",
+  timeframe_title: "Chọn thời gian hết hạn",
+  timeframe_subtitle: "Khi nào kiểm tra kết quả?",
+};
+
+STR.id = {
+  brand_top: "TRADE", brand_bottom: "BOT", status: "STANDAR",
+  search: "Cari aset...",
+  lang_title: "Bahasa", lang_ru: "Русский", lang_en: "English",
+  blocks: {
+    assets: { title: "ASET",        sub: "121 instrumen" },
+    edu:    { title: "EDUKASI",     sub: "5 modul + buku" },
+    calc:   { title: "KALKULATOR",  sub: "Martingale + risiko" },
+    news:   { title: "BERITA",      sub: "Kalender · 14 hari ini" },
+    ind:    { title: "INDIKATOR",   sub: "6 klasik" },
+  },
+  assets_count_suffix: "aset",
+  cats: { fiat: "Mata Uang", otc: "OTC Mata Uang", crypto: "Kripto", stocks: "Saham", comm: "Komoditas", idx: "Indeks", fav: "Favorit" },
+  cat_short: { fiat: "💵 FX", otc: "💵 OTC", crypto: "₿ Kripto", stocks: "📊 Saham", comm: "🛢 Komod.", idx: "📈 Indeks", fav: "⭐ Favorit" },
+  edu_tabs: { basics: "Dasar Trading", books: "Buku" },
+  news_cols: { time: "Waktu", prio: "Pent.", left: "Sisa", event: "Acara" },
+  news_time_fmt: (h, m) => `${h}j ${m}m`,
+  calc: {
+    deposit: "Deposit ($)", first_pct: "Trade pertama (%)", coef: "Koefisien",
+    steps: "Tumpang", payout: "Pembayaran (%)",
+    first_bet: "Taruhan pertama", total_risk: "Total risiko", risk_pct: "% deposit",
+    col_step: "Langkah", col_bet: "Taruhan", col_profit: "Untung",
+    sim_title: "SIMULASI · 100 TRADE", winrate: "Tingkat menang (%)", run: "JALANKAN",
+    balance: "Saldo", wins: "Menang", blowups: "Habis", recommendation: "REKOMENDASI",
+    rec_bad: (wr, n, safe, newSteps) => `Dengan ${wr}% menang, deposit habis ${n}x. Turunkan taruhan awal ke ≈${safe}% atau langkah ke ${newSteps}.`,
+    rec_ok: (safe, dd) => `Grid bertahan. Taruhan awal aman: ≈${safe}%. Drawdown maks: ${dd}%.`,
+  },
+  analyze_market: "ANALISIS PASAR", analyze_loading: "MENJALANKAN ALGORITMA...",
+  scanning: "MEMINDAI PASAR...", analyzing_signal: "MENGANALISIS SINYAL...",
+  analyzing_volatility: "MENGANALISIS VOLATILITAS...", finalizing: "MENYELESAIKAN PRAKIRAAN...",
+  buy: "BELI", sell: "JUAL", market: "Pasar", time_label: "Waktu",
+  valid_until: "Berlaku sampai", retry: "Coba lagi", back: "Kembali",
+  tag_signal_ai: "SINYAL AI", tag_signal: "SINYAL", tag_edu: "EDUKASI",
+  tag_ind: "INDIKATOR", tag_asset_analysis: "ANALISIS ASET",
+  dir_up: "NAIK", dir_down: "TURUN",
+  probability: "Probabilitas", expiration: "Kedaluwarsa",
+  entry: "Masuk", target: "Target", accept_signal: "TERIMA SINYAL",
+  processing: "Algoritma AI memproses data...",
+  step_volatility: "› cek volatilitas",
+  step_rsi: "› hitung RSI + MACD",
+  step_patterns: "› pola candle",
+  demo_note: "⚠ Sinyal demo. Di produksi adalah output ML.",
+  demo_note_market: "⚠ Sinyal demo. Di produksi adalah output ML/API.",
+  gate_loading: "Memeriksa akses...",
+  gate_channel_title: "Berlangganan saluran",
+  gate_channel_desc: "Untuk akses sinyal, berlangganan saluran analisis kami.",
+  gate_channel_btn: "📣 Buka saluran", gate_check_btn: "Sudah berlangganan, periksa",
+  gate_broker_title: "Daftar di Pocket Option",
+  gate_broker_desc: "Untuk akses penuh, daftar Pocket Option via link afiliasi dan masukkan ID.",
+  gate_broker_step1: "1. Daftar di broker",
+  gate_broker_step2: "2. Cari UID di profil",
+  gate_broker_step3: "3. Masukkan UID di bawah",
+  gate_broker_btn_register: "🏦 Buka Pocket Option",
+  gate_broker_uid_placeholder: "UID Anda (angka)",
+  gate_broker_uid_hint: "UID biasanya 6–8 angka, ada di profil Pocket Option",
+  gate_broker_uid_hint_err: "UID harus 4–15 angka",
+  gate_broker_submit: "Kirim permohonan",
+  gate_broker_submit_err: "Gagal kirim. Cek koneksi.",
+  gate_broker_pending_title: "Permohonan ditinjau",
+  gate_broker_pending_desc: "UID dikirim. Persetujuan hingga 24 jam. Anda akan menerima notifikasi.",
+  gate_broker_rejected: "Permohonan ditolak. Pastikan daftar via link kami.",
+  gate_error: "Error akses", gate_retry: "Coba lagi",
+  timeframe_title: "Pilih waktu kedaluwarsa",
+  timeframe_subtitle: "Kapan periksa hasil?",
+};
+
+STR.hi = {
+  brand_top: "TRADE", brand_bottom: "BOT", status: "मानक",
+  search: "एसेट खोजें...",
+  lang_title: "भाषा", lang_ru: "Русский", lang_en: "English",
+  blocks: {
+    assets: { title: "एसेट्स",        sub: "121 इंस्ट्रुमेंट" },
+    edu:    { title: "शिक्षा",        sub: "5 मॉड्यूल + किताबें" },
+    calc:   { title: "कैलकुलेटर",     sub: "मार्टिंगेल + जोखिम" },
+    news:   { title: "समाचार",       sub: "कैलेंडर · आज 14" },
+    ind:    { title: "इंडिकेटर",     sub: "6 क्लासिक" },
+  },
+  assets_count_suffix: "एसेट",
+  cats: { fiat: "मुद्राएँ", otc: "OTC मुद्राएँ", crypto: "क्रिप्टो", stocks: "स्टॉक", comm: "कमोडिटीज़", idx: "इंडेक्स", fav: "पसंदीदा" },
+  cat_short: { fiat: "💵 FX", otc: "💵 OTC", crypto: "₿ क्रिप्टो", stocks: "📊 स्टॉक", comm: "🛢 कमोडिटी", idx: "📈 इंडेक्स", fav: "⭐ पसंद" },
+  edu_tabs: { basics: "ट्रेडिंग की मूल बातें", books: "किताबें" },
+  news_cols: { time: "समय", prio: "महत्व", left: "बाकी", event: "घटना" },
+  news_time_fmt: (h, m) => `${h}घं ${m}मि`,
+  calc: {
+    deposit: "जमा ($)", first_pct: "पहला ट्रेड (%)", coef: "गुणांक",
+    steps: "स्तर", payout: "भुगतान (%)",
+    first_bet: "पहली बेट", total_risk: "कुल जोखिम", risk_pct: "जमा का %",
+    col_step: "चरण", col_bet: "बेट", col_profit: "लाभ",
+    sim_title: "सिमुलेशन · 100 ट्रेड", winrate: "जीत दर (%)", run: "चलाएँ",
+    balance: "बैलेंस", wins: "जीत", blowups: "खाते खाली", recommendation: "सिफ़ारिश",
+    rec_bad: (wr, n, safe, newSteps) => `${wr}% जीत के साथ जमा ${n} बार खाली। पहली बेट ≈${safe}% या स्तर ${newSteps} पर लाएँ।`,
+    rec_ok: (safe, dd) => `ग्रिड बच गया। सुरक्षित पहली बेट: ≈${safe}%. अधिकतम ड्रॉडाउन: ${dd}%.`,
+  },
+  analyze_market: "बाज़ार का विश्लेषण", analyze_loading: "एल्गोरिदम चल रहा है...",
+  scanning: "बाज़ार स्कैन हो रहा है...", analyzing_signal: "सिग्नल विश्लेषण...",
+  analyzing_volatility: "अस्थिरता का विश्लेषण...", finalizing: "पूर्वानुमान पूरा हो रहा है...",
+  buy: "खरीदें", sell: "बेचें", market: "बाज़ार", time_label: "समय",
+  valid_until: "मान्य", retry: "पुनः प्रयास", back: "वापस",
+  tag_signal_ai: "AI सिग्नल", tag_signal: "सिग्नल", tag_edu: "शिक्षा",
+  tag_ind: "इंडिकेटर", tag_asset_analysis: "एसेट विश्लेषण",
+  dir_up: "ऊपर", dir_down: "नीचे",
+  probability: "संभावना", expiration: "समाप्ति",
+  entry: "प्रवेश", target: "लक्ष्य", accept_signal: "सिग्नल स्वीकार करें",
+  processing: "AI एल्गोरिदम डेटा प्रोसेस कर रहा है...",
+  step_volatility: "› अस्थिरता जाँच",
+  step_rsi: "› RSI + MACD गणना",
+  step_patterns: "› कैंडल पैटर्न",
+  demo_note: "⚠ डेमो सिग्नल। उत्पादन में ML मॉडल का आउटपुट।",
+  demo_note_market: "⚠ डेमो सिग्नल। उत्पादन में ML/API का आउटपुट।",
+  gate_loading: "पहुँच जाँच रहे हैं...",
+  gate_channel_title: "चैनल सब्सक्राइब करें",
+  gate_channel_desc: "सिग्नल पाने के लिए हमारे विश्लेषण चैनल को सब्सक्राइब करें।",
+  gate_channel_btn: "📣 चैनल खोलें", gate_check_btn: "मैंने सब्सक्राइब किया, जाँचें",
+  gate_broker_title: "Pocket Option पर रजिस्टर करें",
+  gate_broker_desc: "पूरी पहुँच के लिए हमारे रेफ़रल लिंक से Pocket Option पर रजिस्टर करें और अपना ID डालें।",
+  gate_broker_step1: "1. ब्रोकर पर रजिस्टर करें",
+  gate_broker_step2: "2. प्रोफ़ाइल में अपना UID खोजें",
+  gate_broker_step3: "3. नीचे UID डालें",
+  gate_broker_btn_register: "🏦 Pocket Option खोलें",
+  gate_broker_uid_placeholder: "आपका UID (अंक)",
+  gate_broker_uid_hint: "UID आमतौर पर 6–8 अंक का होता है, Pocket Option प्रोफ़ाइल में मिलेगा",
+  gate_broker_uid_hint_err: "UID 4–15 अंक का होना चाहिए",
+  gate_broker_submit: "अनुरोध भेजें",
+  gate_broker_submit_err: "भेजने में त्रुटि। कनेक्शन जाँचें।",
+  gate_broker_pending_title: "अनुरोध समीक्षा में",
+  gate_broker_pending_desc: "UID भेज दिया। स्वीकृति 24 घंटे तक। आपको सूचना मिलेगी।",
+  gate_broker_rejected: "अनुरोध अस्वीकृत। हमारे लिंक से रजिस्टर करना सुनिश्चित करें।",
+  gate_error: "पहुँच त्रुटि", gate_retry: "पुनः प्रयास",
+  timeframe_title: "समाप्ति समय चुनें",
+  timeframe_subtitle: "परिणाम कब जाँचें?",
+};
+
+// Также добавляем timeframe_title в ru/en
+STR.ru.timeframe_title = "Выберите время экспирации";
+STR.ru.timeframe_subtitle = "Когда проверить результат?";
+STR.en.timeframe_title = "Choose expiration time";
+STR.en.timeframe_subtitle = "When to check the result?";
+
+// Proxy: для каждого языка возвращает связку «свой словарь + fallback на en».
+// Это значит что неопределённый ключ автоматически берётся из английской версии.
+const STR_RAW = STR;
+const makeProxy = (lang) => new Proxy({}, {
+  get(_, key) {
+    const v = STR_RAW[lang]?.[key];
+    if (v !== undefined) return v;
+    return STR_RAW.en[key];
+  },
+});
+
+const STR_PROXY = {
+  ru: makeProxy("ru"), en: makeProxy("en"),
+  es: makeProxy("es"), pt: makeProxy("pt"),
+  tr: makeProxy("tr"), vi: makeProxy("vi"),
+  id: makeProxy("id"), hi: makeProxy("hi"),
+};
+
+const LANG_LIST = ["en", "ru", "es", "pt", "tr", "vi", "id", "hi"];
+const LANG_LABELS_MINI = {
+  en: "🇬🇧 English",
+  ru: "🇷🇺 Русский",
+  es: "🇪🇸 Español",
+  pt: "🇵🇹 Português",
+  tr: "🇹🇷 Türkçe",
+  vi: "🇻🇳 Tiếng Việt",
+  id: "🇮🇩 Bahasa Indonesia",
+  hi: "🇮🇳 हिन्दी",
+};
+
+const LangCtx = createContext({ lang: "en", t: STR_PROXY.en, setLang: () => {} });
 const useT = () => useContext(LangCtx);
 
 /* ────────────────────────── CONFIG ────────────────────────── */
@@ -658,7 +1097,7 @@ const fmtMoney = n => `$${fmt(n, 2)}`;
 
 export default function TradeAppBot() {
   const [lang, setLang] = useState("en");   // дефолт English
-  const t = STR[lang];
+  const t = STR_PROXY[lang] || STR_PROXY.en;
 
   const [openBlock, setOpenBlock] = useState("assets");
   const [openCat, setOpenCat] = useState("fiat");
@@ -697,9 +1136,21 @@ export default function TradeAppBot() {
       tg.setHeaderColor?.("#070708");
       tg.setBackgroundColor?.("#070708");
       tg.disableVerticalSwipes?.();
-      const tgLang = tg.initDataUnsafe?.user?.language_code;
-      // Русскоязычные локали → ru, всё остальное → en (дефолт)
-      if (tgLang === "ru" || tgLang === "uk" || tgLang === "be") setLang("ru");
+      const tgLang = (tg.initDataUnsafe?.user?.language_code || "").toLowerCase();
+      // Маппинг Telegram language_code → наш язык
+      const langMap = {
+        ru: "ru", uk: "ru", be: "ru", kk: "ru",  // русскоязычные
+        es: "es",
+        pt: "pt", "pt-br": "pt",
+        tr: "tr",
+        vi: "vi",
+        id: "id", ms: "id",  // малайский тоже на ID
+        hi: "hi",
+      };
+      // Берём двухбуквенный префикс (ru-RU → ru)
+      const short = tgLang.slice(0, 2);
+      const detected = langMap[tgLang] || langMap[short];
+      if (detected) setLang(detected);
     } catch (e) { console.warn("TG init:", e); }
 
     if (!API_URL) {
@@ -911,9 +1362,26 @@ export default function TradeAppBot() {
     authState.brokerStatus === "none" || authState.brokerStatus === "rejected" ? "broker" :
     null;
 
+  // Список таймфреймов для выбора пользователем
+  const TIMEFRAMES = [
+    { key: "10s", label: "10s", seconds: 10 },
+    { key: "30s", label: "30s", seconds: 30 },
+    { key: "1m",  label: "1m",  seconds: 60 },
+    { key: "3m",  label: "3m",  seconds: 180 },
+    { key: "5m",  label: "5m",  seconds: 300 },
+    { key: "10m", label: "10m", seconds: 600 },
+  ];
+
+  // 1) клик на актив → открываем выбор таймфрейма
   const analyzeAsset = (asset) => {
     track("asset_clicked", { ticker: asset.ticker, catKey: asset.catKey });
-    setAssetSignal({ asset, loading: true, result: null });
+    setAssetSignal({ asset, stage: "timeframe", loading: false, result: null });
+  };
+
+  // 2) клик на таймфрейм → запускаем анализ
+  const runAssetAnalysis = (asset, timeframe) => {
+    track("market_analysis_started", { ticker: asset.ticker, tf: timeframe.key });
+    setAssetSignal({ asset, stage: "analyzing", loading: true, result: null, timeframe });
     setTimeout(() => {
       const isUp = Math.random() > 0.5;
       const price = typeof asset.price === "number" ? asset.price : 1;
@@ -922,11 +1390,13 @@ export default function TradeAppBot() {
       const target = isUp ? price * (1 + delta) : price * (1 - delta);
       setAssetSignal({
         asset,
+        stage: "result",
         loading: false,
+        timeframe,
         result: {
           isUp,
           prob: 78 + Math.floor(Math.random() * 17),
-          time: `${1 + Math.floor(Math.random() * 5)}M`,
+          time: timeframe.label,
           entry: price.toFixed(digits),
           target: target.toFixed(digits),
         },
@@ -1108,7 +1578,7 @@ export default function TradeAppBot() {
                 onClick={() => setLangOpen(v => !v)}
                 className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/5 border border-white/10 hover:border-yellow-500/30 transition"
               >
-                <span className="text-base leading-none">{lang === "ru" ? "🇷🇺" : "🇬🇧"}</span>
+                <span className="text-base leading-none">{(LANG_LABELS_MINI[lang] || "🇬🇧 English").split(" ")[0]}</span>
                 <span className="text-[10px] font-bold text-neutral-300 uppercase">{lang}</span>
                 <ChevronDown size={10} className={`text-neutral-500 transition-transform ${langOpen ? "rotate-180" : ""}`} />
               </button>
@@ -1116,26 +1586,28 @@ export default function TradeAppBot() {
               {langOpen && (
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setLangOpen(false)} />
-                  <div className="absolute top-full right-0 mt-2 z-40 w-52 rounded-xl glass p-2 fade-in shadow-2xl">
+                  <div className="absolute top-full right-0 mt-2 z-40 w-60 rounded-xl glass p-2 fade-in shadow-2xl max-h-[80vh] overflow-y-auto">
                     <div className="px-2 py-1 text-[9px] tracking-[0.25em] text-neutral-500 font-bold uppercase">
                       {t.lang_title}
                     </div>
-                    {[
-                      { code: "ru", flag: "🇷🇺", name: t.lang_ru },
-                      { code: "en", flag: "🇬🇧", name: t.lang_en },
-                    ].map(o => (
-                      <button
-                        key={o.code}
-                        onClick={() => { setLang(o.code); setLangOpen(false); }}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition ${
-                          lang === o.code ? "bg-yellow-500/15 text-yellow-400" : "hover:bg-white/5 text-neutral-200"
-                        }`}
-                      >
-                        <span className="text-xl leading-none">{o.flag}</span>
-                        <span className="text-sm font-semibold flex-1">{o.name}</span>
-                        {lang === o.code && <Check size={14} />}
-                      </button>
-                    ))}
+                    {LANG_LIST.map(code => {
+                      const label = LANG_LABELS_MINI[code];
+                      const flag = label.split(" ")[0];
+                      const name = label.substring(flag.length + 1);
+                      return (
+                        <button
+                          key={code}
+                          onClick={() => { setLang(code); setLangOpen(false); }}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition ${
+                            lang === code ? "bg-yellow-500/15 text-yellow-400" : "hover:bg-white/5 text-neutral-200"
+                          }`}
+                        >
+                          <span className="text-xl leading-none">{flag}</span>
+                          <span className="text-sm font-semibold flex-1">{name}</span>
+                          {lang === code && <Check size={14} />}
+                        </button>
+                      );
+                    })}
                   </div>
                 </>
               )}
@@ -1558,7 +2030,44 @@ export default function TradeAppBot() {
         {/* ASSET SIGNAL MODAL */}
         {assetSignal && (
           <Modal onClose={() => setAssetSignal(null)}>
-            {assetSignal.loading ? (
+            {assetSignal.stage === "timeframe" ? (
+              /* СТАДИЯ 1: ВЫБОР ТАЙМФРЕЙМА */
+              <div className="py-2 text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <div className="relative w-11 h-10 flex items-center justify-center">
+                    <AssetIcon asset={assetSignal.asset} />
+                  </div>
+                  <div className="text-[10px] tracking-[0.3em] text-yellow-400 font-bold">{t.tag_asset_analysis}</div>
+                </div>
+                <div className="text-xl font-extrabold">{assetSignal.asset.ticker}</div>
+                <div className="text-[11px] text-neutral-500 mt-0.5">{t.cat_short[assetSignal.asset.catKey]}</div>
+
+                <div className="mt-6 mb-4">
+                  <div className="text-sm font-bold text-neutral-100 mb-1">{t.timeframe_title}</div>
+                  <div className="text-[11px] text-neutral-500">{t.timeframe_subtitle}</div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {TIMEFRAMES.map(tf => (
+                    <button
+                      key={tf.key}
+                      onClick={() => runAssetAnalysis(assetSignal.asset, tf)}
+                      className="py-3 rounded-xl bg-neutral-900 border border-white/10 hover:border-yellow-500/50 hover:bg-yellow-500/10 active:bg-yellow-500/20 transition-all font-extrabold text-sm tracking-wide"
+                    >
+                      {tf.label}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setAssetSignal(null)}
+                  className="mt-5 w-full py-2.5 rounded-xl bg-neutral-900 border border-white/5 text-neutral-400 hover:text-neutral-200 transition text-xs font-semibold"
+                >
+                  {t.back}
+                </button>
+              </div>
+            ) : assetSignal.loading ? (
+              /* СТАДИЯ 2: АНАЛИЗ */
               <div className="py-10 text-center">
                 <div className="relative w-20 h-20 mx-auto">
                   <div className="absolute inset-0 rounded-full border-2 border-yellow-500/20" />
@@ -1569,6 +2078,9 @@ export default function TradeAppBot() {
                 </div>
                 <div className="mt-5 text-[10px] tracking-[0.3em] text-yellow-400 font-bold">{t.tag_asset_analysis}</div>
                 <div className="text-xl font-extrabold mt-1">{assetSignal.asset.ticker}</div>
+                {assetSignal.timeframe && (
+                  <div className="text-[11px] text-emerald-400 font-bold mt-1">{t.expiration}: {assetSignal.timeframe.label}</div>
+                )}
                 <div className="mt-3 text-[11px] text-neutral-500">{t.processing}</div>
                 <div className="mt-4 space-y-1 text-[10px] text-neutral-600 mono">
                   <div>{t.step_volatility}</div>
