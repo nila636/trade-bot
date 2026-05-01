@@ -23,6 +23,7 @@ const WEBAPP_URL    = process.env.WEBAPP_URL    || "https://example.com";
 const SUPPORT_URL   = process.env.SUPPORT_URL   || "https://t.me/your_support";
 const REVIEWS_URL   = process.env.REVIEWS_URL   || "https://t.me/your_reviews";
 const WELCOME_IMAGE = process.env.WELCOME_IMAGE;
+const API_URL       = process.env.API_URL       || ""; // URL нашего api-сервиса для daily-сигналов
 const ADMIN_IDS     = (process.env.ADMIN_IDS || "")
   .split(",").map(s => s.trim()).filter(Boolean).map(Number);
 
@@ -206,6 +207,7 @@ const L = {
     btn_support:  "💬 Support",
     btn_language: "🌐 Change language",
     btn_signal:   "🚀 Get signal 🚀",
+    btn_broker:   "🏦 Open Pocket Option",
     btn_back:     "⬅ Back",
     pick_lang_first: "🌐 *Please choose your language:*",
     lang_set: "✅ Language set",
@@ -215,7 +217,7 @@ const L = {
       "*🔓 HOW TO GET ACCESS*\n\n" +
       "*Step 1.* Subscribe to our channel — we post updates and important news there.\n\n" +
       "*Step 2.* Tap the «🚀 Get signal» button.\n\n" +
-      "*Step 3.* Register on *Pocket Option* using our partner link inside the app. This is required for free access.\n\n" +
+      "*Step 3.* Register on [Pocket Option](https://u3.shortink.io/smart/PUzmkw57PSkH73) using our partner link inside the app. This is required for free access.\n\n" +
       "*Step 4.* Access will be granted automatically once you register (usually within a minute).\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 APP SECTIONS*\n\n" +
@@ -247,6 +249,7 @@ const L = {
     btn_support:  "💬 Поддержка",
     btn_language: "🌐 Сменить язык",
     btn_signal:   "🚀 Получить сигнал 🚀",
+    btn_broker:   "🏦 Открыть Pocket Option",
     btn_back:     "⬅ Назад",
     pick_lang_first: "🌐 *Пожалуйста, выберите язык:*",
     lang_set: "✅ Язык установлен",
@@ -256,7 +259,7 @@ const L = {
       "*🔓 КАК ПОЛУЧИТЬ ДОСТУП*\n\n" +
       "*Шаг 1.* Подпишись на наш канал.\n\n" +
       "*Шаг 2.* Нажми «🚀 Получить сигнал».\n\n" +
-      "*Шаг 3.* Зарегистрируйся на *Pocket Option* по нашей партнёрской ссылке.\n\n" +
+      "*Шаг 3.* Зарегистрируйся на [Pocket Option](https://u3.shortink.io/smart/PUzmkw57PSkH73) по нашей партнёрской ссылке.\n\n" +
       "*Шаг 4.* Доступ откроется автоматически (в течение минуты).\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 РАЗДЕЛЫ ПРИЛОЖЕНИЯ*\n\n" +
@@ -288,6 +291,7 @@ const L = {
     btn_support:  "💬 Soporte",
     btn_language: "🌐 Cambiar idioma",
     btn_signal:   "🚀 Obtener señal 🚀",
+    btn_broker:   "🏦 Abrir Pocket Option",
     btn_back:     "⬅ Atrás",
     pick_lang_first: "🌐 *Por favor, elige tu idioma:*",
     lang_set: "✅ Idioma establecido",
@@ -297,7 +301,7 @@ const L = {
       "*🔓 CÓMO OBTENER ACCESO*\n\n" +
       "*Paso 1.* Suscríbete a nuestro canal.\n\n" +
       "*Paso 2.* Toca «🚀 Obtener señal».\n\n" +
-      "*Paso 3.* Regístrate en *Pocket Option* usando nuestro enlace de afiliado.\n\n" +
+      "*Paso 3.* Regístrate en [Pocket Option](https://u3.shortink.io/smart/PUzmkw57PSkH73) usando nuestro enlace de afiliado.\n\n" +
       "*Paso 4.* El acceso se otorgará automáticamente (en un minuto).\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 SECCIONES DE LA APP*\n\n" +
@@ -329,6 +333,7 @@ const L = {
     btn_support:  "💬 Suporte",
     btn_language: "🌐 Alterar idioma",
     btn_signal:   "🚀 Receber sinal 🚀",
+    btn_broker:   "🏦 Abrir Pocket Option",
     btn_back:     "⬅ Voltar",
     pick_lang_first: "🌐 *Por favor, escolha seu idioma:*",
     lang_set: "✅ Idioma definido",
@@ -338,7 +343,7 @@ const L = {
       "*🔓 COMO OBTER ACESSO*\n\n" +
       "*Passo 1.* Inscreva-se no nosso canal.\n\n" +
       "*Passo 2.* Toque em «🚀 Receber sinal».\n\n" +
-      "*Passo 3.* Cadastre-se na *Pocket Option* usando nosso link de afiliado.\n\n" +
+      "*Passo 3.* Cadastre-se na [Pocket Option](https://u3.shortink.io/smart/PUzmkw57PSkH73) usando nosso link de afiliado.\n\n" +
       "*Passo 4.* O acesso será concedido automaticamente (em um minuto).\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 SEÇÕES DO APP*\n\n" +
@@ -370,6 +375,7 @@ const L = {
     btn_support:  "💬 Destek",
     btn_language: "🌐 Dili değiştir",
     btn_signal:   "🚀 Sinyal al 🚀",
+    btn_broker:   "🏦 Pocket Option Aç",
     btn_back:     "⬅ Geri",
     pick_lang_first: "🌐 *Lütfen dilinizi seçin:*",
     lang_set: "✅ Dil ayarlandı",
@@ -379,7 +385,7 @@ const L = {
       "*🔓 ERİŞİM NASIL ALINIR*\n\n" +
       "*Adım 1.* Kanalımıza abone olun.\n\n" +
       "*Adım 2.* «🚀 Sinyal al» düğmesine dokunun.\n\n" +
-      "*Adım 3.* Ortak bağlantımızı kullanarak *Pocket Option*'a kaydolun.\n\n" +
+      "*Adım 3.* Ortak bağlantımızı kullanarak [Pocket Option](https://u3.shortink.io/smart/PUzmkw57PSkH73)'a kaydolun.\n\n" +
       "*Adım 4.* Erişim otomatik olarak verilecek (bir dakika içinde).\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 UYGULAMA BÖLÜMLERİ*\n\n" +
@@ -411,6 +417,7 @@ const L = {
     btn_support:  "💬 Hỗ trợ",
     btn_language: "🌐 Đổi ngôn ngữ",
     btn_signal:   "🚀 Nhận tín hiệu 🚀",
+    btn_broker:   "🏦 Mở Pocket Option",
     btn_back:     "⬅ Quay lại",
     pick_lang_first: "🌐 *Vui lòng chọn ngôn ngữ:*",
     lang_set: "✅ Đã đặt ngôn ngữ",
@@ -420,7 +427,7 @@ const L = {
       "*🔓 CÁCH NHẬN QUYỀN TRUY CẬP*\n\n" +
       "*Bước 1.* Đăng ký kênh của chúng tôi.\n\n" +
       "*Bước 2.* Nhấn nút «🚀 Nhận tín hiệu».\n\n" +
-      "*Bước 3.* Đăng ký trên *Pocket Option* bằng liên kết đối tác của chúng tôi.\n\n" +
+      "*Bước 3.* Đăng ký trên [Pocket Option](https://u3.shortink.io/smart/PUzmkw57PSkH73) bằng liên kết đối tác của chúng tôi.\n\n" +
       "*Bước 4.* Quyền truy cập sẽ được cấp tự động (trong vòng một phút).\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 CÁC PHẦN ỨNG DỤNG*\n\n" +
@@ -452,6 +459,7 @@ const L = {
     btn_support:  "💬 Dukungan",
     btn_language: "🌐 Ubah bahasa",
     btn_signal:   "🚀 Dapatkan sinyal 🚀",
+    btn_broker:   "🏦 Buka Pocket Option",
     btn_back:     "⬅ Kembali",
     pick_lang_first: "🌐 *Silakan pilih bahasa Anda:*",
     lang_set: "✅ Bahasa disetel",
@@ -461,7 +469,7 @@ const L = {
       "*🔓 CARA MENDAPATKAN AKSES*\n\n" +
       "*Langkah 1.* Berlangganan saluran kami.\n\n" +
       "*Langkah 2.* Ketuk tombol «🚀 Dapatkan sinyal».\n\n" +
-      "*Langkah 3.* Daftar di *Pocket Option* menggunakan tautan afiliasi kami.\n\n" +
+      "*Langkah 3.* Daftar di [Pocket Option](https://u3.shortink.io/smart/PUzmkw57PSkH73) menggunakan tautan afiliasi kami.\n\n" +
       "*Langkah 4.* Akses diberikan otomatis (dalam satu menit).\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 BAGIAN APLIKASI*\n\n" +
@@ -493,6 +501,7 @@ const L = {
     btn_support:  "💬 सहायता",
     btn_language: "🌐 भाषा बदलें",
     btn_signal:   "🚀 सिग्नल पाएँ 🚀",
+    btn_broker:   "🏦 Pocket Option खोलें",
     btn_back:     "⬅ वापस",
     pick_lang_first: "🌐 *कृपया अपनी भाषा चुनें:*",
     lang_set: "✅ भाषा सेट",
@@ -502,7 +511,7 @@ const L = {
       "*🔓 पहुँच कैसे प्राप्त करें*\n\n" +
       "*चरण 1.* हमारे चैनल को सब्सक्राइब करें।\n\n" +
       "*चरण 2.* «🚀 सिग्नल पाएँ» बटन दबाएँ।\n\n" +
-      "*चरण 3.* हमारे साथी लिंक से *Pocket Option* पर रजिस्टर करें।\n\n" +
+      "*चरण 3.* हमारे साथी लिंक से [Pocket Option](https://u3.shortink.io/smart/PUzmkw57PSkH73) पर रजिस्टर करें।\n\n" +
       "*चरण 4.* पहुँच स्वचालित रूप से दी जाएगी (एक मिनट में)।\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 ऐप अनुभाग*\n\n" +
@@ -560,6 +569,10 @@ async function getLangOrEn(id) {
 
 /* ─────────────────────── KEYBOARDS ─────────────────────── */
 
+// Кликабельная ссылка-партнёр на Pocket Option. Используется и в кнопке,
+// и внутри инструкции (markdown-link).
+const POCKET_OPTION_LINK = "https://u3.shortink.io/smart/PUzmkw57PSkH73";
+
 function mainKeyboard(lang) {
   const T = L[lang] || L.en;
   return new InlineKeyboard()
@@ -567,7 +580,8 @@ function mainKeyboard(lang) {
     .text(T.btn_reviews,  "reviews").row()
     .text(T.btn_support,  "support")
     .text(T.btn_language, "language").row()
-    .webApp(T.btn_signal, WEBAPP_URL);
+    .webApp(T.btn_signal, WEBAPP_URL).row()
+    .url(T.btn_broker, POCKET_OPTION_LINK);
 }
 
 function langKeyboard() {
@@ -971,6 +985,274 @@ bot.callbackQuery(/^bc_ok_(.+)$/, async (ctx) => {
 
 /* ─────────────────────── START ─────────────────────── */
 
+/* ─────────────────────── DAILY AI SIGNALS BROADCAST ─────────────────────── */
+
+// Тексты для ежедневной рассылки на 8 языках
+const DAILY_TEXTS = {
+  en: {
+    title: "🤖 *AI DAILY SIGNALS*",
+    subtitle: "Top-3 high-confidence signals for today",
+    direction_up: "⬆ BUY",
+    direction_down: "⬇ SELL",
+    confidence: "Confidence",
+    expiration: "Expiration",
+    cta: "Open the app for full analysis 👇",
+    btn_open: "🚀 Get signal",
+    btn_broker: "🏦 Open Pocket Option",
+    disclaimer: "_⚠ Trading involves risk. Signals are informational only._",
+  },
+  ru: {
+    title: "🤖 *ИИ — СИГНАЛЫ ДНЯ*",
+    subtitle: "Топ-3 сигнала с высокой вероятностью на сегодня",
+    direction_up: "⬆ BUY",
+    direction_down: "⬇ SELL",
+    confidence: "Вероятность",
+    expiration: "Экспирация",
+    cta: "Открой приложение для полного анализа 👇",
+    btn_open: "🚀 Получить сигнал",
+    btn_broker: "🏦 Открыть Pocket Option",
+    disclaimer: "_⚠ Торговля сопряжена с риском. Сигналы носят информационный характер._",
+  },
+  es: {
+    title: "🤖 *SEÑALES DIARIAS DE IA*",
+    subtitle: "Top-3 señales con alta confianza para hoy",
+    direction_up: "⬆ COMPRAR",
+    direction_down: "⬇ VENDER",
+    confidence: "Confianza",
+    expiration: "Expiración",
+    cta: "Abre la app para análisis completo 👇",
+    btn_open: "🚀 Obtener señal",
+    btn_broker: "🏦 Abrir Pocket Option",
+    disclaimer: "_⚠ El trading conlleva riesgo. Las señales son informativas._",
+  },
+  pt: {
+    title: "🤖 *SINAIS DIÁRIOS DE IA*",
+    subtitle: "Top-3 sinais de alta confiança para hoje",
+    direction_up: "⬆ COMPRAR",
+    direction_down: "⬇ VENDER",
+    confidence: "Confiança",
+    expiration: "Expiração",
+    cta: "Abra o app para análise completa 👇",
+    btn_open: "🚀 Receber sinal",
+    btn_broker: "🏦 Abrir Pocket Option",
+    disclaimer: "_⚠ Trading envolve risco. Os sinais são informativos._",
+  },
+  tr: {
+    title: "🤖 *GÜNLÜK AI SİNYALLERİ*",
+    subtitle: "Bugün için yüksek güvenli top-3 sinyal",
+    direction_up: "⬆ AL",
+    direction_down: "⬇ SAT",
+    confidence: "Güven",
+    expiration: "Vade",
+    cta: "Tam analiz için uygulamayı aç 👇",
+    btn_open: "🚀 Sinyal al",
+    btn_broker: "🏦 Pocket Option Aç",
+    disclaimer: "_⚠ Alım satım risk içerir. Sinyaller sadece bilgi amaçlıdır._",
+  },
+  vi: {
+    title: "🤖 *TÍN HIỆU AI HÀNG NGÀY*",
+    subtitle: "Top-3 tín hiệu độ tin cậy cao hôm nay",
+    direction_up: "⬆ MUA",
+    direction_down: "⬇ BÁN",
+    confidence: "Độ tin cậy",
+    expiration: "Hết hạn",
+    cta: "Mở ứng dụng để phân tích đầy đủ 👇",
+    btn_open: "🚀 Nhận tín hiệu",
+    btn_broker: "🏦 Mở Pocket Option",
+    disclaimer: "_⚠ Giao dịch có rủi ro. Tín hiệu chỉ mang tính tham khảo._",
+  },
+  id: {
+    title: "🤖 *SINYAL HARIAN AI*",
+    subtitle: "Top-3 sinyal kepercayaan tinggi hari ini",
+    direction_up: "⬆ BELI",
+    direction_down: "⬇ JUAL",
+    confidence: "Kepercayaan",
+    expiration: "Kedaluwarsa",
+    cta: "Buka aplikasi untuk analisis lengkap 👇",
+    btn_open: "🚀 Dapatkan sinyal",
+    btn_broker: "🏦 Buka Pocket Option",
+    disclaimer: "_⚠ Trading berisiko. Sinyal hanya untuk informasi._",
+  },
+  hi: {
+    title: "🤖 *AI दैनिक सिग्नल*",
+    subtitle: "आज के लिए शीर्ष-3 उच्च-विश्वास सिग्नल",
+    direction_up: "⬆ खरीदें",
+    direction_down: "⬇ बेचें",
+    confidence: "विश्वास",
+    expiration: "समाप्ति",
+    cta: "पूर्ण विश्लेषण के लिए ऐप खोलें 👇",
+    btn_open: "🚀 सिग्नल पाएँ",
+    btn_broker: "🏦 Pocket Option खोलें",
+    disclaimer: "_⚠ ट्रेडिंग में जोखिम है। सिग्नल केवल जानकारी के लिए हैं।_",
+  },
+};
+
+// Активы для ежедневного скана. Берём ликвидную крипту + мажорные FX —
+// для них наш api умеет давать честный теханализ через /api/analyze.
+const DAILY_PAIRS = [
+  { label: "BTC/USDT", source: "binance", symbol: "BTCUSDT",  digits: 2, fallback: 68000 },
+  { label: "ETH/USDT", source: "binance", symbol: "ETHUSDT",  digits: 2, fallback: 3400 },
+  { label: "SOL/USDT", source: "binance", symbol: "SOLUSDT",  digits: 2, fallback: 178 },
+  { label: "BNB/USDT", source: "binance", symbol: "BNBUSDT",  digits: 2, fallback: 595 },
+  { label: "XRP/USDT", source: "binance", symbol: "XRPUSDT",  digits: 4, fallback: 0.62 },
+  { label: "DOGE/USDT",source: "binance", symbol: "DOGEUSDT", digits: 5, fallback: 0.185 },
+  { label: "AVAX/USDT",source: "binance", symbol: "AVAXUSDT", digits: 2, fallback: 34.2 },
+  { label: "LINK/USDT",source: "binance", symbol: "LINKUSDT", digits: 3, fallback: 13.55 },
+  { label: "EUR/USD",  source: "frankfurter", from: "EUR", to: "USD", digits: 5, fallback: 1.084 },
+  { label: "GBP/USD",  source: "frankfurter", from: "GBP", to: "USD", digits: 5, fallback: 1.27 },
+  { label: "USD/JPY",  source: "frankfurter", from: "USD", to: "JPY", digits: 3, fallback: 151 },
+  { label: "AUD/USD",  source: "frankfurter", from: "AUD", to: "USD", digits: 5, fallback: 0.65 },
+];
+
+// Получает сигнал через наш api
+async function getSignalForPair(pair) {
+  if (!API_URL) return null;
+  try {
+    const r = await fetch(`${API_URL}/api/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Internal-Daily": "1" },
+      body: JSON.stringify({ pair, internal: true }),
+    });
+    if (!r.ok) return null;
+    return await r.json(); // { direction, confidence, real, indicators, signals }
+  } catch { return null; }
+}
+
+// Формирует тексты для одного языка из массива сигналов
+function formatDailySignals(signals, lang) {
+  const T = DAILY_TEXTS[lang] || DAILY_TEXTS.en;
+  const expirations = ["1m", "3m", "5m"];
+  let body = `${T.title}\n_${T.subtitle}_\n\n`;
+  signals.forEach((s, i) => {
+    const dir = s.direction === "BUY" ? T.direction_up : T.direction_down;
+    const pct = Math.round(s.confidence * 100);
+    body += `*${i + 1}. ${s.label}*\n`;
+    body += `   ${dir}  · ${T.confidence}: ${pct}%\n`;
+    body += `   ${T.expiration}: ${expirations[i] || "1m"}\n\n`;
+  });
+  body += `${T.cta}\n\n${T.disclaimer}`;
+  return body;
+}
+
+function dailySignalsKeyboard(lang) {
+  const T = DAILY_TEXTS[lang] || DAILY_TEXTS.en;
+  return new InlineKeyboard()
+    .webApp(T.btn_open, WEBAPP_URL).row()
+    .url(T.btn_broker, POCKET_OPTION_LINK);
+}
+
+// Запускает ежедневную рассылку
+async function runDailySignalsBroadcast() {
+  if (!API_URL) {
+    console.warn("⚠ API_URL not set, skipping daily signals");
+    return;
+  }
+  if (!hasDb) {
+    console.warn("⚠ No DB, skipping daily signals");
+    return;
+  }
+  console.log("🤖 Daily signals: starting...");
+
+  // 1) Сканируем все пары, получаем сигналы
+  const allSignals = [];
+  for (const pair of DAILY_PAIRS) {
+    const sig = await getSignalForPair(pair);
+    if (sig?.direction && typeof sig.confidence === "number") {
+      allSignals.push({ label: pair.label, direction: sig.direction, confidence: sig.confidence });
+    }
+    await new Promise(r => setTimeout(r, 300)); // не пушить api слишком быстро
+  }
+
+  if (allSignals.length < 3) {
+    console.warn(`⚠ Daily signals: only got ${allSignals.length}, skipping broadcast`);
+    return;
+  }
+
+  // 2) Сортируем по confidence, берём топ-3
+  allSignals.sort((a, b) => b.confidence - a.confidence);
+  const top3 = allSignals.slice(0, 3);
+  console.log(`✅ Daily signals: selected ${top3.map(s => s.label).join(", ")}`);
+
+  // 3) Берём всех юзеров (с языком из БД)
+  let users;
+  try {
+    const r = await pool.query("SELECT tg_id, COALESCE(lang, 'en') AS lang FROM users");
+    users = r.rows;
+  } catch (e) {
+    console.error("daily: failed to load users:", e);
+    return;
+  }
+  console.log(`📤 Daily signals: sending to ${users.length} users`);
+
+  // 4) Шлём с rate-limit (40мс между сообщениями)
+  let sent = 0, failed = 0, blocked = 0;
+  for (const u of users) {
+    const text = formatDailySignals(top3, u.lang);
+    const kb   = dailySignalsKeyboard(u.lang);
+    try {
+      await bot.api.sendMessage(u.tg_id, text, {
+        parse_mode: "Markdown",
+        reply_markup: kb,
+        disable_web_page_preview: true,
+      });
+      sent++;
+    } catch (e) {
+      failed++;
+      if (e.description?.includes("blocked") || e.description?.includes("deactivated")) blocked++;
+    }
+    await new Promise(r => setTimeout(r, 40));
+  }
+  console.log(`✅ Daily signals done: sent=${sent} failed=${failed} blocked=${blocked}`);
+
+  // 5) Уведомляем админов о результате
+  if (ADMIN_IDS.length) {
+    const msg = `🤖 *Daily signals broadcast*\n\n` +
+      `📊 Top-3: ${top3.map(s => s.label).join(", ")}\n` +
+      `📨 Sent: ${sent}\n⚠ Failed: ${failed}${blocked ? ` (blocked: ${blocked})` : ""}`;
+    for (const adminId of ADMIN_IDS) {
+      bot.api.sendMessage(adminId, msg, { parse_mode: "Markdown" }).catch(() => {});
+    }
+  }
+}
+
+// Scheduler — простой интервальный планировщик. Запускаем один раз в сутки
+// на UTC времени = 09:00 (что соответствует 12:00 по Москве, 14:00 в Турции, 16:30 в Индии).
+function scheduleDailySignals() {
+  const TARGET_HOUR_UTC = 9;  // 09:00 UTC
+
+  function nextRunMs() {
+    const now = new Date();
+    const next = new Date(Date.UTC(
+      now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
+      TARGET_HOUR_UTC, 0, 0, 0
+    ));
+    if (next.getTime() <= now.getTime()) {
+      next.setUTCDate(next.getUTCDate() + 1);
+    }
+    return next.getTime() - now.getTime();
+  }
+
+  function planNext() {
+    const delay = nextRunMs();
+    const hours = Math.round(delay / 3600000 * 10) / 10;
+    console.log(`⏰ Next daily signals broadcast in ~${hours}h`);
+    setTimeout(async () => {
+      await runDailySignalsBroadcast().catch(e => console.error("daily run failed:", e));
+      planNext();
+    }, delay);
+  }
+  planNext();
+}
+
+// Админская команда для теста рассылки прямо сейчас
+bot.command("daily_signals", async (ctx) => {
+  if (!isAdmin(ctx.from.id)) return ctx.reply("⛔ Доступ запрещён.");
+  await ctx.reply("🤖 Запускаю daily signals broadcast (тест)…");
+  runDailySignalsBroadcast().catch(e => console.error("manual daily:", e));
+});
+
+
+
 bot.catch((err) => console.error("Bot error:", err));
 
 bot.start({
@@ -978,5 +1260,6 @@ bot.start({
     console.log(`✅ @${me.username} is running`);
     if (ADMIN_IDS.length) console.log(`   Admins: ${ADMIN_IDS.join(", ")}`);
     else console.log(`   ⚠ ADMIN_IDS not set — /admin команда недоступна`);
+    scheduleDailySignals();
   },
 });
