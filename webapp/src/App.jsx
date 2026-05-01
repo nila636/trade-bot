@@ -810,6 +810,394 @@ STR.hi = {
   timeframe_subtitle: "परिणाम कब जाँचें?",
 };
 
+// ─── Edu (сокращённый) и indicators для es/pt/tr/vi/id/hi.
+// На английском остаются books и длинные академические тексты — fallback через Proxy.
+
+STR.es.edu = [
+  { title: '¿Qué es el trading?', desc: 'Conceptos básicos: cómo funcionan los mercados y quién realmente gana.', body: `El trading es comprar y vender activos financieros (divisas, acciones, criptos, materias primas, índices) para obtener ganancia del movimiento del precio. A diferencia de la inversión, donde el capital se mantiene años, un trader mantiene posiciones desde segundos hasta semanas y gana específicamente de las fluctuaciones.
+
+Los mercados funcionan por oferta y demanda. Cuando hay más compradores, el precio sube; cuando dominan los vendedores, baja. El trabajo del trader es predecir la dirección y cronometrar la entrada.
+
+Los estilos de trading se diferencian por tiempo de retención: scalping (segundos), intraday (un día), swing (2-7 días), position (semanas).
+
+Para empezar necesitas: cuenta en bróker regulado, capital que puedas perder (empieza con demo), una plataforma, y lo más importante — una estrategia con reglas claras que eliminen las emociones.
+
+La mayoría de principiantes pierde no porque los mercados sean complejos, sino porque no tienen plan. La primera etapa no es buscar ganancias, sino aprender. Un profesional se diferencia de un aficionado por disciplina y enfoque sistemático.` },
+  { title: 'Gestión de riesgo', desc: 'Reglas de control de pérdidas — la línea entre trader y apostador.', body: `La gestión de riesgo separa al trader del apostador. Las estadísticas son brutales: 70-80% de principiantes pierden su depósito en el primer año, casi siempre por no controlar el riesgo.
+
+Regla base — la "regla 1-2%". Ninguna operación debe arriesgar más del 1-2% del depósito. Con cuenta de $1,000 la pérdida máxima por operación es $10-20. Incluso 10 pérdidas seguidas no quiebran la cuenta.
+
+Segundo — el stop-loss. Precio predeterminado donde la posición se cierra automáticamente. Sin él, una mala operación puede destruir tu cuenta. Pon el stop ANTES de entrar, no "cuando vea que va mal".
+
+Tercero — ratio riesgo/beneficio. Una buena operación tiene ganancia potencial al menos 2x la pérdida posible. Con 1:2 solo necesitas acertar 40% para ser rentable.
+
+Cuarto — límites diarios. Si perdiste 4% en un día, cierra el terminal hasta mañana. Esto protege del tilt — el estado donde tras varias pérdidas intentas "recuperarte" e ignoras tus reglas.` },
+  { title: 'Fundamentos del análisis', desc: 'Análisis técnico: niveles, tendencias, volúmenes, soportes y resistencias.', body: `El análisis se divide en fundamental (noticias, datos económicos) y técnico (solo el gráfico, principio "el mercado descuenta todo").
+
+El núcleo del análisis técnico es la tendencia. Los mercados se mueven en tres direcciones: alcista (uptrend), bajista (downtrend), lateral. La regla: opera con la tendencia, no contra ella.
+
+Soportes y resistencias son niveles donde el precio rebota o se gira. Se forman porque muchos participantes ven los mismos niveles. Una rotura suele señalar cambio de tendencia.
+
+El volumen es la cantidad de contratos negociados. Movimientos con alto volumen son más confiables. Movimientos con bajo volumen son sospechosos.
+
+Los timeframes — minutos, horas, días, semanas. Regla: determina la dirección en TF alto, busca entradas en TF bajo.
+
+Los indicadores son fórmulas aplicadas a precio y volumen: medias móviles, RSI, MACD. No predicen el futuro — ayudan a ver lo que ya está en el precio. No uses 10 indicadores, 2-3 elegidos por propósito son suficientes.` },
+  { title: 'Patrones', desc: 'Formaciones de velas: envolventes, pin-bar, tres cuervos y más.', body: `Un patrón es una figura recurrente que con cierta probabilidad predice el movimiento futuro. Funcionan porque la psicología del mercado se repite.
+
+Patrones de velas reversales. "Martillo" — mecha larga abajo y cuerpo pequeño en una tendencia bajista — señala reversal alcista. "Estrella fugaz" — espejo en tendencia alcista, reversal bajista. "Envolvente" — vela grande que cubre completamente la anterior de color opuesto, fuerte señal de reversal. "Doji" — apertura y cierre casi iguales, indecisión del mercado.
+
+Patrones de continuación. "Tres métodos" — una vela fuerte, luego 3-4 pequeñas contra-tendencia, luego otra fuerte con la tendencia.
+
+Patrones gráficos reversales. "Hombro-cabeza-hombro" — tres techos donde el del medio es el más alto. "Doble techo" — dos máximos al mismo nivel. "Doble suelo" — espejo abajo.
+
+Patrones gráficos continuación. "Bandera" — canal pequeño contra-tendencia tras impulso fuerte. "Triángulo" — rango contraído. "Cuña" — similar al triángulo pero con bordes inclinados.
+
+Regla: ningún patrón es 100%. Tasas de éxito 55-70%. Usa patrones con confirmación: volumen, niveles, indicadores, tendencia del TF mayor.` },
+  { title: 'Psicología del trading', desc: '12 módulos — desde el miedo a perder hasta la disciplina profesional.', body: `El análisis técnico se aprende en meses. La psicología del trading toma años — y separa traders rentables de perdedores.
+
+Tres emociones mueven mercados: miedo, codicia, esperanza. El miedo cierra ganancias temprano. La codicia mueve el stop más lejos cuando el precio va contra ti. La esperanza es la más peligrosa — mantiene posiciones perdedoras cuando todo dice cerrar.
+
+Error clásico: tratar de "recuperar" tras una pérdida. Tras 2-3 pérdidas el instinto de apostador se activa: aumentas tamaño, ignoras reglas, entras sin señal. Este estado se llama tilt. Tilt vacía cuentas. La única cura es alejarse del terminal hasta mañana.
+
+Segundo enemigo — FOMO (miedo a perderse). El activo sube 10% — el principiante compra arriba, justo cuando los grandes toman ganancias. Una hora después la posición está en rojo, llega el pánico. Regla: si te perdiste el inicio, sáltatelo.
+
+Tercero — overtrading. Creer que más operaciones = más ganancia es falso. En mercados tranquilos la mejor estrategia es no operar.
+
+Herramientas: diario de trading y checklist. El diario registra cada operación con lógica de entrada y estado emocional. El checklist antes de cada operación previene entradas "por intuición".
+
+Regla a aprender primero: el mercado no te debe nada. Una pérdida es normal.` },
+];
+STR.es.indicators = [
+  { svgKey: 'bollinger', name: 'Bandas de Bollinger', sub: 'Envoltura de volatilidad', body: 'Tres líneas alrededor de la media — SMA±2σ. Estrechamiento = volatilidad cayendo, expansión = inicio de tendencia.' },
+  { svgKey: 'macd', name: 'MACD', sub: 'Convergencia/Divergencia de Medias', body: 'Diferencia entre EMA rápida y lenta. Cruce hacia arriba = bullish, hacia abajo = bearish.' },
+  { svgKey: 'stochastic', name: 'Estocástico', sub: 'Oscilador Estocástico', body: 'Dos valores (%K y %D) en rango 0–100. Por encima de 80 = sobrecomprado, por debajo de 20 = sobrevendido.' },
+  { svgKey: 'adx', name: 'ADX', sub: 'Índice Direccional Promedio', body: 'Fuerza de tendencia. ADX > 25 = tendencia presente, < 20 = lateral.' },
+  { svgKey: 'fractals', name: 'Fractales', sub: 'Fractales de Bill Williams', body: 'Cinco velas con la del medio siendo alto/bajo local. Para colocar stops y entradas.' },
+  { svgKey: 'rsi', name: 'RSI', sub: 'Índice de Fuerza Relativa', body: 'Oscilador 0–100. Por encima de 70 = sobrecomprado, por debajo de 30 = sobrevendido.' },
+];
+
+STR.pt.edu = [
+  { title: 'O que é trading?', desc: 'Conceitos básicos: como os mercados funcionam e quem realmente lucra.', body: `Trading é comprar e vender ativos financeiros (moedas, ações, criptos, commodities, índices) para lucrar com o movimento do preço. Diferente do investimento, onde o capital fica anos, um trader mantém posições de segundos a semanas e ganha especificamente das flutuações.
+
+Os mercados funcionam por oferta e procura. Quando há mais compradores, o preço sobe; quando dominam vendedores, cai. O trabalho do trader é prever direção e cronometrar a entrada.
+
+Estilos de trading diferem por tempo de retenção: scalping (segundos), intraday (um dia), swing (2-7 dias), position (semanas).
+
+Para começar precisa: conta em corretora regulada, capital que possa perder (comece com demo), uma plataforma, e o mais importante — uma estratégia com regras claras que eliminem emoções.
+
+A maioria dos iniciantes perde não porque os mercados sejam complexos, mas porque não têm plano. A primeira etapa não é buscar lucros, é aprender. Um profissional se distingue de amador pela disciplina e abordagem sistemática.` },
+  { title: 'Gestão de risco', desc: 'Regras de controle de perdas — a linha entre trader e apostador.', body: `A gestão de risco separa o trader do apostador. As estatísticas são brutais: 70-80% dos iniciantes perdem o depósito no primeiro ano, quase sempre por não controlar risco.
+
+Regra base — "regra 1-2%". Nenhuma operação deve arriscar mais que 1-2% do depósito. Com conta de $1,000 a perda máxima por trade é $10-20. Mesmo 10 perdas seguidas não quebram a conta.
+
+Segundo — o stop-loss. Preço predefinido onde a posição fecha automaticamente. Sem ele, um mau trade pode destruir sua conta. Coloque o stop ANTES de entrar.
+
+Terceiro — razão risco/recompensa. Um bom trade tem ganho potencial pelo menos 2x a perda possível. Com 1:2 você só precisa acertar 40% para ser lucrativo.
+
+Quarto — limites diários. Se perdeu 4% em um dia, feche o terminal até amanhã. Isso protege do tilt — o estado onde após várias perdas tenta "recuperar" e ignora regras.` },
+  { title: 'Fundamentos da análise', desc: 'Análise técnica: níveis, tendências, volumes, suporte e resistência.', body: `A análise se divide em fundamental (notícias, dados econômicos) e técnica (apenas o gráfico, princípio "o mercado precifica tudo").
+
+O núcleo da análise técnica é a tendência. Mercados se movem em três direções: alta (uptrend), baixa (downtrend), lateral. Regra: opere com a tendência, não contra ela.
+
+Suporte e resistência são níveis onde o preço quica ou reverte. Formam-se porque muitos participantes veem os mesmos níveis. Uma quebra geralmente sinaliza mudança de tendência.
+
+Volume é a quantidade de contratos negociados. Movimentos com alto volume são mais confiáveis.
+
+Timeframes — minutos, horas, dias, semanas. Regra: determine a direção no TF alto, busque entradas no TF baixo.
+
+Indicadores são fórmulas aplicadas a preço e volume: médias móveis, RSI, MACD. Não preveem o futuro — ajudam a ver o que já está no preço. 2-3 escolhidos por propósito são suficientes.` },
+  { title: 'Padrões', desc: 'Formações de velas: envolventes, pin-bar, três corvos e mais.', body: `Um padrão é uma figura recorrente que com certa probabilidade prevê o movimento futuro. Funcionam porque a psicologia do mercado se repete.
+
+Padrões de velas reversais. "Martelo" — pavio longo embaixo e corpo pequeno em tendência de baixa — sinal de reversão para cima. "Estrela cadente" — espelho em tendência de alta, reversão para baixo. "Engolfo" — vela grande cobre completamente a anterior de cor oposta, sinal forte de reversão. "Doji" — abertura e fechamento quase iguais, indecisão.
+
+Padrões de continuação. "Três métodos" — uma vela forte, depois 3-4 pequenas contra-tendência, depois outra forte com a tendência.
+
+Padrões gráficos reversais. "Ombro-cabeça-ombro" — três topos com o do meio mais alto. "Topo duplo" — dois máximos no mesmo nível. "Fundo duplo" — espelho embaixo.
+
+Padrões de continuação gráficos. "Bandeira" — canal pequeno contra-tendência após impulso forte. "Triângulo" — faixa contraída. "Cunha" — similar ao triângulo com bordas inclinadas.
+
+Regra: nenhum padrão é 100%. Taxas de acerto 55-70%. Use padrões com confirmação: volume, níveis, indicadores, tendência do TF maior.` },
+  { title: 'Psicologia do trading', desc: '12 módulos — do medo de perder à disciplina profissional.', body: `A análise técnica aprende-se em meses. A psicologia leva anos — e separa traders lucrativos de perdedores.
+
+Três emoções movem mercados: medo, ganância, esperança. O medo fecha ganhos cedo. A ganância afasta o stop quando o preço vai contra. A esperança é a mais perigosa — mantém posições perdedoras quando tudo diz para fechar.
+
+Erro clássico: tentar "recuperar" após uma perda. Após 2-3 perdas o instinto de apostador ativa: aumenta tamanho, ignora regras, entra sem sinal. Este estado chama-se tilt. Tilt esvazia contas. A única cura é afastar-se do terminal até amanhã.
+
+Segundo inimigo — FOMO (medo de ficar de fora). O ativo sobe 10% — o iniciante compra no topo, exatamente quando os grandes tomam lucro. Uma hora depois a posição está vermelha, o pânico chega. Regra: se perdeu o início, pule.
+
+Terceiro — overtrading. Acreditar que mais trades = mais lucro é falso. Em mercados calmos a melhor estratégia é não operar.
+
+Ferramentas: diário de trading e checklist. O diário registra cada trade com lógica de entrada e estado emocional. O checklist antes de cada trade evita entradas "por intuição".
+
+Regra primeiro a aprender: o mercado não te deve nada. Uma perda é normal.` },
+];
+STR.pt.indicators = [
+  { svgKey: 'bollinger', name: 'Bandas de Bollinger', sub: 'Envelope de volatilidade', body: 'Três linhas em torno da média — SMA±2σ. Estreitamento = volatilidade caindo, expansão = início de tendência.' },
+  { svgKey: 'macd', name: 'MACD', sub: 'Convergência/Divergência de Médias', body: 'Diferença entre EMA rápida e lenta. Cruzamento para cima = altista, para baixo = baixista.' },
+  { svgKey: 'stochastic', name: 'Estocástico', sub: 'Oscilador Estocástico', body: 'Dois valores (%K e %D) na faixa 0–100. Acima de 80 = sobrecomprado, abaixo de 20 = sobrevendido.' },
+  { svgKey: 'adx', name: 'ADX', sub: 'Índice Direcional Médio', body: 'Força da tendência. ADX > 25 = tendência presente, < 20 = lateral.' },
+  { svgKey: 'fractals', name: 'Fractais', sub: 'Fractais de Bill Williams', body: 'Cinco velas com a do meio sendo alta/baixa local. Para colocar stops e entradas.' },
+  { svgKey: 'rsi', name: 'RSI', sub: 'Índice de Força Relativa', body: 'Oscilador 0–100. Acima de 70 = sobrecomprado, abaixo de 30 = sobrevendido.' },
+];
+
+STR.tr.edu = [
+  { title: 'Trading nedir?', desc: 'Temel kavramlar: piyasalar nasıl çalışır ve gerçekten kim kazanır.', body: `Trading, fiyat hareketinden kâr elde etmek için finansal varlıkları (dövizler, hisseler, kripto, emtia, endeksler) alıp satmaktır. Yatırımdan farklı olarak, sermayenin yıllarca bekletildiği yerde, bir trader pozisyonları saniyelerden haftalara kadar tutar ve özellikle dalgalanmalardan kazanır.
+
+Piyasalar arz ve talep ile çalışır. Alıcı çoksa fiyat yükselir, satıcı baskınsa düşer. Trader'ın işi yönü tahmin etmek ve girişi zamanlamaktır.
+
+Trading stilleri tutma süresine göre farklılaşır: scalping (saniyeler), intraday (bir gün), swing (2-7 gün), position (haftalar).
+
+Başlamak için: düzenlenmiş broker hesabı, kaybetmeyi göze alabileceğin sermaye (demo ile başla), bir platform ve en önemlisi — duyguları ortadan kaldıran net kurallarla bir strateji.
+
+Çoğu acemi piyasalar karmaşık olduğu için değil, planı olmadığı için kaybeder. İlk aşama kâr aramak değil, öğrenmektir. Profesyonel amatörden disiplin ve sistemli yaklaşımla ayrılır.` },
+  { title: 'Risk yönetimi', desc: 'Kayıp kontrol kuralları — trader ile kumarbaz arasındaki çizgi.', body: `Risk yönetimi trader'ı kumarbazdan ayırır. İstatistikler acımasız: acemilerin %70-80'i ilk yılda mevduatını kaybeder, hemen hemen her zaman risk kontrol eksikliği nedeniyle.
+
+Temel kural — "1-2% kuralı". Hiçbir işlemde mevduatın %1-2'sinden fazlası riske atılmamalı. $1,000 hesapla işlem başına maksimum kayıp $10-20. 10 üst üste kayıp bile hesabı bitirmez.
+
+İkinci — stop-loss. Pozisyonun otomatik kapandığı önceden belirlenmiş fiyat. Onsuz, kötü bir işlem hesabını yok edebilir. Stop'u girişten ÖNCE koy.
+
+Üçüncü — risk/ödül oranı. İyi bir işlemde potansiyel kâr olası kaybın en az 2 katıdır. 1:2 ile sadece %40 başarı oranıyla kârlı olabilirsin.
+
+Dördüncü — günlük limitler. Bir günde %4 kaybettiysen yarına kadar terminali kapat. Bu tilt'ten korur — birkaç kayıptan sonra "geri kazanma" çabası ve kuralları görmezden gelme durumu.` },
+  { title: 'Analiz temelleri', desc: 'Teknik analiz: seviyeler, trendler, hacimler, destek ve direnç.', body: `Analiz iki gruba ayrılır: temel (haberler, ekonomik veriler) ve teknik (sadece grafik, "piyasa her şeyi fiyatlar" prensibi).
+
+Teknik analizin özü trenddir. Piyasalar üç yönde hareket eder: yükseliş (uptrend), düşüş (downtrend), yatay. Kural: trendle işlem yap, ona karşı değil.
+
+Destek ve direnç fiyatın sıçradığı veya döndüğü seviyelerdir. Birçok katılımcı aynı seviyeleri görür. Bir kırılma genellikle trend değişikliği işaretidir.
+
+Hacim işlem gören kontrat sayısıdır. Yüksek hacimli hareketler daha güvenilirdir.
+
+Zaman dilimleri — dakikalar, saatler, günler. Kural: yüksek TF'de yönü belirle, düşük TF'de giriş ara.
+
+Göstergeler fiyat ve hacme uygulanan formüllerdir: hareketli ortalamalar, RSI, MACD. Geleceği tahmin etmezler — fiyatta zaten olanı görmeye yardım ederler. Amaca göre seçilmiş 2-3 yeterli.` },
+  { title: 'Mum desenleri', desc: 'Mum formasyonları: yutmalar, pin-bar, üç karga ve daha fazlası.', body: `Bir desen, belli bir olasılıkla gelecekteki hareketi öngören tekrarlanan figürdür. Çalışırlar çünkü piyasa psikolojisi tekrar eder.
+
+Tersine dönüş mum desenleri. "Çekiç" — düşüş trendinde uzun alt fitil ve küçük gövde — yukarı dönüş işareti. "Kayan yıldız" — yükseliş trendinde aynası, aşağı dönüş. "Yutma" — büyük bir mum öncekini tamamen kaplar, güçlü dönüş işareti. "Doji" — açılış ve kapanış neredeyse eşit, kararsızlık.
+
+Devam desenleri. "Üç yöntem" — güçlü bir mum, sonra 3-4 küçük ters yönlü, sonra bir tane daha trend yönünde güçlü.
+
+Tersine dönüş grafik desenleri. "Omuz-baş-omuz" — ortadaki en yüksek olan üç tepe. "Çift tepe" — aynı seviyede iki maksimum. "Çift dip" — aşağıdaki aynası.
+
+Devam grafik desenleri. "Bayrak" — güçlü impulsdan sonra küçük ters kanal. "Üçgen" — daralan aralık. "Kama" — üçgene benzer ama her iki kenarı aynı yönde eğimli.
+
+Kural: hiçbir desen %100 değil. Başarı oranı %55-70. Desenleri onayla kullan: hacim, seviyeler, göstergeler, üst TF trendi.` },
+  { title: 'Trading psikolojisi', desc: '12 modül — kayıp korkusundan profesyonel disipline.', body: `Teknik analiz aylarda öğrenilir. Trading psikolojisi yıllar alır — ve kârlı trader'ları kaybedenlerden ayıran budur.
+
+Üç duygu piyasaları yönetir: korku, hırs, umut. Korku kazançları erken kapatır. Hırs fiyat aleyhine giderken stop'u uzaklaştırır. Umut en tehlikelisi — her şey kapatmayı söylediğinde kayıp pozisyonu tutar.
+
+Klasik hata: kayıp sonrası "geri kazanma" çabası. 2-3 kayıptan sonra kumarbaz içgüdüsü devreye girer: pozisyon büyüt, kuralları yok say, sinyalsiz gir. Bu duruma tilt denir. Tilt hesapları boşaltır. Tek çare yarına kadar terminalden uzaklaşmak.
+
+İkinci düşman — FOMO (kaçırma korkusu). Varlık %10 yükselir — acemi tepede alır, tam büyüklerin kâr aldığı an. Bir saat sonra pozisyon kırmızı, panik gelir. Kural: başlangıcı kaçırdıysan atla.
+
+Üçüncü — aşırı işlem. Daha çok işlem = daha çok kâr inancı yanlış. Sakin piyasalarda en iyi strateji işlem yapmamaktır.
+
+Araçlar: trading günlüğü ve kontrol listesi. Günlük her işlemi giriş mantığı ve duygusal durumla kaydeder. Her işlemden önce kontrol listesi "iç güdü" girişlerini engeller.
+
+İlk öğrenilecek kural: piyasa sana hiçbir şey borçlu değil. Bir kayıp normaldir.` },
+];
+STR.tr.indicators = [
+  { svgKey: 'bollinger', name: 'Bollinger Bantları', sub: 'Oynaklık zarfı', body: 'Ortalama etrafında üç çizgi — SMA±2σ. Daralma = oynaklık düşüyor, genişleme = trend başlıyor.' },
+  { svgKey: 'macd', name: 'MACD', sub: 'Hareketli Ortalama Yakınsama Iraksaması', body: 'Hızlı ve yavaş EMA farkı. Yukarı geçiş = yükseliş, aşağı = düşüş.' },
+  { svgKey: 'stochastic', name: 'Stokastik', sub: 'Stokastik Osilatör', body: 'İki değer (%K ve %D) 0–100 aralığında. 80 üzeri = aşırı alım, 20 altı = aşırı satım.' },
+  { svgKey: 'adx', name: 'ADX', sub: 'Ortalama Yönlü Endeks', body: 'Trend gücü. ADX > 25 = trend var, < 20 = yatay.' },
+  { svgKey: 'fractals', name: 'Fraktallar', sub: 'Bill Williams Fraktalları', body: 'Ortadaki yerel yüksek/düşük olan beş mum. Stop yerleştirmek ve giriş bulmak için.' },
+  { svgKey: 'rsi', name: 'RSI', sub: 'Göreceli Güç Endeksi', body: '0–100 osilatör. 70 üzeri = aşırı alım, 30 altı = aşırı satım.' },
+];
+
+STR.vi.edu = [
+  { title: 'Trading là gì?', desc: 'Khái niệm cơ bản: thị trường hoạt động ra sao và ai thực sự kiếm lời.', body: `Trading là mua bán tài sản tài chính (tiền tệ, cổ phiếu, crypto, hàng hóa, chỉ số) để kiếm lời từ biến động giá. Khác với đầu tư giữ vốn nhiều năm, trader giữ vị thế từ giây đến tuần và kiếm chính từ biến động.
+
+Thị trường hoạt động theo cung cầu. Khi mua đông hơn, giá tăng; khi bán áp đảo, giá giảm. Việc của trader là dự đoán hướng và canh thời điểm vào lệnh.
+
+Phong cách trading khác nhau theo thời gian giữ: scalping (giây), intraday (một ngày), swing (2-7 ngày), position (tuần).
+
+Để bắt đầu cần: tài khoản broker được cấp phép, vốn có thể chấp nhận mất (bắt đầu demo), nền tảng giao dịch, và quan trọng nhất — chiến lược với quy tắc rõ ràng loại bỏ cảm xúc.
+
+Đa số người mới thua không phải vì thị trường phức tạp, mà vì không có kế hoạch. Giai đoạn đầu không phải tìm lợi nhuận mà học. Chuyên gia khác nghiệp dư ở kỷ luật và cách tiếp cận hệ thống.` },
+  { title: 'Quản lý rủi ro', desc: 'Quy tắc kiểm soát thua lỗ — ranh giới giữa trader và người cờ bạc.', body: `Quản lý rủi ro tách trader khỏi người cờ bạc. Thống kê tàn nhẫn: 70-80% người mới mất tiền gửi trong năm đầu, hầu như luôn vì không kiểm soát rủi ro.
+
+Quy tắc cơ bản — "quy tắc 1-2%". Không lệnh nào nên rủi ro hơn 1-2% tiền gửi. Với tài khoản $1,000 mất tối đa mỗi lệnh $10-20. Ngay cả 10 lệnh thua liên tiếp cũng không cháy tài khoản.
+
+Thứ hai — stop-loss. Giá đặt sẵn nơi vị thế đóng tự động. Không có nó, một lệnh xấu phá hủy tài khoản. Đặt stop TRƯỚC khi vào.
+
+Thứ ba — tỷ lệ rủi ro/lợi nhuận. Lệnh tốt có lợi nhuận tiềm năng ít nhất 2x tổn thất. Với 1:2 chỉ cần đúng 40% là có lời.
+
+Thứ tư — giới hạn ngày. Mất 4% trong ngày, đóng terminal đến mai. Điều này bảo vệ khỏi tilt — trạng thái sau vài lần thua cố "gỡ", tăng kích thước, bỏ qua quy tắc.` },
+  { title: 'Cơ bản phân tích', desc: 'Phân tích kỹ thuật: mức, xu hướng, khối lượng, hỗ trợ kháng cự.', body: `Phân tích chia thành cơ bản (tin tức, dữ liệu kinh tế) và kỹ thuật (chỉ biểu đồ, nguyên tắc "thị trường định giá mọi thứ").
+
+Cốt lõi phân tích kỹ thuật là xu hướng. Thị trường di chuyển 3 hướng: tăng (uptrend), giảm (downtrend), đi ngang. Quy tắc: giao dịch theo xu hướng.
+
+Hỗ trợ và kháng cự là mức giá nẩy hoặc đảo chiều. Hình thành vì nhiều người thấy cùng mức. Phá vỡ thường báo đổi xu hướng.
+
+Khối lượng là số hợp đồng giao dịch. Chuyển động khối lượng cao đáng tin cậy hơn.
+
+Khung thời gian — phút, giờ, ngày. Quy tắc: xác định hướng ở TF cao, tìm điểm vào TF thấp.
+
+Chỉ báo là công thức áp dụng cho giá và khối lượng: trung bình động, RSI, MACD. Không dự đoán tương lai — giúp thấy điều đã có trong giá. 2-3 chỉ báo chọn theo mục đích là đủ.` },
+  { title: 'Mẫu hình', desc: 'Hình mẫu nến: bao trùm, pin-bar, ba con quạ và nhiều mẫu khác.', body: `Mẫu hình là hình tái diễn dự đoán chuyển động tương lai với xác suất nhất định. Hoạt động vì tâm lý thị trường lặp lại.
+
+Mẫu nến đảo chiều. "Búa" — bóng dài dưới và thân nhỏ trong xu hướng giảm — tín hiệu đảo lên. "Sao băng" — gương trong xu hướng tăng. "Bao trùm" — nến lớn bao toàn nến trước màu ngược, tín hiệu đảo mạnh. "Doji" — mở và đóng gần bằng nhau, do dự.
+
+Mẫu tiếp diễn. "Ba phương pháp" — một nến mạnh, sau đó 3-4 nến nhỏ ngược xu hướng, rồi một nến mạnh khác theo xu hướng.
+
+Mẫu biểu đồ đảo chiều. "Vai-đầu-vai" — ba đỉnh với đỉnh giữa cao nhất. "Đỉnh đôi" — hai đỉnh cùng mức. "Đáy đôi" — gương phía dưới.
+
+Mẫu tiếp diễn biểu đồ. "Cờ" — kênh nhỏ ngược xu hướng sau xung lực mạnh. "Tam giác" — phạm vi co lại. "Nêm" — tương tự tam giác nhưng cả hai cạnh nghiêng cùng hướng.
+
+Quy tắc: không mẫu nào 100%. Tỷ lệ thắng 55-70%. Dùng mẫu với xác nhận: khối lượng, mức, chỉ báo, xu hướng TF lớn.` },
+  { title: 'Tâm lý trading', desc: '12 mô-đun — từ sợ thua lỗ đến kỷ luật chuyên nghiệp.', body: `Phân tích kỹ thuật học vài tháng. Tâm lý trading mất nhiều năm — và là điều tách trader có lời khỏi người thua lỗ.
+
+Ba cảm xúc chi phối thị trường: sợ hãi, tham lam, hy vọng. Sợ đóng lời sớm. Tham di chuyển stop ra xa khi giá đi ngược. Hy vọng nguy hiểm nhất — giữ vị thế lỗ khi mọi tín hiệu nói đóng.
+
+Lỗi phổ biến: cố "gỡ" sau khi thua. Sau 2-3 lần thua bản năng cờ bạc kích hoạt: tăng kích thước, bỏ qua quy tắc, vào không tín hiệu. Trạng thái này gọi là tilt. Tilt làm cạn tài khoản. Cách duy nhất là rời terminal đến mai.
+
+Kẻ thù thứ hai — FOMO (sợ bỏ lỡ). Tài sản tăng 10% — người mới mua đỉnh, đúng lúc người lớn chốt lời. Một giờ sau vị thế đỏ, hoảng loạn. Quy tắc: lỡ đầu chuyển động, bỏ qua.
+
+Thứ ba — giao dịch quá mức. Tin nhiều lệnh = nhiều lời là sai. Thị trường yên lặng chiến lược tốt nhất là không giao dịch.
+
+Công cụ: nhật ký giao dịch và danh sách kiểm tra. Nhật ký ghi mỗi lệnh với logic vào và trạng thái cảm xúc. Danh sách trước mỗi lệnh ngăn vào "theo cảm tính".
+
+Quy tắc đầu tiên cần học: thị trường không nợ bạn gì. Một lệnh thua là bình thường.` },
+];
+STR.vi.indicators = [
+  { svgKey: 'bollinger', name: 'Dải Bollinger', sub: 'Bao phủ độ biến động', body: 'Ba đường quanh trung bình — SMA±2σ. Thu hẹp = biến động giảm, mở rộng = xu hướng bắt đầu.' },
+  { svgKey: 'macd', name: 'MACD', sub: 'Hội tụ/Phân kỳ Trung bình động', body: 'Khác biệt giữa EMA nhanh và chậm. Cắt lên = tăng, cắt xuống = giảm.' },
+  { svgKey: 'stochastic', name: 'Stochastic', sub: 'Stochastic Oscillator', body: 'Hai giá trị (%K và %D) trong khoảng 0–100. Trên 80 = quá mua, dưới 20 = quá bán.' },
+  { svgKey: 'adx', name: 'ADX', sub: 'Chỉ số Định hướng Trung bình', body: 'Sức mạnh xu hướng. ADX > 25 = có xu hướng, < 20 = đi ngang.' },
+  { svgKey: 'fractals', name: 'Fractal', sub: 'Fractal của Bill Williams', body: 'Năm nến với nến giữa là đỉnh/đáy cục bộ. Để đặt stop và tìm điểm vào.' },
+  { svgKey: 'rsi', name: 'RSI', sub: 'Chỉ số Sức mạnh Tương đối', body: 'Oscillator 0–100. Trên 70 = quá mua, dưới 30 = quá bán.' },
+];
+
+STR.id.edu = [
+  { title: 'Apa itu trading?', desc: 'Konsep dasar: bagaimana pasar bekerja dan siapa yang benar-benar untung.', body: `Trading adalah aktivitas membeli dan menjual aset finansial (mata uang, saham, kripto, komoditas, indeks) untuk untung dari pergerakan harga. Berbeda dari investasi, di mana modal disimpan bertahun-tahun, trader memegang posisi dari detik hingga minggu dan untung khusus dari fluktuasi.
+
+Pasar bekerja berdasarkan penawaran dan permintaan. Saat pembeli lebih banyak, harga naik; saat penjual mendominasi, turun. Pekerjaan trader adalah memprediksi arah dan mengatur waktu masuk.
+
+Gaya trading berbeda berdasarkan waktu memegang: scalping (detik), intraday (satu hari), swing (2-7 hari), position (minggu).
+
+Untuk memulai butuh: akun di broker teregulasi, modal yang sanggup hilang (mulai dengan demo), platform trading, dan paling penting — strategi dengan aturan jelas yang menghilangkan emosi.
+
+Mayoritas pemula rugi bukan karena pasar rumit, tapi karena tidak punya rencana. Tahap pertama bukan mencari profit, tapi belajar. Profesional berbeda dari amatir dalam disiplin dan pendekatan sistematis.` },
+  { title: 'Manajemen risiko', desc: 'Aturan kontrol kerugian — garis antara trader dan penjudi.', body: `Manajemen risiko memisahkan trader dari penjudi. Statistiknya brutal: 70-80% pemula kehilangan deposit di tahun pertama, hampir selalu karena tidak mengontrol risiko.
+
+Aturan dasar — "aturan 1-2%". Tidak ada trade yang harus berisiko lebih dari 1-2% deposit. Dengan akun $1,000 kerugian maksimum per trade $10-20. Bahkan 10 kerugian beruntun tidak menghancurkan akun.
+
+Kedua — stop-loss. Harga preset di mana posisi tertutup otomatis. Tanpa itu, satu trade buruk bisa hancurkan akun. Pasang stop SEBELUM masuk.
+
+Ketiga — rasio risiko/imbalan. Trade bagus punya potensi untung minimal 2x kerugian. Dengan 1:2 hanya perlu benar 40% untuk profit.
+
+Keempat — batas harian. Kalau rugi 4% sehari, tutup terminal sampai besok. Ini melindungi dari tilt — keadaan setelah beberapa kerugian mencoba "balas dendam" dan abaikan aturan.` },
+  { title: 'Dasar analisis', desc: 'Analisis teknis: level, tren, volume, support dan resistance.', body: `Analisis terbagi jadi fundamental (berita, data ekonomi) dan teknis (hanya grafik, prinsip "pasar memperhitungkan semua").
+
+Inti analisis teknis adalah tren. Pasar bergerak tiga arah: naik (uptrend), turun (downtrend), sideways. Aturan: trading dengan tren, bukan melawan.
+
+Support dan resistance adalah level di mana harga memantul atau berbalik. Terbentuk karena banyak peserta melihat level sama. Pembatalan biasanya menandai perubahan tren.
+
+Volume adalah jumlah kontrak yang diperdagangkan. Pergerakan dengan volume tinggi lebih dapat diandalkan.
+
+Timeframe — menit, jam, hari. Aturan: tentukan arah di TF tinggi, cari entry di TF rendah.
+
+Indikator adalah formula yang diterapkan ke harga dan volume: moving average, RSI, MACD. Tidak memprediksi masa depan — membantu melihat yang sudah ada di harga. 2-3 dipilih sesuai tujuan sudah cukup.` },
+  { title: 'Pola', desc: 'Formasi candle: engulfing, pin-bar, three crows dan lainnya.', body: `Pola adalah gambar berulang yang dengan probabilitas tertentu memprediksi pergerakan. Bekerja karena psikologi pasar berulang.
+
+Pola candle reversal. "Hammer" — sumbu panjang bawah dan body kecil di tren turun — sinyal balik atas. "Shooting star" — cermin di tren naik. "Engulfing" — candle besar menutupi seluruh sebelumnya warna berlawanan, sinyal balik kuat. "Doji" — open dan close hampir sama, indecision.
+
+Pola continuation. "Three methods" — satu candle kuat, lalu 3-4 kecil melawan tren, lalu satu lagi kuat searah tren.
+
+Pola chart reversal. "Head and shoulders" — tiga puncak dengan tengah tertinggi. "Double top" — dua puncak di level sama. "Double bottom" — cermin di bawah.
+
+Pola continuation chart. "Flag" — kanal kecil melawan tren setelah impulse kuat. "Triangle" — range menyusut. "Wedge" — mirip triangle tapi kedua sisi miring searah.
+
+Aturan: tidak ada pola 100%. Win rate 55-70%. Gunakan pola dengan konfirmasi: volume, level, indikator, tren TF lebih besar.` },
+  { title: 'Psikologi trading', desc: '12 modul — dari takut rugi sampai disiplin profesional.', body: `Analisis teknis dipelajari dalam beberapa bulan. Psikologi trading butuh tahunan — dan itu yang memisahkan trader profit dari yang rugi.
+
+Tiga emosi menggerakkan pasar: takut, serakah, harapan. Takut menutup profit terlalu cepat. Serakah menggeser stop saat harga melawan. Harapan paling berbahaya — menahan posisi rugi saat semua sinyal bilang tutup.
+
+Kesalahan klasik: coba "balas dendam" setelah rugi. Setelah 2-3 kerugian insting penjudi aktif: besarkan posisi, abaikan aturan, masuk tanpa sinyal. Keadaan ini disebut tilt. Tilt menguras akun. Satu-satunya obat menjauh dari terminal sampai besok.
+
+Musuh kedua — FOMO (takut ketinggalan). Aset naik 10% — pemula beli di puncak, tepat saat pemain besar ambil profit. Satu jam kemudian posisi merah, panik. Aturan: kalau ketinggalan awal, lewatkan.
+
+Ketiga — overtrading. Percaya banyak trade = banyak profit itu salah. Di pasar tenang strategi terbaik tidak trading.
+
+Alat: jurnal trading dan checklist. Jurnal mencatat setiap trade dengan logika entry dan kondisi emosi. Checklist sebelum setiap trade mencegah entry "berdasar feeling".
+
+Aturan pertama yang harus dipelajari: pasar tidak berhutang apapun padamu. Trade rugi itu normal.` },
+];
+STR.id.indicators = [
+  { svgKey: 'bollinger', name: 'Bollinger Bands', sub: 'Selubung volatilitas', body: 'Tiga garis sekitar rata-rata — SMA±2σ. Menyempit = volatilitas turun, melebar = tren mulai.' },
+  { svgKey: 'macd', name: 'MACD', sub: 'Konvergensi/Divergensi Moving Average', body: 'Selisih EMA cepat dan lambat. Persilangan ke atas = bullish, ke bawah = bearish.' },
+  { svgKey: 'stochastic', name: 'Stochastic', sub: 'Osilator Stokastik', body: 'Dua nilai (%K dan %D) di rentang 0–100. Di atas 80 = overbought, di bawah 20 = oversold.' },
+  { svgKey: 'adx', name: 'ADX', sub: 'Average Directional Index', body: 'Kekuatan tren. ADX > 25 = ada tren, < 20 = sideways.' },
+  { svgKey: 'fractals', name: 'Fractals', sub: 'Fraktal Bill Williams', body: 'Lima candle dengan tengah jadi tinggi/rendah lokal. Untuk pasang stop dan entry.' },
+  { svgKey: 'rsi', name: 'RSI', sub: 'Relative Strength Index', body: 'Osilator 0–100. Di atas 70 = overbought, di bawah 30 = oversold.' },
+];
+
+STR.hi.edu = [
+  { title: 'ट्रेडिंग क्या है?', desc: 'मूल अवधारणाएँ: बाज़ार कैसे काम करते हैं और वास्तव में कौन कमाता है।', body: `ट्रेडिंग कीमत के उतार-चढ़ाव से लाभ कमाने के लिए वित्तीय परिसंपत्तियों (मुद्राएँ, स्टॉक, क्रिप्टो, कमोडिटी, इंडेक्स) को खरीदना और बेचना है। निवेश से अलग, जहाँ पूंजी सालों रखी जाती है, ट्रेडर सेकंड से सप्ताह तक पोजीशन रखता है और विशेष रूप से उतार-चढ़ाव से कमाता है।
+
+बाज़ार माँग और आपूर्ति पर काम करते हैं। जब खरीदार ज़्यादा होते हैं, कीमत बढ़ती है; जब विक्रेता हावी होते हैं, गिरती है। ट्रेडर का काम दिशा का अनुमान लगाना और प्रवेश का समय तय करना है।
+
+ट्रेडिंग शैलियाँ रखने के समय से अलग होती हैं: स्कैलपिंग (सेकंड), इंट्राडे (एक दिन), स्विंग (2-7 दिन), पोजीशन (सप्ताह)।
+
+शुरू करने के लिए चाहिए: नियामित ब्रोकर खाता, खोने योग्य पूंजी (डेमो से शुरू करें), ट्रेडिंग प्लेटफॉर्म, और सबसे महत्वपूर्ण — स्पष्ट नियमों वाली रणनीति जो भावनाओं को दूर करे।
+
+अधिकांश शुरुआती इसलिए नहीं हारते कि बाज़ार जटिल हैं, बल्कि इसलिए कि उनके पास योजना नहीं। पहला चरण लाभ खोजना नहीं, बल्कि सीखना है। पेशेवर अनुभवहीन से अनुशासन और व्यवस्थित दृष्टिकोण से अलग है।` },
+  { title: 'जोखिम प्रबंधन', desc: 'नुकसान-नियंत्रण नियम — ट्रेडर और जुआरी के बीच की रेखा।', body: `जोखिम प्रबंधन ट्रेडर को जुआरी से अलग करता है। आँकड़े क्रूर हैं: 70-80% शुरुआती पहले साल में जमा खो देते हैं, लगभग हमेशा जोखिम न नियंत्रित करने के कारण।
+
+मूल नियम — "1-2% नियम"। कोई ट्रेड जमा के 1-2% से अधिक जोखिम नहीं उठाना चाहिए। $1,000 खाते पर प्रति ट्रेड अधिकतम हानि $10-20। 10 लगातार हार भी खाता खाली नहीं करेगी।
+
+दूसरा — स्टॉप-लॉस। पूर्व-निर्धारित कीमत जहाँ पोजीशन स्वचालित रूप से बंद हो जाती है। इसके बिना, एक बुरा ट्रेड आपका खाता नष्ट कर सकता है। प्रवेश से पहले स्टॉप लगाएँ।
+
+तीसरा — जोखिम/इनाम अनुपात। एक अच्छे ट्रेड में संभावित लाभ संभावित हानि का कम से कम 2 गुना होता है। 1:2 के साथ केवल 40% सही होने की ज़रूरत है।
+
+चौथा — दैनिक सीमाएँ। एक दिन में 4% खो दिया, कल तक टर्मिनल बंद। यह टिल्ट से बचाता है — कई हारों के बाद "वापस जीतने" का प्रयास और नियमों को अनदेखा करना।` },
+  { title: 'विश्लेषण की मूल बातें', desc: 'तकनीकी विश्लेषण: स्तर, रुझान, मात्रा, सपोर्ट और रेज़िस्टेंस।', body: `विश्लेषण दो स्कूलों में बँटा है: मौलिक (समाचार, आर्थिक डेटा) और तकनीकी (केवल चार्ट, सिद्धांत "बाज़ार सब कीमत में डालता है")।
+
+तकनीकी विश्लेषण का मूल रुझान है। बाज़ार तीन दिशाओं में चलते हैं: ऊपर (uptrend), नीचे (downtrend), सपाट। नियम: रुझान के साथ ट्रेड करें, खिलाफ नहीं।
+
+सपोर्ट और रेज़िस्टेंस ऐसी कीमतें हैं जहाँ कीमत बार-बार उछलती या मुड़ती है। कई प्रतिभागी समान स्तर देखते हैं। टूट अक्सर रुझान बदलाव का संकेत है।
+
+मात्रा एक अवधि में कारोबार किए गए अनुबंधों की संख्या है। उच्च मात्रा पर हलचल अधिक विश्वसनीय है।
+
+टाइमफ्रेम — मिनट, घंटे, दिन। नियम: उच्च टीएफ पर दिशा निर्धारित करें, निम्न पर प्रवेश ढूँढें।
+
+संकेतक कीमत और मात्रा पर लागू सूत्र हैं: मूविंग एवरेज, RSI, MACD। भविष्य का अनुमान नहीं लगाते — कीमत में जो पहले से है उसे देखने में मदद करते हैं। उद्देश्य से चुने 2-3 पर्याप्त।` },
+  { title: 'पैटर्न', desc: 'मोमबत्ती पैटर्न: एनगल्फिंग, पिन-बार, थ्री क्रोज़ और अन्य।', body: `पैटर्न चार्ट पर एक आवर्ती आकृति है जो किसी संभावना के साथ भविष्य की चाल का अनुमान लगाती है। बाज़ार मनोविज्ञान दोहराता है इसलिए वे काम करते हैं।
+
+रिवर्सल कैंडल पैटर्न। "हैमर" — डाउनट्रेंड में लंबी निचली बाती और छोटा बॉडी — ऊपर की ओर रिवर्सल का संकेत। "शूटिंग स्टार" — अपट्रेंड में दर्पण, नीचे रिवर्सल। "एनगल्फिंग" — विपरीत रंग की पिछली कैंडल को पूरी तरह ढँकती बड़ी कैंडल, मज़बूत रिवर्सल संकेत। "डोजी" — खुलने और बंद होने के समय लगभग समान, अनिश्चय।
+
+निरंतरता पैटर्न। "थ्री मेथड्स" — एक मज़बूत कैंडल, फिर 3-4 छोटी रुझान-विरोधी, फिर एक और मज़बूत रुझान के साथ।
+
+रिवर्सल चार्ट पैटर्न। "हेड एंड शोल्डर्स" — तीन शीर्ष जहाँ बीच का सबसे ऊँचा। "डबल टॉप" — समान स्तर पर दो उच्च। "डबल बॉटम" — नीचे का दर्पण।
+
+निरंतरता चार्ट पैटर्न। "फ्लैग" — तेज़ इंपल्स के बाद छोटा रुझान-विरोधी चैनल। "ट्रायंगल" — सिकुड़ती सीमा। "वेज" — ट्रायंगल जैसा पर दोनों किनारे एक ही दिशा में झुके।
+
+मुख्य नियम: कोई पैटर्न 100% नहीं। जीत दर 55-70%। पुष्टिकरण के साथ पैटर्न का उपयोग करें: मात्रा, स्तर, संकेतक, उच्च टीएफ रुझान।` },
+  { title: 'ट्रेडिंग मनोविज्ञान', desc: '12 मॉड्यूल — हानि के डर से लेकर पेशेवर अनुशासन तक।', body: `तकनीकी विश्लेषण कुछ महीनों में सीखा जा सकता है। ट्रेडिंग मनोविज्ञान सालों लेता है — और यही लाभकारी ट्रेडरों को हारने वालों से अलग करता है।
+
+तीन भावनाएँ बाज़ार चलाती हैं: डर, लालच, आशा। डर लाभ की पोजीशन बहुत जल्दी बंद करता है। लालच कीमत के विरुद्ध जाने पर स्टॉप दूर ले जाता है। आशा सबसे ख़तरनाक — हर संकेत बंद करने को कहता है तब भी हारती पोजीशन रखती है।
+
+क्लासिक गलती: हानि के बाद "वापस जीतने" का प्रयास। 2-3 हानियों के बाद जुआरी की प्रवृत्ति सक्रिय हो जाती है: आकार बढ़ाना, अपने नियमों की अनदेखी करना, संकेत के बिना प्रवेश करना। इस अवस्था को टिल्ट कहते हैं। टिल्ट खाते खाली करता है। एकमात्र इलाज कल तक स्क्रीन से दूर रहना।
+
+दूसरा शत्रु — FOMO (छूटने का डर)। संपत्ति 10% कूदती है — शुरुआती शीर्ष पर खरीदता है, ठीक तब जब बड़े खिलाड़ी लाभ ले रहे होते हैं। एक घंटे बाद पोजीशन घाटे में, घबराहट आती है। नियम: यदि हलचल की शुरुआत छूट गई, उसे छोड़ दें।
+
+तीसरा — ओवरट्रेडिंग। यह विश्वास कि अधिक ट्रेड का मतलब अधिक लाभ ग़लत है। शांत बाज़ार में सबसे अच्छी रणनीति ट्रेड न करना है।
+
+मनोविज्ञान के विरुद्ध उपकरण — ट्रेडिंग जर्नल और चेकलिस्ट। जर्नल हर ट्रेड को प्रवेश तर्क और भावनात्मक स्थिति के साथ रिकॉर्ड करती है। हर ट्रेड से पहले चेकलिस्ट "गट" प्रवेशों को रोकती है।
+
+पहला सीखने वाला नियम: बाज़ार आपको कुछ नहीं देता। एक हारता ट्रेड सामान्य है, त्रासदी नहीं।` },
+];
+STR.hi.indicators = [
+  { svgKey: 'bollinger', name: 'बोलिंगर बैंड्स', sub: 'अस्थिरता का लिफ़ाफ़ा', body: 'औसत के चारों ओर तीन रेखाएँ — SMA±2σ। संकुचन = अस्थिरता गिर रही, विस्तार = ट्रेंड शुरू।' },
+  { svgKey: 'macd', name: 'MACD', sub: 'मूविंग एवरेज कन्वर्जेंस डाइवर्जेंस', body: 'तेज़ और धीमी EMA का अंतर। ऊपर क्रॉस = बुलिश, नीचे = बेयरिश।' },
+  { svgKey: 'stochastic', name: 'स्टोकैस्टिक', sub: 'स्टोकैस्टिक ऑसिलेटर', body: 'दो मान (%K और %D) 0–100 रेंज में। 80 के ऊपर = ओवरबॉट, 20 के नीचे = ओवरसोल्ड।' },
+  { svgKey: 'adx', name: 'ADX', sub: 'एवरेज डायरेक्शनल इंडेक्स', body: 'ट्रेंड की ताक़त। ADX > 25 = ट्रेंड मौजूद, < 20 = सपाट।' },
+  { svgKey: 'fractals', name: 'फ्रैक्टल्स', sub: 'बिल विलियम्स फ्रैक्टल्स', body: 'पाँच कैंडल जहाँ बीच की लोकल हाई/लो। स्टॉप लगाने और एंट्री खोजने के लिए।' },
+  { svgKey: 'rsi', name: 'RSI', sub: 'रिलेटिव स्ट्रेंथ इंडेक्स', body: '0–100 ऑसिलेटर। 70 के ऊपर = ओवरबॉट, 30 के नीचे = ओवरसोल्ड।' },
+];
+
+
 // Также добавляем timeframe_title в ru/en
 STR.ru.timeframe_title = "Выберите время экспирации";
 STR.ru.timeframe_subtitle = "Когда проверить результат?";
