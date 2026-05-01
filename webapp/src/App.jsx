@@ -1168,6 +1168,11 @@ export default function TradeAppBot() {
         if (!r.ok) throw new Error((await r.json()).error || "auth failed");
         const d = await r.json();
         setAuthState({ loading: false, session: d.session, subscribed: d.subscribed, brokerStatus: d.brokerStatus, error: null });
+
+        // Применяем язык из БД (что юзер выбрал в боте). Иначе — из Telegram. Иначе — en.
+        if (d.user?.lang && LANG_LIST.includes(d.user.lang)) {
+          setLang(d.user.lang);
+        }
       } catch (e) {
         setAuthState({ loading: false, session: null, subscribed: false, brokerStatus: "none", error: e.message });
       }
@@ -1182,6 +1187,20 @@ export default function TradeAppBot() {
       headers: { "Content-Type": "application/json", "X-Session": authState.session },
       body: JSON.stringify({ event, payload }),
     }).catch(() => {});
+  };
+
+  // Меняет язык — локально применяет + отправляет в API чтобы сохранилось в БД,
+  // и бот тоже знал текущий язык юзера.
+  const changeLang = async (code) => {
+    if (!LANG_LIST.includes(code)) return;
+    setLang(code);
+    if (API_URL && authState.session) {
+      fetch(`${API_URL}/api/lang`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Session": authState.session },
+        body: JSON.stringify({ lang: code }),
+      }).catch(() => {});
+    }
   };
 
   // Трекаем открытие приложения
@@ -1597,7 +1616,7 @@ export default function TradeAppBot() {
                       return (
                         <button
                           key={code}
-                          onClick={() => { setLang(code); setLangOpen(false); }}
+                          onClick={() => { changeLang(code); setLangOpen(false); }}
                           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition ${
                             lang === code ? "bg-yellow-500/15 text-yellow-400" : "hover:bg-white/5 text-neutral-200"
                           }`}
