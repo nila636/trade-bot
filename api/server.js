@@ -480,7 +480,10 @@ function syntheticSeries(base, digits) {
   return out;
 }
 
-app.post("/api/analyze", authMiddleware, async (req, res) => {
+// /api/analyze не требует сессии — это публичный аналитический endpoint.
+// Он используется и Mini App'ом юзера, и фоновой задачей бота для daily-сигналов.
+// Никакие персональные данные тут не передаются.
+app.post("/api/analyze", async (req, res) => {
   const { pair } = req.body || {};
   if (!pair || typeof pair !== "object" || !pair.source || !pair.label) {
     return res.status(400).json({ error: "invalid pair" });
