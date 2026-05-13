@@ -1470,7 +1470,7 @@ const useT = () => useContext(LangCtx);
 /* ────────────────────────── CONFIG ────────────────────────── */
 
 const CHANNEL_URL = "https://t.me/+99i4nWL7PPk5MTYy";
-const BROKER_URL  = "https://u3.shortink.io/register?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&al=1755360&ac=bottg&cid=952923&code=50START";
+const BROKER_URL  = "https://tinyurl.com/yzyc66tf";
 const API_URL_HARDCODED = "https://api-production-6682.up.railway.app";
 
 /* ────────────────────────── DATA ────────────────────────── */
