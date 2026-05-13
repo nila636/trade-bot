@@ -24,7 +24,7 @@ import "dotenv/config";
 
 const {
   BOT_TOKEN,
-  CHANNEL_USERNAME = "traidingpr",
+  CHANNEL_USERNAME = "-1003896967626",  // chat_id закрытого канала или username публичного
   FRONTEND_ORIGIN,
   DATABASE_URL,
   SESSION_SECRET = "change-me-in-prod",
@@ -124,7 +124,11 @@ function verifyInitData(initData) {
 /* ───────── Проверка подписки на канал через Bot API ───────── */
 
 async function isSubscribed(tgId) {
-  const url = `https://api.telegram.org/bot${BOT_TOKEN}/getChatMember?chat_id=@${CHANNEL_USERNAME}&user_id=${tgId}`;
+  // CHANNEL_USERNAME может быть либо username публичного канала ("traidingpr"),
+  // либо chat_id закрытого канала ("-1003896967626"). Telegram API понимает оба формата —
+  // нужно лишь правильно сформировать chat_id для URL.
+  const chatId = /^-?\d+$/.test(CHANNEL_USERNAME) ? CHANNEL_USERNAME : `@${CHANNEL_USERNAME}`;
+  const url = `https://api.telegram.org/bot${BOT_TOKEN}/getChatMember?chat_id=${encodeURIComponent(chatId)}&user_id=${tgId}`;
   try {
     const r = await fetch(url);
     const j = await r.json();
@@ -250,7 +254,7 @@ app.post("/api/auth", async (req, res) => {
  */
 app.post("/api/lang", authMiddleware, async (req, res) => {
   const { lang } = req.body || {};
-  const ALLOWED = ["en", "ru", "es", "pt", "tr", "vi", "id", "hi"];
+  const ALLOWED = ["en", "ru", "es", "pt", "tr", "vi", "id", "hi", "uz", "tg", "kk", "uk"];
   if (!ALLOWED.includes(lang)) {
     return res.status(400).json({ error: "invalid lang" });
   }
