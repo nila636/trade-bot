@@ -181,7 +181,7 @@ async function getAllUsers() {
 /* ─────────────────────── I18N ─────────────────────── */
 
 // Список поддерживаемых языков
-const LANGS = ["en", "ru", "es", "pt", "tr", "vi", "id", "hi"];
+const LANGS = ["en", "ru", "es", "pt", "tr", "vi", "id", "hi", "uz", "tg", "kk", "uk"];
 const LANG_LABELS = {
   en: "🇬🇧 English",
   ru: "🇷🇺 Русский",
@@ -191,6 +191,10 @@ const LANG_LABELS = {
   vi: "🇻🇳 Tiếng Việt",
   id: "🇮🇩 Bahasa Indonesia",
   hi: "🇮🇳 हिन्दी",
+  uz: "🇺🇿 O'zbekcha",
+  tg: "🇹🇯 Тоҷикӣ",
+  kk: "🇰🇿 Қазақша",
+  uk: "🇺🇦 Українська",
 };
 
 const L = {
@@ -530,6 +534,174 @@ const L = {
       "⚠️ *महत्वपूर्ण:* ट्रेडिंग में पूँजी हानि का जोखिम है। सिग्नल केवल जानकारी के लिए हैं।\n\n" +
       "💬 मदद चाहिए? *सहायता* का उपयोग करें।",
   },
+  uz: {
+    title: "📊 *TRADE BOT*",
+    welcome:
+      "*TRADE BOT*ga xush kelibsiz — sun'iy intellektga asoslangan savdo signallari platformasi.\n\n" +
+      "📈 *Algoritm aniqligi:* 87% gacha\n" +
+      "⚡ *Real vaqtda signallar*\n" +
+      "🔒 *Xavfsiz kirish*",
+    choose: "Quyidan amalni tanlang:",
+    btn_guide:    "📘 Qo'llanma",
+    btn_reviews:  "⭐ Sharhlar",
+    btn_support:  "💬 Yordam",
+    btn_language: "🌐 Tilni o'zgartirish",
+    btn_signal:   "🚀 Signal olish 🚀",
+    btn_broker:   "🏦 Pocket Option ochish",
+    btn_back:     "⬅ Orqaga",
+    pick_lang_first: "🌐 *Iltimos, tilingizni tanlang:*",
+    lang_set: "✅ Til o'rnatildi",
+    guide:
+      "📘 *TO'LIQ QO'LLANMA*\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "*🔓 KIRISH QANDAY OLINADI*\n\n" +
+      "*1-qadam.* Bizning kanalimizga obuna bo'ling.\n\n" +
+      "*2-qadam.* «🚀 Signal olish» tugmasini bosing.\n\n" +
+      "*3-qadam.* [Pocket Option](https://u3.shortink.io/smart/PUzmkw57PSkH73)da bizning sherikchilik linkimiz orqali ro'yxatdan o'ting.\n\n" +
+      "*4-qadam.* Kirish avtomatik beriladi (bir daqiqa ichida).\n\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "*📱 ILOVA BO'LIMLARI*\n\n" +
+      "📊 *Aktivlar* — real vaqt narxlari bilan 121 ta vosita.\n\n" +
+      "✨ *Bozor tahlili* — AI RSI + MACD + Bollinger asosida signal beradi.\n\n" +
+      "🧮 *Kalkulyator* — foyda va xavfni hisoblash.\n\n" +
+      "📰 *Yangiliklar* — haftalik iqtisodiy voqealar.\n\n" +
+      "⭐ *Sevimlilar* — tez kirish uchun aktivlarni saqlang.\n\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "*💡 SIGNALNI QANDAY O'QISH KERAK*\n\n" +
+      "• *⬆ TEPAGA (BUY)* — narx ko'tariladi deb kutiladi\n" +
+      "• *⬇ PASTGA (SELL)* — narx tushadi deb kutiladi\n" +
+      "• *Ehtimollik* — algoritm ishonchi\n" +
+      "• *Muddati* — natijani keyin tekshiring\n\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "⚠️ *Muhim:* savdo kapitalni yo'qotish xavfini o'z ichiga oladi. Signallar faqat ma'lumot beradi.\n\n" +
+      "💬 Yordam kerakmi? *Yordam* tugmasidan foydalaning.",
+  },
+  tg: {
+    title: "📊 *TRADE BOT*",
+    welcome:
+      "Ба *TRADE BOT* хуш омадед — низоми сигналҳои савдо дар асоси сунъи зеҳни.\n\n" +
+      "📈 *Дақиқии алгоритм:* то 87%\n" +
+      "⚡ *Сигналҳо дар вақти воқеӣ*\n" +
+      "🔒 *Дастрасии бехатар*",
+    choose: "Аз поён амалро интихоб кунед:",
+    btn_guide:    "📘 Дастур",
+    btn_reviews:  "⭐ Тақризҳо",
+    btn_support:  "💬 Дастгирӣ",
+    btn_language: "🌐 Тағйир додани забон",
+    btn_signal:   "🚀 Сигнал гирифтан 🚀",
+    btn_broker:   "🏦 Pocket Option кушодан",
+    btn_back:     "⬅ Бозгашт",
+    pick_lang_first: "🌐 *Лутфан, забонатонро интихоб кунед:*",
+    lang_set: "✅ Забон танзим шуд",
+    guide:
+      "📘 *ДАСТУРИ ПУРРА*\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "*🔓 ЧӢ ТАВР ДАСТРАСӢ ГИРИФТАН*\n\n" +
+      "*Қадами 1.* Ба канали мо обуна шавед.\n\n" +
+      "*Қадами 2.* Тугмаи «🚀 Сигнал гирифтан»-ро пахш кунед.\n\n" +
+      "*Қадами 3.* Дар [Pocket Option](https://u3.shortink.io/smart/PUzmkw57PSkH73) тавассути линки шарикии мо номнавис шавед.\n\n" +
+      "*Қадами 4.* Дастрасӣ ба таври худкор дода мешавад (дар як дақиқа).\n\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "*📱 БАХШҲОИ ПРОГРАММА*\n\n" +
+      "📊 *Активҳо* — 121 асбоб бо нархҳои вақти воқеӣ.\n\n" +
+      "✨ *Таҳлили бозор* — AI бо ёрии RSI + MACD + Bollinger сигнал медиҳад.\n\n" +
+      "🧮 *Калкулятор* — ҳисоби фоида ва хатар.\n\n" +
+      "📰 *Хабарҳо* — рӯйдодҳои иқтисодии ҳафта.\n\n" +
+      "⭐ *Дӯстдоштаҳо* — активҳоро барои дастрасии тез нигоҳ доред.\n\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "*💡 ЧӢ ТАВР СИГНАЛРО ХОНДАН*\n\n" +
+      "• *⬆ БОЛО (BUY)* — нарх боло меравад\n" +
+      "• *⬇ ПОЁН (SELL)* — нарх поён меравад\n" +
+      "• *Эҳтимолият* — эътимоди алгоритм\n" +
+      "• *Анҷом* — натиҷаро баъдан санҷед\n\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "⚠️ *Муҳим:* савдо хатари талаф додани сармояро дорад. Сигналҳо танҳо барои маълумот.\n\n" +
+      "💬 Кӯмак лозим? *Дастгирӣ*-ро истифода баред.",
+  },
+  kk: {
+    title: "📊 *TRADE BOT*",
+    welcome:
+      "*TRADE BOT*-қа қош келдіңіз — жасанды интеллект негізіндегі трейдинг сигналдары жүйесі.\n\n" +
+      "📈 *Алгоритм дәлдігі:* 87%-ға дейін\n" +
+      "⚡ *Нақты уақыттағы сигналдар*\n" +
+      "🔒 *Қауіпсіз қол жетімділік*",
+    choose: "Төменнен әрекет таңдаңыз:",
+    btn_guide:    "📘 Нұсқаулық",
+    btn_reviews:  "⭐ Пікірлер",
+    btn_support:  "💬 Қолдау",
+    btn_language: "🌐 Тілді өзгерту",
+    btn_signal:   "🚀 Сигнал алу 🚀",
+    btn_broker:   "🏦 Pocket Option ашу",
+    btn_back:     "⬅ Артқа",
+    pick_lang_first: "🌐 *Тіліңізді таңдаңыз:*",
+    lang_set: "✅ Тіл орнатылды",
+    guide:
+      "📘 *ТОЛЫҚ НҰСҚАУЛЫҚ*\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "*🔓 ҚОЛ ЖЕТКІЗУДІ ҚАЛАЙ АЛУҒА БОЛАДЫ*\n\n" +
+      "*1-қадам.* Біздің каналға жазылыңыз.\n\n" +
+      "*2-қадам.* «🚀 Сигнал алу» түймесін басыңыз.\n\n" +
+      "*3-қадам.* Біздің серіктестік сілтемесі арқылы [Pocket Option](https://u3.shortink.io/smart/PUzmkw57PSkH73)-та тіркеліңіз.\n\n" +
+      "*4-қадам.* Қол жеткізу автоматты түрде беріледі (бір минут ішінде).\n\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "*📱 ҚОЛДАНБА БӨЛІМДЕРІ*\n\n" +
+      "📊 *Активтер* — нақты уақыт бағаларымен 121 құрал.\n\n" +
+      "✨ *Нарықты талдау* — ЖИ RSI + MACD + Bollinger арқылы сигнал береді.\n\n" +
+      "🧮 *Калькулятор* — пайда мен тәуекелді бағалау.\n\n" +
+      "📰 *Жаңалықтар* — апта сайынғы экономикалық оқиғалар.\n\n" +
+      "⭐ *Таңдаулылар* — тез қолжетімділік үшін активтерді сақтаңыз.\n\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "*💡 СИГНАЛДЫ ҚАЛАЙ ОҚУ КЕРЕК*\n\n" +
+      "• *⬆ ЖОҒАРЫ (BUY)* — баға өседі деп күтіледі\n" +
+      "• *⬇ ТӨМЕН (SELL)* — баға түседі деп күтіледі\n" +
+      "• *Ықтималдық* — алгоритм сенімділігі\n" +
+      "• *Аяқталу* — нәтижені кейінірек тексеріңіз\n\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "⚠️ *Маңызды:* трейдинг капиталды жоғалту тәуекелін қамтиды. Сигналдар тек ақпарат үшін.\n\n" +
+      "💬 Көмек керек пе? *Қолдау* түймесін пайдаланыңыз.",
+  },
+  uk: {
+    title: "📊 *TRADE BOT*",
+    welcome:
+      "Ласкаво просимо до *TRADE BOT* — платформи торгових сигналів на основі ШІ.\n\n" +
+      "📈 *Точність алгоритму:* до 87%\n" +
+      "⚡ *Сигнали у реальному часі*\n" +
+      "🔒 *Захищений доступ*",
+    choose: "Оберіть дію нижче:",
+    btn_guide:    "📘 Інструкція",
+    btn_reviews:  "⭐ Відгуки",
+    btn_support:  "💬 Підтримка",
+    btn_language: "🌐 Змінити мову",
+    btn_signal:   "🚀 Отримати сигнал 🚀",
+    btn_broker:   "🏦 Відкрити Pocket Option",
+    btn_back:     "⬅ Назад",
+    pick_lang_first: "🌐 *Будь ласка, оберіть мову:*",
+    lang_set: "✅ Мову встановлено",
+    guide:
+      "📘 *ПОВНА ІНСТРУКЦІЯ*\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "*🔓 ЯК ОТРИМАТИ ДОСТУП*\n\n" +
+      "*Крок 1.* Підпишись на наш канал.\n\n" +
+      "*Крок 2.* Натисни «🚀 Отримати сигнал».\n\n" +
+      "*Крок 3.* Зареєструйся на [Pocket Option](https://u3.shortink.io/smart/PUzmkw57PSkH73) за нашим партнерським посиланням.\n\n" +
+      "*Крок 4.* Доступ відкриється автоматично (протягом хвилини).\n\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "*📱 РОЗДІЛИ ДОДАТКА*\n\n" +
+      "📊 *Активи* — 121 інструмент з реальними цінами.\n\n" +
+      "✨ *Аналіз ринку* — ШІ дає сигнал на основі RSI + MACD + Bollinger.\n\n" +
+      "🧮 *Калькулятор* — розрахунок прибутку та ризику.\n\n" +
+      "📰 *Новини* — економічні події тижня.\n\n" +
+      "⭐ *Обране* — збережи активи для швидкого доступу.\n\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "*💡 ЯК ЧИТАТИ СИГНАЛ*\n\n" +
+      "• *⬆ ВГОРУ (BUY)* — очікується зростання ціни\n" +
+      "• *⬇ ВНИЗ (SELL)* — очікується падіння ціни\n" +
+      "• *Ймовірність* — впевненість алгоритму\n" +
+      "• *Закінчення* — перевір результат пізніше\n\n" +
+      "━━━━━━━━━━━━━━━━━━\n\n" +
+      "⚠️ *Важливо:* торгівля пов'язана з ризиком втрати капіталу. Сигнали мають інформаційний характер.\n\n" +
+      "💬 Потрібна допомога? Використай *Підтримку*.",
+  },
 };
 
 // Кеш язык в памяти (на сессию). При первой загрузке/новом юзере — читаем из БД.
@@ -587,7 +759,7 @@ function mainKeyboard(lang) {
 function langKeyboard() {
   // 8 языков, по 2 в ряду
   const kb = new InlineKeyboard();
-  const codes = ["en", "ru", "es", "pt", "tr", "vi", "id", "hi"];
+  const codes = ["en", "ru", "es", "pt", "tr", "vi", "id", "hi", "uz", "tg", "kk", "uk"];
   for (let i = 0; i < codes.length; i += 2) {
     kb.text(LANG_LABELS[codes[i]],     `setlang_${codes[i]}`);
     if (codes[i + 1]) kb.text(LANG_LABELS[codes[i + 1]], `setlang_${codes[i + 1]}`);
@@ -799,7 +971,7 @@ bot.callbackQuery("adm_export", async (ctx) => {
 
 /* ─────────────────────── ЗАЯВКИ НА БИРЖУ ─────────────────────── */
 
-const CHANNEL_USERNAME = process.env.CHANNEL_USERNAME || "traidingpr";
+const CHANNEL_USERNAME = process.env.CHANNEL_USERNAME || "-1003896967626";  // username или chat_id
 const BROKER_REF_URL   = process.env.BROKER_REF_URL   || "https://pocketoption.com/ru/?ref=YOUR_REF_ID";
 
 bot.command("claims", async (ctx) => {
@@ -858,15 +1030,16 @@ bot.callbackQuery(/^claim_(ok|no)_(\d+)$/, async (ctx) => {
 /* Команда проверки подписки юзера на канал — полезна для дебага */
 bot.command("checksub", async (ctx) => {
   try {
-    const m = await bot.api.getChatMember(`@${CHANNEL_USERNAME}`, ctx.from.id);
+    const chatId = /^-?\d+$/.test(CHANNEL_USERNAME) ? Number(CHANNEL_USERNAME) : `@${CHANNEL_USERNAME}`;
+    const m = await bot.api.getChatMember(chatId, ctx.from.id);
     const subscribed = ["creator", "administrator", "member"].includes(m.status);
     await ctx.reply(
       subscribed
-        ? `✅ Вы подписаны на @${CHANNEL_USERNAME} (status: ${m.status})`
-        : `❌ Вы не подписаны на @${CHANNEL_USERNAME}\nhttps://t.me/${CHANNEL_USERNAME}`
+        ? `✅ Вы подписаны на канал (status: ${m.status})`
+        : `❌ Вы не подписаны на канал\nhttps://t.me/+99i4nWL7PPk5MTYy`
     );
   } catch (e) {
-    await ctx.reply(`⚠ Ошибка проверки: ${e.description || e.message}\n\nУбедитесь, что бот добавлен админом в канал @${CHANNEL_USERNAME}.`);
+    await ctx.reply(`⚠ Ошибка проверки: ${e.description || e.message}\n\nУбедитесь, что бот добавлен админом в канал.`);
   }
 });
 
@@ -1084,6 +1257,54 @@ const DAILY_TEXTS = {
     btn_open: "🚀 सिग्नल पाएँ",
     btn_broker: "🏦 Pocket Option खोलें",
     disclaimer: "_⚠ ट्रेडिंग में जोखिम है। सिग्नल केवल जानकारी के लिए हैं।_",
+  },
+  uz: {
+    title: "🤖 *AI KUNLIK SIGNALLAR*",
+    subtitle: "Bugun uchun yuqori ishonchli Top-3 signal",
+    direction_up: "⬆ SOTIB OLISH",
+    direction_down: "⬇ SOTISH",
+    confidence: "Ishonch",
+    expiration: "Muddati",
+    cta: "To'liq tahlil uchun ilovani oching 👇",
+    btn_open: "🚀 Signal olish",
+    btn_broker: "🏦 Pocket Option ochish",
+    disclaimer: "_⚠ Savdo xavfli. Signallar faqat ma'lumot uchun._",
+  },
+  tg: {
+    title: "🤖 *AI СИГНАЛҲОИ ҲАРРӮЗА*",
+    subtitle: "Барои имрӯз 3 сигнали беҳтарин",
+    direction_up: "⬆ ХАРИДАН",
+    direction_down: "⬇ ФУРӮХТАН",
+    confidence: "Эътимод",
+    expiration: "Муҳлат",
+    cta: "Барои таҳлили пурра барномаро кушоед 👇",
+    btn_open: "🚀 Сигнал гирифтан",
+    btn_broker: "🏦 Pocket Option кушодан",
+    disclaimer: "_⚠ Савдо хатарнок аст. Сигналҳо танҳо барои маълумот._",
+  },
+  kk: {
+    title: "🤖 *AI КҮНДЕЛІКТІ СИГНАЛДАР*",
+    subtitle: "Бүгінгі ең сенімді Топ-3 сигнал",
+    direction_up: "⬆ САТЫП АЛУ",
+    direction_down: "⬇ САТУ",
+    confidence: "Сенімділік",
+    expiration: "Мерзімі",
+    cta: "Толық талдау үшін қолданбаны ашыңыз 👇",
+    btn_open: "🚀 Сигнал алу",
+    btn_broker: "🏦 Pocket Option ашу",
+    disclaimer: "_⚠ Трейдинг тәуекелді. Сигналдар тек ақпарат үшін._",
+  },
+  uk: {
+    title: "🤖 *ЩОДЕННІ AI СИГНАЛИ*",
+    subtitle: "Топ-3 сигнали з високою впевненістю на сьогодні",
+    direction_up: "⬆ КУПИТИ",
+    direction_down: "⬇ ПРОДАТИ",
+    confidence: "Впевненість",
+    expiration: "Закінчення",
+    cta: "Відкрий додаток для повного аналізу 👇",
+    btn_open: "🚀 Отримати сигнал",
+    btn_broker: "🏦 Відкрити Pocket Option",
+    disclaimer: "_⚠ Торгівля пов'язана з ризиком. Сигнали інформативні._",
   },
 };
 
