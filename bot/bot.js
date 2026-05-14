@@ -1043,32 +1043,36 @@ bot.command("checksub", async (ctx) => {
   }
 });
 
-/* /debug — глубокая диагностика подключения бота к каналу. Только для админа. */
+/* /debug — глубокая диагностика подключения бота к каналу. Открыта для всех (для удобства). */
 bot.command("debug", async (ctx) => {
-  if (!isAdmin(ctx.from.id)) return ctx.reply("⛔ Доступ запрещён.");
   const lines = [];
-  lines.push(`*ENV CHANNEL_USERNAME:* \`${CHANNEL_USERNAME}\``);
+  lines.push(`ENV CHANNEL_USERNAME: ${CHANNEL_USERNAME}`);
+  lines.push(`Caller tg_id: ${ctx.from.id}`);
+  lines.push(`Is admin: ${isAdmin(ctx.from.id)}`);
+  lines.push("");
   try {
     const me = await bot.api.getMe();
-    lines.push(`*BOT (по BOT_TOKEN):* @${me.username} (id ${me.id})`);
+    lines.push(`BOT (по BOT_TOKEN): @${me.username} (id ${me.id})`);
   } catch (e) {
-    lines.push(`*getMe FAILED:* ${e.description || e.message}`);
+    lines.push(`getMe FAILED: ${e.description || e.message}`);
   }
+  lines.push("");
+  lines.push("--- getChat для трёх вариантов: ---");
   const targets = [
-    CHANNEL_USERNAME,
-    "-1003896967626",
-    "traidingpr",
+    ["env value", CHANNEL_USERNAME],
+    ["closed Trading Pro", "-1003896967626"],
+    ["public @traidingpr", "traidingpr"],
   ];
-  for (const t of targets) {
+  for (const [label, t] of targets) {
     const chatId = /^-?\d+$/.test(t) ? Number(t) : `@${t}`;
     try {
       const chat = await bot.api.getChat(chatId);
-      lines.push(`✅ \`${t}\` → title="${chat.title}", id=${chat.id}, type=${chat.type}`);
+      lines.push(`OK [${label}] ${t} -> title="${chat.title}", id=${chat.id}, type=${chat.type}`);
     } catch (e) {
-      lines.push(`❌ \`${t}\` → ${e.description || e.message}`);
+      lines.push(`FAIL [${label}] ${t} -> ${e.description || e.message}`);
     }
   }
-  await ctx.reply(lines.join("\n"), { parse_mode: "Markdown" });
+  await ctx.reply(lines.join("\n"));
 });
 
 function csvEscape(s) {
