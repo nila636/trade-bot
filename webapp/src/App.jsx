@@ -1781,11 +1781,14 @@ export default function TradeAppBot() {
     }
 
     (async () => {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 10000);
       try {
         const r = await fetch(`${API_URL}/api/auth`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ initData: tg.initData }),
+          signal: ctrl.signal,
         });
         if (!r.ok) throw new Error((await r.json()).error || "auth failed");
         const d = await r.json();
@@ -1796,7 +1799,10 @@ export default function TradeAppBot() {
           setLang(d.user.lang);
         }
       } catch (e) {
-        setAuthState({ loading: false, session: null, subscribed: false, brokerStatus: "none", error: e.message });
+        const msg = e.name === "AbortError" ? "Network timeout — попробуйте обновить" : (e.message || "auth failed");
+        setAuthState({ loading: false, session: null, subscribed: false, brokerStatus: "none", error: msg });
+      } finally {
+        clearTimeout(timer);
       }
     })();
   }, []);
@@ -1966,17 +1972,23 @@ export default function TradeAppBot() {
     const tg = window.Telegram?.WebApp;
     if (!tg || !API_URL) return;
     setAuthState(s => ({ ...s, loading: true }));
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 10000);
     try {
       const r = await fetch(`${API_URL}/api/auth`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ initData: tg.initData }),
+        signal: ctrl.signal,
       });
       if (!r.ok) throw new Error((await r.json()).error || "auth failed");
       const d = await r.json();
       setAuthState({ loading: false, session: d.session, subscribed: d.subscribed, brokerStatus: d.brokerStatus, error: null });
     } catch (e) {
-      setAuthState({ loading: false, session: null, subscribed: false, brokerStatus: "none", error: e.message });
+      const msg = e.name === "AbortError" ? "Network timeout — попробуйте обновить" : (e.message || "auth failed");
+      setAuthState({ loading: false, session: null, subscribed: false, brokerStatus: "none", error: msg });
+    } finally {
+      clearTimeout(timer);
     }
   };
 
