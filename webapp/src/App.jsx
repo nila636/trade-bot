@@ -1469,7 +1469,7 @@ const useT = () => useContext(LangCtx);
 
 /* ────────────────────────── CONFIG ────────────────────────── */
 
-const CHANNEL_URL = "https://t.me/+99i4nWL7PPk5MTYy";
+const CHANNEL_URL = "https://t.me/traidingpr";
 const BROKER_URL  = "https://tinyurl.com/yzyc66tf";
 const API_URL_HARDCODED = "https://api-production-6682.up.railway.app";
 

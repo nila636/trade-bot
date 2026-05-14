@@ -1036,7 +1036,7 @@ bot.command("checksub", async (ctx) => {
     await ctx.reply(
       subscribed
         ? `✅ Вы подписаны на канал (status: ${m.status})`
-        : `❌ Вы не подписаны на канал\nhttps://t.me/+99i4nWL7PPk5MTYy`
+        : `❌ Вы не подписаны на канал\nhttps://t.me/traidingpr`
     );
   } catch (e) {
     await ctx.reply(`⚠ Ошибка проверки: ${e.description || e.message}\n\nУбедитесь, что бот добавлен админом в канал.`);
