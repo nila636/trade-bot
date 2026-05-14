@@ -1014,10 +1014,39 @@ bot.callbackQuery(/^claim_(ok|no)_(\d+)$/, async (ctx) => {
     );
   }
 
-  // Уведомление пользователю
+  // Уведомление пользователю на его языке
+  const userLang = await getLangOrEn(tgId);
+  const APPROVE_MSG = {
+    en: "✅ Your Pocket Option registration is confirmed! Full access to the app is now open.",
+    ru: "✅ Ваша регистрация на Pocket Option подтверждена! Полный доступ к приложению открыт.",
+    es: "✅ ¡Tu registro en Pocket Option está confirmado! Acceso completo a la app abierto.",
+    pt: "✅ Seu cadastro na Pocket Option foi confirmado! Acesso completo ao app liberado.",
+    tr: "✅ Pocket Option kaydın onaylandı! Uygulamaya tam erişim açıldı.",
+    vi: "✅ Đăng ký Pocket Option của bạn đã được xác nhận! Bạn có toàn quyền truy cập ứng dụng.",
+    id: "✅ Pendaftaran Pocket Option Anda dikonfirmasi! Akses penuh ke aplikasi terbuka.",
+    hi: "✅ आपका Pocket Option पंजीकरण पुष्टि हो गया है! ऐप तक पूर्ण पहुँच खुली है।",
+    uz: "✅ Pocket Option ro'yxatdan o'tishingiz tasdiqlandi! Ilovaga to'liq kirish ochildi.",
+    tg: "✅ Бақайдгирии шумо дар Pocket Option тасдиқ карда шуд! Дастрасии пурра ба барнома кушода шуд.",
+    kk: "✅ Pocket Option тіркеуіңіз расталды! Қолданбаға толық рұқсат ашылды.",
+    uk: "✅ Вашу реєстрацію на Pocket Option підтверджено! Повний доступ до застосунку відкрито.",
+  };
+  const REJECT_MSG = {
+    en: "❌ Your application was rejected. Please make sure you registered via the partner link in the bot and submit again.",
+    ru: "❌ Ваша заявка отклонена. Убедитесь, что вы зарегистрировались по реферальной ссылке в боте, и подайте заявку заново.",
+    es: "❌ Tu solicitud fue rechazada. Asegúrate de haberte registrado por el enlace de afiliado y envía la solicitud de nuevo.",
+    pt: "❌ Sua solicitação foi rejeitada. Certifique-se de ter se cadastrado pelo link de afiliado e envie novamente.",
+    tr: "❌ Başvurun reddedildi. Bot içindeki ortak bağlantı ile kayıt olduğundan emin ol ve tekrar gönder.",
+    vi: "❌ Đơn đăng ký của bạn đã bị từ chối. Hãy chắc chắn bạn đã đăng ký qua liên kết đối tác trong bot và gửi lại.",
+    id: "❌ Permohonan Anda ditolak. Pastikan Anda mendaftar lewat tautan afiliasi di bot dan kirim ulang.",
+    hi: "❌ आपका आवेदन अस्वीकृत हुआ। कृपया बॉट में पार्टनर लिंक से पंजीकरण की पुष्टि करें और फिर से आवेदन करें।",
+    uz: "❌ Arizangiz rad etildi. Botdagi sherikchilik linki orqali ro'yxatdan o'tganingizga ishonch hosil qiling va qaytadan yuboring.",
+    tg: "❌ Дархости шумо рад карда шуд. Лутфан тасдиқ кунед, ки шумо тавассути линки шарикии бот номнавис шудаед ва аз нав фиристед.",
+    kk: "❌ Өтінішіңіз қабылданбады. Ботта серіктестік сілтеме арқылы тіркелгеніңізге көз жеткізіп, қайтадан жіберіңіз.",
+    uk: "❌ Вашу заявку відхилено. Переконайтеся, що ви зареєструвалися за партнерським посиланням у боті, і подайте заявку знову.",
+  };
   const userMsg = newStatus === "approved"
-    ? "✅ Ваша регистрация на Pocket Option подтверждена! Полный доступ к приложению открыт."
-    : "❌ Ваша заявка отклонена. Убедитесь, что вы зарегистрировались по реферальной ссылке в боте, и подайте заявку заново.";
+    ? (APPROVE_MSG[userLang] || APPROVE_MSG.en)
+    : (REJECT_MSG[userLang] || REJECT_MSG.en);
   await bot.api.sendMessage(tgId, userMsg).catch(() => {});
 
   await ctx.answerCallbackQuery({

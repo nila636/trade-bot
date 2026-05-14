@@ -374,11 +374,25 @@ app.all("/api/webhook/pocketoption", express.urlencoded({ extended: true }), asy
       [tgId, traderId ? String(traderId) : null]
     );
 
-    // Шлём уведомление пользователю через Telegram Bot API
-    const notifyText =
-      `✅ Ваша регистрация на Pocket Option подтверждена автоматически!\n` +
-      `Pocket Option ID: ${traderId || "—"}\n\n` +
-      `Полный доступ к приложению открыт. 🚀`;
+    // Локализованное уведомление пользователю через Telegram Bot API.
+    // Берём lang из БД (юзер выбрал в боте или подхватился из Telegram).
+    const langRow = await pool.query("SELECT lang FROM users WHERE tg_id = $1", [tgId]).catch(() => null);
+    const userLang = langRow?.rows?.[0]?.lang || "en";
+    const APPROVE_TEXTS = {
+      en: `✅ Your Pocket Option registration has been confirmed automatically!\nPocket Option ID: ${traderId || "—"}\n\nFull access to the app is now open. 🚀`,
+      ru: `✅ Ваша регистрация на Pocket Option подтверждена автоматически!\nPocket Option ID: ${traderId || "—"}\n\nПолный доступ к приложению открыт. 🚀`,
+      es: `✅ ¡Tu registro en Pocket Option ha sido confirmado automáticamente!\nID de Pocket Option: ${traderId || "—"}\n\nAcceso completo a la app abierto. 🚀`,
+      pt: `✅ Seu cadastro na Pocket Option foi confirmado automaticamente!\nID da Pocket Option: ${traderId || "—"}\n\nAcesso completo ao app liberado. 🚀`,
+      tr: `✅ Pocket Option kaydın otomatik olarak onaylandı!\nPocket Option ID: ${traderId || "—"}\n\nUygulamaya tam erişim açıldı. 🚀`,
+      vi: `✅ Đăng ký Pocket Option của bạn đã được xác nhận tự động!\nID Pocket Option: ${traderId || "—"}\n\nBạn có toàn quyền truy cập ứng dụng. 🚀`,
+      id: `✅ Pendaftaran Pocket Option Anda telah dikonfirmasi otomatis!\nID Pocket Option: ${traderId || "—"}\n\nAkses penuh ke aplikasi terbuka. 🚀`,
+      hi: `✅ आपका Pocket Option पंजीकरण स्वतः पुष्टि हो गया है!\nPocket Option ID: ${traderId || "—"}\n\nऐप तक पूर्ण पहुँच खुल गई है। 🚀`,
+      uz: `✅ Pocket Option ro'yxatdan o'tishingiz avtomatik tasdiqlandi!\nPocket Option ID: ${traderId || "—"}\n\nIlovaga to'liq kirish ochildi. 🚀`,
+      tg: `✅ Бақайдгирии шумо дар Pocket Option ба таври худкор тасдиқ карда шуд!\nPocket Option ID: ${traderId || "—"}\n\nДастрасии пурра ба барнома кушода шуд. 🚀`,
+      kk: `✅ Pocket Option тіркеуіңіз автоматты түрде расталды!\nPocket Option ID: ${traderId || "—"}\n\nҚолданбаға толық рұқсат ашылды. 🚀`,
+      uk: `✅ Вашу реєстрацію на Pocket Option підтверджено автоматично!\nPocket Option ID: ${traderId || "—"}\n\nПовний доступ до застосунку відкрито. 🚀`,
+    };
+    const notifyText = APPROVE_TEXTS[userLang] || APPROVE_TEXTS.en;
     fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
