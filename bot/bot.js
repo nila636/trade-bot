@@ -1043,6 +1043,34 @@ bot.command("checksub", async (ctx) => {
   }
 });
 
+/* /debug — глубокая диагностика подключения бота к каналу. Только для админа. */
+bot.command("debug", async (ctx) => {
+  if (!isAdmin(ctx.from.id)) return ctx.reply("⛔ Доступ запрещён.");
+  const lines = [];
+  lines.push(`*ENV CHANNEL_USERNAME:* \`${CHANNEL_USERNAME}\``);
+  try {
+    const me = await bot.api.getMe();
+    lines.push(`*BOT (по BOT_TOKEN):* @${me.username} (id ${me.id})`);
+  } catch (e) {
+    lines.push(`*getMe FAILED:* ${e.description || e.message}`);
+  }
+  const targets = [
+    CHANNEL_USERNAME,
+    "-1003896967626",
+    "traidingpr",
+  ];
+  for (const t of targets) {
+    const chatId = /^-?\d+$/.test(t) ? Number(t) : `@${t}`;
+    try {
+      const chat = await bot.api.getChat(chatId);
+      lines.push(`✅ \`${t}\` → title="${chat.title}", id=${chat.id}, type=${chat.type}`);
+    } catch (e) {
+      lines.push(`❌ \`${t}\` → ${e.description || e.message}`);
+    }
+  }
+  await ctx.reply(lines.join("\n"), { parse_mode: "Markdown" });
+});
+
 function csvEscape(s) {
   if (s == null) return "";
   const str = String(s);
