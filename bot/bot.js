@@ -1036,15 +1036,29 @@ bot.command("checksub", async (ctx) => {
     await ctx.reply(
       subscribed
         ? `✅ Вы подписаны на канал (status: ${m.status})`
-        : `❌ Вы не подписаны на канал\nhttps://t.me/traidingpr`
+        : `❌ Вы не подписаны на канал\nhttps://t.me/+99i4nWL7PPk5MTYy`
     );
   } catch (e) {
     await ctx.reply(`⚠ Ошибка проверки: ${e.description || e.message}\n\nУбедитесь, что бот добавлен админом в канал.`);
   }
 });
 
-/* /debug — глубокая диагностика подключения бота к каналу. Открыта для всех (для удобства). */
+/* Авто-одобрение заявок на вступление в канал.
+ * Срабатывает, если у invite-link включён approval-mode. Бот мгновенно одобряет,
+ * юзер становится member, и проверка подписки через getChatMember сразу проходит. */
+bot.on("chat_join_request", async (ctx) => {
+  const r = ctx.update.chat_join_request;
+  try {
+    await ctx.api.approveChatJoinRequest(r.chat.id, r.from.id);
+    console.log(`✅ Auto-approved join request: user ${r.from.id} → chat ${r.chat.id} (${r.chat.title})`);
+  } catch (e) {
+    console.warn(`⚠ Approve failed for user ${r.from.id}: ${e.description || e.message}`);
+  }
+});
+
+/* /debug — глубокая диагностика подключения бота к каналу. Только для админа. */
 bot.command("debug", async (ctx) => {
+  if (!isAdmin(ctx.from.id)) return ctx.reply("⛔ Доступ запрещён.");
   const lines = [];
   lines.push(`ENV CHANNEL_USERNAME: ${CHANNEL_USERNAME}`);
   lines.push(`Caller tg_id: ${ctx.from.id}`);
