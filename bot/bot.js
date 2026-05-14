@@ -221,7 +221,7 @@ const L = {
       "*🔓 HOW TO GET ACCESS*\n\n" +
       "*Step 1.* Subscribe to our channel — we post updates and important news there.\n\n" +
       "*Step 2.* Tap the «🚀 Get signal» button.\n\n" +
-      "*Step 3.* Register on [Pocket Option](https://tinyurl.com/yzyc66tf) using our partner link inside the app. This is required for free access.\n\n" +
+      "*Step 3.* Register on [Pocket Option](https://pocketoption.com/cabinet/demo-quick-high-low?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50) using our partner link inside the app. This is required for free access.\n\n" +
       "*Step 4.* Access will be granted automatically once you register (usually within a minute).\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 APP SECTIONS*\n\n" +
@@ -263,7 +263,7 @@ const L = {
       "*🔓 КАК ПОЛУЧИТЬ ДОСТУП*\n\n" +
       "*Шаг 1.* Подпишись на наш канал.\n\n" +
       "*Шаг 2.* Нажми «🚀 Получить сигнал».\n\n" +
-      "*Шаг 3.* Зарегистрируйся на [Pocket Option](https://tinyurl.com/yzyc66tf) по нашей партнёрской ссылке.\n\n" +
+      "*Шаг 3.* Зарегистрируйся на [Pocket Option](https://pocketoption.com/cabinet/demo-quick-high-low?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50) по нашей партнёрской ссылке.\n\n" +
       "*Шаг 4.* Доступ откроется автоматически (в течение минуты).\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 РАЗДЕЛЫ ПРИЛОЖЕНИЯ*\n\n" +
@@ -305,7 +305,7 @@ const L = {
       "*🔓 CÓMO OBTENER ACCESO*\n\n" +
       "*Paso 1.* Suscríbete a nuestro canal.\n\n" +
       "*Paso 2.* Toca «🚀 Obtener señal».\n\n" +
-      "*Paso 3.* Regístrate en [Pocket Option](https://tinyurl.com/yzyc66tf) usando nuestro enlace de afiliado.\n\n" +
+      "*Paso 3.* Regístrate en [Pocket Option](https://pocketoption.com/cabinet/demo-quick-high-low?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50) usando nuestro enlace de afiliado.\n\n" +
       "*Paso 4.* El acceso se otorgará automáticamente (en un minuto).\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 SECCIONES DE LA APP*\n\n" +
@@ -347,7 +347,7 @@ const L = {
       "*🔓 COMO OBTER ACESSO*\n\n" +
       "*Passo 1.* Inscreva-se no nosso canal.\n\n" +
       "*Passo 2.* Toque em «🚀 Receber sinal».\n\n" +
-      "*Passo 3.* Cadastre-se na [Pocket Option](https://tinyurl.com/yzyc66tf) usando nosso link de afiliado.\n\n" +
+      "*Passo 3.* Cadastre-se na [Pocket Option](https://pocketoption.com/cabinet/demo-quick-high-low?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50) usando nosso link de afiliado.\n\n" +
       "*Passo 4.* O acesso será concedido automaticamente (em um minuto).\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 SEÇÕES DO APP*\n\n" +
@@ -389,7 +389,7 @@ const L = {
       "*🔓 ERİŞİM NASIL ALINIR*\n\n" +
       "*Adım 1.* Kanalımıza abone olun.\n\n" +
       "*Adım 2.* «🚀 Sinyal al» düğmesine dokunun.\n\n" +
-      "*Adım 3.* Ortak bağlantımızı kullanarak [Pocket Option](https://tinyurl.com/yzyc66tf)'a kaydolun.\n\n" +
+      "*Adım 3.* Ortak bağlantımızı kullanarak [Pocket Option](https://pocketoption.com/cabinet/demo-quick-high-low?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50)'a kaydolun.\n\n" +
       "*Adım 4.* Erişim otomatik olarak verilecek (bir dakika içinde).\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 UYGULAMA BÖLÜMLERİ*\n\n" +
@@ -431,7 +431,7 @@ const L = {
       "*🔓 CÁCH NHẬN QUYỀN TRUY CẬP*\n\n" +
       "*Bước 1.* Đăng ký kênh của chúng tôi.\n\n" +
       "*Bước 2.* Nhấn nút «🚀 Nhận tín hiệu».\n\n" +
-      "*Bước 3.* Đăng ký trên [Pocket Option](https://tinyurl.com/yzyc66tf) bằng liên kết đối tác của chúng tôi.\n\n" +
+      "*Bước 3.* Đăng ký trên [Pocket Option](https://pocketoption.com/cabinet/demo-quick-high-low?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50) bằng liên kết đối tác của chúng tôi.\n\n" +
       "*Bước 4.* Quyền truy cập sẽ được cấp tự động (trong vòng một phút).\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 CÁC PHẦN ỨNG DỤNG*\n\n" +
@@ -473,7 +473,7 @@ const L = {
       "*🔓 CARA MENDAPATKAN AKSES*\n\n" +
       "*Langkah 1.* Berlangganan saluran kami.\n\n" +
       "*Langkah 2.* Ketuk tombol «🚀 Dapatkan sinyal».\n\n" +
-      "*Langkah 3.* Daftar di [Pocket Option](https://tinyurl.com/yzyc66tf) menggunakan tautan afiliasi kami.\n\n" +
+      "*Langkah 3.* Daftar di [Pocket Option](https://pocketoption.com/cabinet/demo-quick-high-low?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50) menggunakan tautan afiliasi kami.\n\n" +
       "*Langkah 4.* Akses diberikan otomatis (dalam satu menit).\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 BAGIAN APLIKASI*\n\n" +
@@ -515,7 +515,7 @@ const L = {
       "*🔓 पहुँच कैसे प्राप्त करें*\n\n" +
       "*चरण 1.* हमारे चैनल को सब्सक्राइब करें।\n\n" +
       "*चरण 2.* «🚀 सिग्नल पाएँ» बटन दबाएँ।\n\n" +
-      "*चरण 3.* हमारे साथी लिंक से [Pocket Option](https://tinyurl.com/yzyc66tf) पर रजिस्टर करें।\n\n" +
+      "*चरण 3.* हमारे साथी लिंक से [Pocket Option](https://pocketoption.com/cabinet/demo-quick-high-low?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50) पर रजिस्टर करें।\n\n" +
       "*चरण 4.* पहुँच स्वचालित रूप से दी जाएगी (एक मिनट में)।\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 ऐप अनुभाग*\n\n" +
@@ -557,7 +557,7 @@ const L = {
       "*🔓 KIRISH QANDAY OLINADI*\n\n" +
       "*1-qadam.* Bizning kanalimizga obuna bo'ling.\n\n" +
       "*2-qadam.* «🚀 Signal olish» tugmasini bosing.\n\n" +
-      "*3-qadam.* [Pocket Option](https://tinyurl.com/yzyc66tf)da bizning sherikchilik linkimiz orqali ro'yxatdan o'ting.\n\n" +
+      "*3-qadam.* [Pocket Option](https://pocketoption.com/cabinet/demo-quick-high-low?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50)da bizning sherikchilik linkimiz orqali ro'yxatdan o'ting.\n\n" +
       "*4-qadam.* Kirish avtomatik beriladi (bir daqiqa ichida).\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 ILOVA BO'LIMLARI*\n\n" +
@@ -599,7 +599,7 @@ const L = {
       "*🔓 ЧӢ ТАВР ДАСТРАСӢ ГИРИФТАН*\n\n" +
       "*Қадами 1.* Ба канали мо обуна шавед.\n\n" +
       "*Қадами 2.* Тугмаи «🚀 Сигнал гирифтан»-ро пахш кунед.\n\n" +
-      "*Қадами 3.* Дар [Pocket Option](https://tinyurl.com/yzyc66tf) тавассути линки шарикии мо номнавис шавед.\n\n" +
+      "*Қадами 3.* Дар [Pocket Option](https://pocketoption.com/cabinet/demo-quick-high-low?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50) тавассути линки шарикии мо номнавис шавед.\n\n" +
       "*Қадами 4.* Дастрасӣ ба таври худкор дода мешавад (дар як дақиқа).\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 БАХШҲОИ ПРОГРАММА*\n\n" +
@@ -641,7 +641,7 @@ const L = {
       "*🔓 ҚОЛ ЖЕТКІЗУДІ ҚАЛАЙ АЛУҒА БОЛАДЫ*\n\n" +
       "*1-қадам.* Біздің каналға жазылыңыз.\n\n" +
       "*2-қадам.* «🚀 Сигнал алу» түймесін басыңыз.\n\n" +
-      "*3-қадам.* Біздің серіктестік сілтемесі арқылы [Pocket Option](https://tinyurl.com/yzyc66tf)-та тіркеліңіз.\n\n" +
+      "*3-қадам.* Біздің серіктестік сілтемесі арқылы [Pocket Option](https://pocketoption.com/cabinet/demo-quick-high-low?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50)-та тіркеліңіз.\n\n" +
       "*4-қадам.* Қол жеткізу автоматты түрде беріледі (бір минут ішінде).\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 ҚОЛДАНБА БӨЛІМДЕРІ*\n\n" +
@@ -683,7 +683,7 @@ const L = {
       "*🔓 ЯК ОТРИМАТИ ДОСТУП*\n\n" +
       "*Крок 1.* Підпишись на наш канал.\n\n" +
       "*Крок 2.* Натисни «🚀 Отримати сигнал».\n\n" +
-      "*Крок 3.* Зареєструйся на [Pocket Option](https://tinyurl.com/yzyc66tf) за нашим партнерським посиланням.\n\n" +
+      "*Крок 3.* Зареєструйся на [Pocket Option](https://pocketoption.com/cabinet/demo-quick-high-low?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50) за нашим партнерським посиланням.\n\n" +
       "*Крок 4.* Доступ відкриється автоматично (протягом хвилини).\n\n" +
       "━━━━━━━━━━━━━━━━━━\n\n" +
       "*📱 РОЗДІЛИ ДОДАТКА*\n\n" +
@@ -743,7 +743,7 @@ async function getLangOrEn(id) {
 
 // Кликабельная ссылка-партнёр на Pocket Option. Используется и в кнопке,
 // и внутри инструкции (markdown-link).
-const POCKET_OPTION_LINK = "https://tinyurl.com/yzyc66tf";
+const POCKET_OPTION_LINK = "https://pocketoption.com/cabinet/demo-quick-high-low?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50";
 
 function mainKeyboard(lang) {
   const T = L[lang] || L.en;
