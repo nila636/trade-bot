@@ -77,24 +77,38 @@ async function trackUser(ctx) {
     last_name: u.last_name || null,
   };
 
+  // Авто-определение языка из Telegram language_code → один из 12 поддерживаемых.
+  // Если есть в LANGS — используем, иначе fallback на "en".
+  const TG_LANG_MAP = {
+    ru: "ru", be: "ru",
+    uk: "uk", kk: "kk", uz: "uz", tg: "tg",
+    es: "es", pt: "pt", "pt-br": "pt",
+    tr: "tr", vi: "vi",
+    id: "id", ms: "id",
+    hi: "hi",
+    en: "en",
+  };
+  const rawLang = (u.language_code || "").toLowerCase();
+  const detectedLang = TG_LANG_MAP[rawLang] || TG_LANG_MAP[rawLang.slice(0, 2)] || "en";
+
   let isNew = false;
   if (hasDb) {
     // Сначала узнаём новый ли это юзер (чтобы уведомить админа)
     const exists = await pool.query("SELECT 1 FROM users WHERE tg_id = $1", [data.tg_id]);
     isNew = exists.rowCount === 0;
 
-    // При INSERT — lang остаётся NULL (юзер выберет язык сам).
-    // При UPDATE — lang НЕ обновляем, чтобы сохранить выбор юзера.
+    // При INSERT — устанавливаем lang из Telegram language_code (юзер потом может сменить).
+    // При UPDATE — lang НЕ обновляем (сохраняем выбор юзера).
     await pool.query(
-      `INSERT INTO users (tg_id, username, first_name, last_name)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO users (tg_id, username, first_name, last_name, lang)
+       VALUES ($1, $2, $3, $4, $5)
        ON CONFLICT (tg_id) DO UPDATE SET
          username = EXCLUDED.username,
          first_name = EXCLUDED.first_name,
          last_name = EXCLUDED.last_name,
          last_seen = NOW(),
          actions = users.actions + 1`,
-      [data.tg_id, data.username, data.first_name, data.last_name]
+      [data.tg_id, data.username, data.first_name, data.last_name, detectedLang]
     );
   } else {
     isNew = !memUsers.has(data.tg_id);
@@ -1137,8 +1151,19 @@ function chunkLines(lines, maxLen) {
 
 /* ─────────────────────── РАССЫЛКА ─────────────────────── */
 
-/* Хранилище pending-рассылок: key = broadcastId, value = { text, fromAdminId } */
+/* Хранилище pending/активных-рассылок: key = broadcastId, value = { text/i18n, fromAdminId, cancelled }.
+ * Когда юзер жмёт "📤 Отправить" — переходит в активную фазу (idle до этого).
+ * /stop_broadcast ставит cancelled=true → цикл рассылки прервётся на следующей итерации. */
 const pendingBroadcasts = new Map();
+let activeBroadcastId = null;
+
+bot.command("stop_broadcast", async (ctx) => {
+  if (!isAdmin(ctx.from.id)) return ctx.reply("⛔ Доступ запрещён.");
+  if (!activeBroadcastId) return ctx.reply("⚠ Сейчас нет активной рассылки.");
+  const b = pendingBroadcasts.get(activeBroadcastId);
+  if (b) b.cancelled = true;
+  await ctx.reply("🛑 Прерываю рассылку — остановится на следующей итерации (через 0.5 сек).");
+});
 
 bot.command("broadcast", async (ctx) => {
   if (!isAdmin(ctx.from.id)) return ctx.reply("⛔ Доступ запрещён.");
@@ -1305,13 +1330,23 @@ bot.callbackQuery(/^bc_ok_(.+)$/, async (ctx) => {
   await ctx.answerCallbackQuery({ text: "Запускаю рассылку..." });
   await ctx.editMessageReplyMarkup({ reply_markup: undefined }).catch(() => {});
 
+  // Активируем — теперь /stop_broadcast может прервать
+  pending.cancelled = false;
+  pendingBroadcasts.set(bid, pending);
+  activeBroadcastId = bid;
+
   const users = await getAllUsers();
-  let sent = 0, failed = 0, blocked = 0;
-  const statusMsg = await ctx.reply(`📤 Рассылаю... 0 / ${users.length}`);
+  let sent = 0, failed = 0, blocked = 0, cancelledAt = null;
+  const statusMsg = await ctx.reply(`📤 Рассылаю... 0 / ${users.length}\n(остановить: /stop_broadcast)`);
   const startedAt = Date.now();
 
   // Rate limit Telegram: 30 msg/sec для разных чатов. Держим 25 для запаса.
   for (let i = 0; i < users.length; i++) {
+    // Проверка отмены — самое начало каждой итерации
+    if (pendingBroadcasts.get(bid)?.cancelled) {
+      cancelledAt = i;
+      break;
+    }
     const u = users[i];
     try {
       if (pending.i18n) {
@@ -1341,10 +1376,14 @@ bot.callbackQuery(/^bc_ok_(.+)$/, async (ctx) => {
   }
 
   const elapsed = ((Date.now() - startedAt) / 1000).toFixed(1);
+  activeBroadcastId = null;
+  pendingBroadcasts.delete(bid);
+  const title = cancelledAt != null ? "🛑 *Рассылка прервана*" : "✅ *Рассылка завершена*";
+  const cancelInfo = cancelledAt != null ? `\n🛑 Прервано на: ${cancelledAt} / ${users.length}` : "";
   await ctx.reply(
-    `✅ *Рассылка завершена*\n\n` +
+    `${title}\n\n` +
     `📨 Отправлено: ${sent}\n` +
-    `⚠ Ошибок: ${failed}${blocked ? ` (из них заблокировали бота: ${blocked})` : ""}\n` +
+    `⚠ Ошибок: ${failed}${blocked ? ` (из них заблокировали бота: ${blocked})` : ""}${cancelInfo}\n` +
     `⏱ Время: ${elapsed}s`,
     { parse_mode: "Markdown" }
   );
