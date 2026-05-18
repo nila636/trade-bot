@@ -1185,6 +1185,116 @@ bot.callbackQuery(/^bc_no_(.+)$/, async (ctx) => {
   await ctx.reply("❌ Рассылка отменена.");
 });
 
+/* ─────────────── ЛОКАЛИЗОВАННАЯ РАССЫЛКА /broadcast_now ───────────────
+ * Шлёт каждому юзеру сообщение НА ЕГО ЯЗЫКЕ (из users.lang в БД).
+ * В каждое сообщение динамически подставляет реф-ссылку с sub_id1=<tg_id>,
+ * чтобы при регистрации в Pocket Option сработал auto-approve через postback.
+ *
+ * Сейчас текст захардкожен (обновление бота + анонс VIP). Если в будущем
+ * понадобится другая рассылка — обнови BROADCAST_I18N. */
+
+const BROADCAST_BASE_URL = "https://pocketoption.com/cabinet/demo-quick-high-low?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50";
+
+const BROADCAST_I18N = {
+  en: (url) =>
+    `👋 Hi! We've upgraded the bot.\n\n` +
+    `If you haven't registered on Pocket Option yet — <a href="${url}">register here</a>.\n\n` +
+    `🤖 We're also launching a <b>VIP bot</b> for those who made a deposit. It runs neural networks we've been testing recently — current accuracy is <b>97%</b>.\n\n` +
+    `VIP access is granted only to depositors — we pay for the AI API keys out of pocket.`,
+  ru: (url) =>
+    `👋 Привет! Мы обновили бота.\n\n` +
+    `Если ты ещё не зарегистрировался в Pocket Option — <a href="${url}">зарегистрироваться</a>.\n\n` +
+    `🤖 Также мы запускаем <b>VIP-бота</b> для тех, кто сделал депозит. В нём собраны нейросети, которые мы тестировали последние дни — текущая точность сигналов <b>97%</b>.\n\n` +
+    `Доступ к VIP-боту получают только депозитеры — из своего бюджета я оплачиваю API-ключи нейросетей.`,
+  es: (url) =>
+    `👋 ¡Hola! Actualizamos el bot.\n\n` +
+    `Si aún no te registraste en Pocket Option — <a href="${url}">registrarse aquí</a>.\n\n` +
+    `🤖 También lanzamos un <b>bot VIP</b> para quienes hicieron un depósito. Incluye redes neuronales que probamos estos días — precisión actual <b>97%</b>.\n\n` +
+    `Acceso VIP solo para depositores — pago las API de la IA con mi propio presupuesto.`,
+  pt: (url) =>
+    `👋 Olá! Atualizamos o bot.\n\n` +
+    `Se você ainda não se cadastrou na Pocket Option — <a href="${url}">cadastrar-se aqui</a>.\n\n` +
+    `🤖 Também estamos lançando um <b>bot VIP</b> para quem fez um depósito. Ele usa redes neurais que testamos nos últimos dias — precisão atual <b>97%</b>.\n\n` +
+    `Acesso VIP só para depositantes — pago as chaves de API da IA do meu próprio orçamento.`,
+  tr: (url) =>
+    `👋 Selam! Botu güncelledik.\n\n` +
+    `Eğer Pocket Option'a henüz kayıt olmadıysan — <a href="${url}">buradan kayıt ol</a>.\n\n` +
+    `🤖 Ayrıca para yatıranlar için bir <b>VIP bot</b> başlatıyoruz. Son günlerde test ettiğimiz sinir ağları içeriyor — şu anki doğruluk <b>%97</b>.\n\n` +
+    `VIP erişimi sadece para yatıranlara verilir — yapay zeka API anahtarlarını kendi bütçemden ödüyorum.`,
+  vi: (url) =>
+    `👋 Xin chào! Chúng tôi đã cập nhật bot.\n\n` +
+    `Nếu bạn chưa đăng ký trên Pocket Option — <a href="${url}">đăng ký tại đây</a>.\n\n` +
+    `🤖 Chúng tôi cũng đang ra mắt <b>bot VIP</b> cho những người đã nạp tiền. Bot này sử dụng các mạng neural đã được kiểm thử những ngày qua — độ chính xác hiện tại là <b>97%</b>.\n\n` +
+    `Quyền truy cập VIP chỉ dành cho người đã nạp tiền — tôi tự trả tiền API của AI.`,
+  id: (url) =>
+    `👋 Halo! Kami memperbarui bot.\n\n` +
+    `Jika kamu belum mendaftar di Pocket Option — <a href="${url}">daftar di sini</a>.\n\n` +
+    `🤖 Kami juga meluncurkan <b>bot VIP</b> untuk yang sudah deposit. Bot ini menjalankan jaringan saraf yang sudah kami uji belakangan — akurasi saat ini <b>97%</b>.\n\n` +
+    `Akses VIP hanya untuk yang sudah deposit — saya membayar API AI dari anggaran pribadi.`,
+  hi: (url) =>
+    `👋 नमस्ते! हमने बॉट को अपडेट किया है।\n\n` +
+    `अगर आपने अभी तक Pocket Option पर पंजीकरण नहीं किया — <a href="${url}">यहाँ पंजीकरण करें</a>।\n\n` +
+    `🤖 हम जमा करने वालों के लिए <b>VIP बॉट</b> भी लॉन्च कर रहे हैं। इसमें न्यूरल नेटवर्क हैं जिन्हें हमने पिछले दिनों परीक्षण किया — वर्तमान सटीकता <b>97%</b> है।\n\n` +
+    `VIP एक्सेस केवल जमाकर्ताओं को मिलता है — मैं अपने बजट से AI API के लिए भुगतान करता हूँ।`,
+  uz: (url) =>
+    `👋 Salom! Botni yangiladik.\n\n` +
+    `Agar siz hali Pocket Option'da ro'yxatdan o'tmagan bo'lsangiz — <a href="${url}">shu yerda ro'yxatdan o'ting</a>.\n\n` +
+    `🤖 Shuningdek, depozit qilganlar uchun <b>VIP bot</b> ishga tushiramiz. Unda biz so'nggi kunlar davomida sinab ko'rgan neyron tarmoqlar bor — hozirgi aniqlik <b>97%</b>.\n\n` +
+    `VIP-ga kirish faqat depozit qilganlarga beriladi — sun'iy intellekt API kalitlarini o'z byudjetimdan to'layman.`,
+  tg: (url) =>
+    `👋 Салом! Мо ботро навсозӣ кардем.\n\n` +
+    `Агар шумо ҳанӯз дар Pocket Option номнавис нашудаед — <a href="${url}">аз ин ҷо номнавис шавед</a>.\n\n` +
+    `🤖 Ҳамчунин мо <b>VIP-ботро</b> барои онҳое, ки депозит гузоштаанд, оғоз мекунем. Дар он шабакаҳои нейронӣ ҷамъ оварда шудаанд, ки рӯзҳои охир санҷидем — дақиқии ҷории сигналҳо <b>97%</b>.\n\n` +
+    `Дастрасии VIP танҳо ба депозиткунандагон дода мешавад — ман аз буҷети шахсии худам пардохти калидҳои API-и нейронҳоро мекунам.`,
+  kk: (url) =>
+    `👋 Сәлем! Біз ботты жаңарттық.\n\n` +
+    `Егер сіз Pocket Option-да әлі тіркелмеген болсаңыз — <a href="${url}">осында тіркелу</a>.\n\n` +
+    `🤖 Сондай-ақ біз депозит салғандарға арналған <b>VIP-ботты</b> іске қосамыз. Ол соңғы күндері тестілеген нейрондық желілерді біріктіреді — қазіргі дәлдік <b>97%</b>.\n\n` +
+    `VIP-қа кіру тек депозит салушыларға беріледі — мен өз бюджетімнен AI API кілттерін төлеймін.`,
+  uk: (url) =>
+    `👋 Привіт! Ми оновили бота.\n\n` +
+    `Якщо ти ще не зареєструвався на Pocket Option — <a href="${url}">зареєструватися</a>.\n\n` +
+    `🤖 Також ми запускаємо <b>VIP-бота</b> для тих, хто зробив депозит. У ньому зібрані нейромережі, які ми тестували останніми днями — поточна точність сигналів <b>97%</b>.\n\n` +
+    `Доступ до VIP-бота отримують лише депозитори — зі свого бюджету я оплачую API-ключі нейромереж.`,
+};
+
+bot.command("broadcast_now", async (ctx) => {
+  if (!isAdmin(ctx.from.id)) return ctx.reply("⛔ Доступ запрещён.");
+  const users = await getAllUsers();
+  if (!users.length) return ctx.reply("_Нет пользователей для рассылки_", { parse_mode: "Markdown" });
+
+  // Превью на русском (для админа)
+  const previewUrl = `${BROADCAST_BASE_URL}&sub_id1=${ctx.from.id}`;
+  const previewText = BROADCAST_I18N.ru(previewUrl);
+
+  const bid = "i18n_" + Date.now().toString(36);
+  pendingBroadcasts.set(bid, { i18n: true, fromAdminId: ctx.from.id, count: users.length });
+
+  // Подсчёт юзеров по языкам
+  const byLang = {};
+  for (const u of users) {
+    const lang = u.lang || "en";
+    byLang[lang] = (byLang[lang] || 0) + 1;
+  }
+  const breakdown = Object.entries(byLang).sort((a, b) => b[1] - a[1])
+    .map(([l, n]) => `  ${l}: ${n}`).join("\n");
+
+  const preview =
+    `📢 <b>Превью локализованной рассылки (RU)</b>\n` +
+    `━━━━━━━━━━━━━━━━\n` +
+    `${previewText}\n` +
+    `━━━━━━━━━━━━━━━━\n\n` +
+    `👥 <b>Получателей:</b> ${users.length}\n` +
+    `🌐 <b>По языкам:</b>\n${breakdown}\n\n` +
+    `⏱ <b>Время:</b> ~${Math.ceil(users.length * 0.05)} сек\n\n` +
+    `Каждый получит на своём языке. URL <a href="${previewUrl}">register</a> уже содержит <code>sub_id1</code> — автоматическое одобрение после регистрации сработает.\n\n` +
+    `Отправить?`;
+  const kb = new InlineKeyboard()
+    .text("📤 Отправить всем", `bc_ok_${bid}`)
+    .text("❌ Отмена", `bc_no_${bid}`);
+  await ctx.reply(preview, { parse_mode: "HTML", disable_web_page_preview: true, reply_markup: kb });
+});
+
 bot.callbackQuery(/^bc_ok_(.+)$/, async (ctx) => {
   if (!isAdmin(ctx.from.id)) return ctx.answerCallbackQuery({ text: "⛔", show_alert: true });
   const bid = ctx.match[1];
@@ -1204,7 +1314,16 @@ bot.callbackQuery(/^bc_ok_(.+)$/, async (ctx) => {
   for (let i = 0; i < users.length; i++) {
     const u = users[i];
     try {
-      await bot.api.sendMessage(u.tg_id, pending.text, { parse_mode: "Markdown", disable_web_page_preview: false });
+      if (pending.i18n) {
+        // Локализованная рассылка: текст на языке юзера + персональный sub_id1 в реф-URL
+        const lang = (u.lang && BROADCAST_I18N[u.lang]) ? u.lang : "en";
+        const url = `${BROADCAST_BASE_URL}&sub_id1=${u.tg_id}`;
+        const text = BROADCAST_I18N[lang](url);
+        await bot.api.sendMessage(u.tg_id, text, { parse_mode: "HTML", disable_web_page_preview: true });
+      } else {
+        // Старый /broadcast — один текст всем
+        await bot.api.sendMessage(u.tg_id, pending.text, { parse_mode: "Markdown", disable_web_page_preview: false });
+      }
       sent++;
     } catch (e) {
       failed++;
