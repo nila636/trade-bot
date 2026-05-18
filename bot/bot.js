@@ -98,7 +98,8 @@ async function trackUser(ctx) {
     isNew = exists.rowCount === 0;
 
     // При INSERT — устанавливаем lang из Telegram language_code (юзер потом может сменить).
-    // При UPDATE — lang НЕ обновляем (сохраняем выбор юзера).
+    // При UPDATE — lang обновляем ТОЛЬКО если в БД он NULL (юзер не выбирал явно).
+    // Это «лечит» старых юзеров с lang=NULL при их следующем входе.
     await pool.query(
       `INSERT INTO users (tg_id, username, first_name, last_name, lang)
        VALUES ($1, $2, $3, $4, $5)
@@ -106,6 +107,7 @@ async function trackUser(ctx) {
          username = EXCLUDED.username,
          first_name = EXCLUDED.first_name,
          last_name = EXCLUDED.last_name,
+         lang = COALESCE(users.lang, EXCLUDED.lang),
          last_seen = NOW(),
          actions = users.actions + 1`,
       [data.tg_id, data.username, data.first_name, data.last_name, detectedLang]
