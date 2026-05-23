@@ -1196,6 +1196,71 @@ bot.command("stop_broadcast", async (ctx) => {
   await ctx.reply("🛑 Прерываю рассылку — остановится на следующей итерации (через 0.5 сек).");
 });
 
+// /check_uid <UID> — проверка приходил ли postback от PO с этим trader_id
+bot.command("check_uid", async (ctx) => {
+  if (!isAdmin(ctx.from.id)) return ctx.reply("⛔ Доступ запрещён.");
+  if (!pool) return ctx.reply("⚠ DB unavailable.");
+  const uid = (ctx.match || "").trim();
+  if (!/^\d+$/.test(uid)) return ctx.reply("Использование: `/check_uid 133132195`", { parse_mode: "Markdown" });
+
+  const wh = await pool.query(`
+    SELECT id, received_at, method, query, body FROM broker_webhooks
+    WHERE source='pocketoption'
+      AND (
+        query->>'trader_id' = $1 OR body->>'trader_id' = $1 OR
+        query->>'traderid'  = $1 OR body->>'traderid'  = $1 OR
+        query->>'user_id'   = $1 OR body->>'user_id'   = $1 OR
+        query->>'uid'       = $1 OR body->>'uid'       = $1 OR
+        query->>'id'        = $1 OR body->>'id'        = $1
+      )
+    ORDER BY received_at DESC LIMIT 10
+  `, [uid]);
+  const claim = await pool.query("SELECT * FROM broker_claims WHERE broker_uid=$1", [uid]);
+
+  let out = `🔍 *Check UID:* \`${uid}\`\n\n`;
+  out += `📋 *Claim:* ${claim.rows.length ? `tg_id=${claim.rows[0].tg_id}, status=${claim.rows[0].status}, deposited_at=${claim.rows[0].deposited_at || "—"}` : "не найдено"}\n\n`;
+  out += `📨 *Webhooks (${wh.rows.length}):*\n`;
+  if (!wh.rows.length) {
+    out += "_Постбеков с этим UID нет. Возможные причины:_\n";
+    out += "• Postback в кабинете PO не настроен или указывает на другой URL\n";
+    out += "• Юзер регистрировался не по нашей affiliate-ссылке\n";
+    out += "• PO ещё не успел отправить (задержка до часа бывает)";
+  } else {
+    for (const w of wh.rows.slice(0, 5)) {
+      const q = w.query || {}, b = w.body || {};
+      const subId = q.sub_id || b.sub_id || q.subid || b.subid || q.click_id || b.click_id || "—";
+      const event = q.event || b.event || q.goal || b.goal || "—";
+      out += `\n• \`${new Date(w.received_at).toISOString().slice(0, 19)}\` ev=\`${event}\` sub_id=\`${subId}\``;
+    }
+  }
+  await ctx.reply(out.slice(0, 4000), { parse_mode: "Markdown" });
+});
+
+// /recent_webhooks — последние 10 postback'ов от PO (любых)
+bot.command("recent_webhooks", async (ctx) => {
+  if (!isAdmin(ctx.from.id)) return ctx.reply("⛔ Доступ запрещён.");
+  if (!pool) return ctx.reply("⚠ DB unavailable.");
+
+  const wh = await pool.query(`
+    SELECT id, received_at, method, query, body
+    FROM broker_webhooks WHERE source='pocketoption'
+    ORDER BY received_at DESC LIMIT 10
+  `);
+  if (!wh.rows.length) {
+    return ctx.reply("📭 Постбеков от PO в логе нет вообще.\n\nЭто значит:\n• Либо postback URL не настроен в кабинете PO Partners\n• Либо настроен на другой домен (не наш API)\n\nURL должен быть:\n`https://api-production-6682.up.railway.app/api/webhook/pocketoption?sub_id={sub_id}&trader_id={trader_id}&event={event}`", { parse_mode: "Markdown" });
+  }
+
+  let out = `📨 *Последние ${wh.rows.length} postback'ов от PO:*\n`;
+  for (const w of wh.rows) {
+    const q = w.query || {}, b = w.body || {};
+    const subId = q.sub_id || b.sub_id || q.subid || b.subid || q.click_id || b.click_id || "—";
+    const trader = q.trader_id || b.trader_id || q.user_id || b.user_id || q.uid || b.uid || "—";
+    const event = q.event || b.event || q.goal || b.goal || "—";
+    out += `\n• \`${new Date(w.received_at).toISOString().slice(0, 19)}\` ev=\`${event}\` sub=\`${subId}\` uid=\`${trader}\``;
+  }
+  await ctx.reply(out.slice(0, 4000), { parse_mode: "Markdown" });
+});
+
 bot.command("broadcast", async (ctx) => {
   if (!isAdmin(ctx.from.id)) return ctx.reply("⛔ Доступ запрещён.");
 
