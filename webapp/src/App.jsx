@@ -2,7 +2,8 @@ import React, { useState, useMemo, useEffect, useRef, createContext, useContext 
 import {
   Search, Star, ChevronDown, Coins, Bitcoin, BarChart3, Fuel, LineChart, Heart,
   GraduationCap, BookOpen, Calculator as CalcIcon, Newspaper, Activity,
-  Zap, Play, ChevronRight, Gauge, X, Sparkles, Check, SatelliteDish, RotateCcw, ArrowLeft
+  Zap, Play, ChevronRight, Gauge, X, Sparkles, Check, SatelliteDish, RotateCcw, ArrowLeft,
+  TrendingUp, TrendingDown, Lock, Timer
 } from "lucide-react";
 
 /* ────────────────────────── I18N ────────────────────────── */
@@ -1475,6 +1476,54 @@ const BROKER_URL  = "https://pocketoption.com/?utm_campaign=844412&utm_source=af
 // Переопределяется через VITE_VIP_BOT_URL только если когда-то понадобится отдельный бот.
 const VIP_BOT_URL = (typeof import.meta !== "undefined" && import.meta.env?.VITE_VIP_BOT_URL) || "https://t.me/tradenewpt_bot?start=vip";
 
+// Полный VIP-UI работает внутри Mini App (full-screen overlay). Тексты — отдельно.
+const VIP_PANEL = {
+  ru: {
+    header: "VIP AI СИГНАЛЫ",
+    sub: "Высокоуверенные сделки с разбором",
+    locked_title: "VIP открывается после депозита",
+    locked_desc: "Зарегистрируйся на Pocket Option, внеси депозит (любая сумма) — и VIP-доступ активируется автоматически.",
+    btn_deposit: "Открыть Pocket Option",
+    counter: "Сигналов сегодня",
+    btn_request: "Получить VIP-сигнал",
+    btn_blocked: "Лимит — обновится в {hour}:00 UTC",
+    btn_loading: "Анализирую рынок…",
+    no_signal: "Жми кнопку, чтобы получить первый сигнал на сегодня",
+    direction_buy: "BUY · LONG",
+    direction_sell: "SELL · SHORT",
+    confidence: "Уверенность",
+    expiry: "Экспирация",
+    expiry_min: "мин",
+    analysis: "Анализ",
+    note_phase2: "AI-интеграция (Claude Sonnet 4.5) появится на этапе 2. Сейчас это демо-сигнал для проверки лимита/сброса.",
+    close: "Закрыть",
+    error_limit: "Лимит на сегодня исчерпан",
+    error_generic: "Ошибка — попробуй ещё раз",
+  },
+  en: {
+    header: "VIP AI SIGNALS",
+    sub: "High-confidence trades with analysis",
+    locked_title: "VIP unlocks after deposit",
+    locked_desc: "Register on Pocket Option and make a deposit — VIP access activates automatically.",
+    btn_deposit: "Open Pocket Option",
+    counter: "Signals today",
+    btn_request: "Get VIP signal",
+    btn_blocked: "Limit — resets at {hour}:00 UTC",
+    btn_loading: "Analyzing market…",
+    no_signal: "Tap the button to get your first signal today",
+    direction_buy: "BUY · LONG",
+    direction_sell: "SELL · SHORT",
+    confidence: "Confidence",
+    expiry: "Expiry",
+    expiry_min: "min",
+    analysis: "Analysis",
+    note_phase2: "AI integration (Claude Sonnet 4.5) coming in Phase 2. For now this is a demo signal for limit/reset testing.",
+    close: "Close",
+    error_limit: "Daily limit reached",
+    error_generic: "Error — try again",
+  },
+};
+
 // Локализация VIP-карточки. Отдельный объект — чтобы не плодить ключи во всех 12 STR-блоках.
 const VIP_CARD = {
   ru: { title: "VIP ДОСТУП",    sub: "Для лучших трейдеров",       btn: "Открыть" },
@@ -1746,6 +1795,7 @@ export default function TradeAppBot() {
   const [search, setSearch] = useState("");
   const [eduTab, setEduTab] = useState("basics");
   const [assetSignal, setAssetSignal] = useState(null);
+  const [vipOpen, setVipOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const scanRunId = useRef(0);
 
@@ -2341,22 +2391,20 @@ export default function TradeAppBot() {
 
         {/* ACCORDIONS */}
         {!gateMode && <main className="relative z-10 px-4 mt-5 space-y-3">
-          {/* VIP-карточка — total black, центр, вся область кликается */}
+          {/* VIP-карточка — total black, открывает full-screen overlay */}
           {(() => {
             const vipT = VIP_CARD[lang] || VIP_CARD.en;
             return (
-              <a
-                href={VIP_BOT_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="block rounded-2xl bg-black border border-white/10 px-5 py-5 text-center hover:border-white/30 hover:bg-neutral-950 transition-all"
+              <button
+                onClick={() => setVipOpen(true)}
+                className="block w-full rounded-2xl bg-black border border-white/10 px-5 py-5 text-center hover:border-white/30 hover:bg-neutral-950 transition-all"
               >
                 <div className="flex items-center justify-center gap-2">
                   <span className="text-xl">💎</span>
                   <span className="text-base font-extrabold text-white tracking-[0.15em]">{vipT.title}</span>
                 </div>
                 <div className="text-[11px] text-neutral-500 mt-1.5 tracking-wide">{vipT.sub}</div>
-              </a>
+              </button>
             );
           })()}
 
@@ -2716,6 +2764,18 @@ export default function TradeAppBot() {
                 : <p>{modal.payload.body}</p>}
             </div>
           </Modal>
+        )}
+
+        {/* VIP OVERLAY — full-screen, открывается по тапу на VIP-карточку */}
+        {vipOpen && (
+          <VipOverlay
+            lang={lang}
+            session={authState.session}
+            apiUrl={API_URL}
+            brokerUrl={BROKER_URL}
+            tgId={typeof window !== "undefined" ? (window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null) : null}
+            onClose={() => setVipOpen(false)}
+          />
         )}
 
         {/* ASSET SIGNAL MODAL */}
@@ -3574,5 +3634,233 @@ function NumInput({ label, value, onChange, step = 1, min, max }) {
         className="w-full mt-1 bg-black/50 border border-white/10 rounded-lg px-3 py-2.5 text-sm mono font-bold focus:outline-none focus:border-yellow-500/40"
       />
     </label>
+  );
+}
+
+/* ────────────────────────── VIP OVERLAY ────────────────────────── */
+
+function VipOverlay({ lang, session, apiUrl, brokerUrl, tgId, onClose }) {
+  const T = VIP_PANEL[lang] || VIP_PANEL.en;
+  const [status, setStatus] = useState(null);    // { is_vip, signals_left, signals_limit, signals_today, reset_hour_utc }
+  const [signal, setSignal] = useState(null);    // последний сигнал из /api/vip/signal
+  const [loading, setLoading] = useState(false); // запрос сигнала идёт
+  const [error, setError] = useState("");
+
+  // Загрузка статуса при открытии
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch(`${apiUrl}/api/vip/status`, {
+          headers: { "X-Session": session },
+        });
+        const d = await r.json();
+        if (!cancelled) setStatus(d);
+      } catch (e) {
+        if (!cancelled) setError(T.error_generic);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [apiUrl, session, T.error_generic]);
+
+  async function requestSignal() {
+    setLoading(true);
+    setError("");
+    try {
+      const r = await fetch(`${apiUrl}/api/vip/signal`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Session": session },
+      });
+      const d = await r.json();
+      if (r.status === 429) {
+        setError(T.error_limit);
+        setStatus(s => s ? { ...s, signals_left: 0, signals_today: d.signals_limit } : s);
+      } else if (!r.ok) {
+        setError(T.error_generic);
+      } else {
+        setSignal(d.signal);
+        setStatus(s => ({
+          ...s,
+          signals_today: d.signals_today,
+          signals_left: d.signals_left,
+          signals_limit: d.signals_limit,
+        }));
+      }
+    } catch {
+      setError(T.error_generic);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const isLocked = status && status.is_vip === false;
+  const left = status?.signals_left ?? null;
+  const limit = status?.signals_limit ?? 5;
+  const today = status?.signals_today ?? 0;
+  const resetHour = status?.reset_hour_utc ?? 9;
+
+  // Партнёрская ссылка для не-VIP юзеров (с sub_id1)
+  const depositUrl = brokerUrl + (brokerUrl.includes("?") ? "&" : "?") +
+    `sub_id1=${tgId}&sub_id=${tgId}&click_id=${tgId}`;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black overflow-y-auto">
+      {/* Фон с эффектом сияния */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black via-neutral-950 to-black pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-yellow-500/[0.06] blur-[120px] rounded-full pointer-events-none" />
+
+      {/* Шапка */}
+      <div className="relative z-10 flex items-center justify-between px-4 py-4 border-b border-white/5 backdrop-blur-sm bg-black/60 sticky top-0">
+        <button
+          onClick={onClose}
+          className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition"
+        >
+          <ArrowLeft size={18} className="text-neutral-300" />
+        </button>
+        <div className="flex items-center gap-2">
+          <Sparkles size={14} className="text-yellow-400" />
+          <span className="text-xs font-extrabold text-yellow-400 tracking-[0.2em]">{T.header}</span>
+        </div>
+        <div className="w-9" />
+      </div>
+
+      <div className="relative z-10 px-5 pt-6 pb-12 max-w-md mx-auto">
+        {/* Loading initial status */}
+        {!status && !error && (
+          <div className="text-center text-neutral-500 text-sm py-12">…</div>
+        )}
+
+        {/* Locked — не депозитер */}
+        {isLocked && (
+          <div className="space-y-5">
+            <div className="text-center py-6">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-yellow-500/10 to-yellow-700/5 border border-yellow-500/20 mb-4">
+                <Lock size={32} className="text-yellow-400/80" />
+              </div>
+              <div className="text-xl font-extrabold text-white tracking-wide">{T.locked_title}</div>
+              <div className="text-sm text-neutral-400 mt-3 leading-relaxed px-2">{T.locked_desc}</div>
+            </div>
+            <a
+              href={depositUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="block w-full text-center bg-gradient-to-br from-yellow-300 to-yellow-500 text-black font-extrabold py-4 rounded-2xl text-sm tracking-wide hover:from-yellow-200 hover:to-yellow-400 transition"
+            >
+              {T.btn_deposit}
+            </a>
+          </div>
+        )}
+
+        {/* VIP-режим */}
+        {status?.is_vip && (
+          <div className="space-y-5">
+            {/* Sub-header */}
+            <div className="text-center">
+              <div className="text-[11px] text-neutral-500 tracking-[0.15em] uppercase">{T.sub}</div>
+            </div>
+
+            {/* Счётчик: точки */}
+            <div className="bg-neutral-950 border border-white/5 rounded-2xl px-5 py-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-[11px] text-neutral-500 uppercase tracking-wider">{T.counter}</div>
+                <div className="text-sm font-bold text-white mono">
+                  <span className={left === 0 ? "text-red-400" : "text-yellow-400"}>{today}</span>
+                  <span className="text-neutral-600"> / {limit}</span>
+                </div>
+              </div>
+              <div className="flex gap-1.5">
+                {Array.from({ length: limit }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`flex-1 h-2 rounded-full ${i < today ? "bg-yellow-500" : "bg-white/10"}`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Кнопка получения сигнала */}
+            {left > 0 ? (
+              <button
+                onClick={requestSignal}
+                disabled={loading}
+                className="block w-full text-center bg-gradient-to-br from-yellow-300 to-yellow-500 text-black font-extrabold py-4 rounded-2xl text-sm tracking-wide hover:from-yellow-200 hover:to-yellow-400 disabled:opacity-60 transition"
+              >
+                {loading ? T.btn_loading : `${T.btn_request} (${left}/${limit})`}
+              </button>
+            ) : (
+              <div className="block w-full text-center bg-neutral-900 border border-white/5 text-neutral-500 font-bold py-4 rounded-2xl text-sm tracking-wide flex items-center justify-center gap-2">
+                <Timer size={14} />
+                {T.btn_blocked.replace("{hour}", String(resetHour).padStart(2, "0"))}
+              </div>
+            )}
+
+            {/* Error */}
+            {error && (
+              <div className="text-center text-red-400 text-sm bg-red-950/30 border border-red-500/20 rounded-xl py-2.5">
+                {error}
+              </div>
+            )}
+
+            {/* Карточка сигнала */}
+            {signal && (
+              <div className={`relative rounded-2xl overflow-hidden border ${
+                signal.direction === "BUY" ? "border-emerald-500/25" : "border-rose-500/25"
+              } bg-neutral-950 slide-up`}>
+                {/* Подложка с цветом направления */}
+                <div className={`absolute inset-x-0 top-0 h-32 bg-gradient-to-b ${
+                  signal.direction === "BUY" ? "from-emerald-500/10 to-transparent" : "from-rose-500/10 to-transparent"
+                } pointer-events-none`} />
+
+                <div className="relative p-5">
+                  {/* Asset + Direction */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-xl font-extrabold text-white tracking-wider">{signal.asset}</div>
+                    <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold ${
+                      signal.direction === "BUY"
+                        ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                        : "bg-rose-500/15 text-rose-400 border border-rose-500/30"
+                    }`}>
+                      {signal.direction === "BUY" ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
+                      {signal.direction === "BUY" ? T.direction_buy : T.direction_sell}
+                    </div>
+                  </div>
+
+                  {/* Metrics */}
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    <div className="bg-black/40 rounded-xl px-3 py-2.5 border border-white/5">
+                      <div className="text-[10px] text-neutral-500 uppercase tracking-wider">{T.confidence}</div>
+                      <div className="text-lg font-extrabold text-yellow-400 mono mt-0.5">{signal.confidence}%</div>
+                    </div>
+                    <div className="bg-black/40 rounded-xl px-3 py-2.5 border border-white/5">
+                      <div className="text-[10px] text-neutral-500 uppercase tracking-wider">{T.expiry}</div>
+                      <div className="text-lg font-extrabold text-white mono mt-0.5">{signal.expiry} <span className="text-xs text-neutral-500 font-bold">{T.expiry_min}</span></div>
+                    </div>
+                  </div>
+
+                  {/* Analysis */}
+                  <div className="bg-black/40 rounded-xl px-4 py-3 border border-white/5">
+                    <div className="text-[10px] text-neutral-500 uppercase tracking-wider mb-1.5">{T.analysis}</div>
+                    <div className="text-sm text-neutral-200 leading-relaxed">
+                      <span className="text-yellow-400 mono">RSI({signal.rsi})</span> · <span className="text-neutral-300">{signal.macd}</span>
+                    </div>
+                    <div className="text-xs text-neutral-400 mt-2 leading-relaxed">{signal.note}</div>
+                  </div>
+
+                  {/* Phase 2 note */}
+                  <div className="text-[10px] text-neutral-600 italic mt-3 leading-relaxed">
+                    {T.note_phase2}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* No-signal hint */}
+            {!signal && !error && (
+              <div className="text-center text-xs text-neutral-600 italic py-2">{T.no_signal}</div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

@@ -438,6 +438,108 @@ app.get("/api/me", authMiddleware, async (req, res) => {
   });
 });
 
+/* ───────── VIP endpoints ─────────
+ * /api/vip/status — текущий статус юзера (депозитер ли, сколько сигналов осталось)
+ * /api/vip/signal — выдача нового сигнала с atomic increment счётчика */
+
+const VIP_LIMIT_PER_DAY = Number(process.env.SIGNALS_PER_DAY || 5);
+const VIP_RESET_HOUR    = Number(process.env.RESET_HOUR_UTC || 9);
+
+function secondsToNextReset() {
+  const now = new Date();
+  const next = new Date(now);
+  next.setUTCHours(VIP_RESET_HOUR, 0, 0, 0);
+  if (next <= now) next.setUTCDate(next.getUTCDate() + 1);
+  return Math.floor((next - now) / 1000);
+}
+
+app.get("/api/vip/status", authMiddleware, async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "db unavailable" });
+  const c = await pool.query(
+    `SELECT deposited_at FROM broker_claims WHERE tg_id = $1`, [req.tgId]
+  );
+  const is_vip = !!c.rows[0]?.deposited_at;
+  if (!is_vip) {
+    return res.json({ is_vip: false, signals_limit: VIP_LIMIT_PER_DAY, reset_hour_utc: VIP_RESET_HOUR });
+  }
+  const u = await pool.query(
+    `INSERT INTO vip_usage (tg_id) VALUES ($1)
+     ON CONFLICT (tg_id) DO UPDATE SET tg_id = EXCLUDED.tg_id
+     RETURNING signals_today, total_signals`,
+    [req.tgId]
+  );
+  const usage = u.rows[0];
+  res.json({
+    is_vip: true,
+    signals_today: usage.signals_today,
+    signals_left: Math.max(0, VIP_LIMIT_PER_DAY - usage.signals_today),
+    signals_limit: VIP_LIMIT_PER_DAY,
+    total_signals: usage.total_signals,
+    seconds_to_reset: secondsToNextReset(),
+    reset_hour_utc: VIP_RESET_HOUR,
+  });
+});
+
+// Placeholder pool — на этапе 2 заменим на вызов Claude Sonnet 4.5.
+const VIP_DEMO_SIGNALS = [
+  { asset: "EUR/USD", direction: "BUY",  confidence: 87, expiry: 5,
+    rsi: 32, macd: "bullish cross", note: "Price touched lower Bollinger band — reversion likely." },
+  { asset: "GBP/JPY", direction: "SELL", confidence: 82, expiry: 3,
+    rsi: 72, macd: "bearish divergence", note: "Resistance at 213.50, momentum weakening." },
+  { asset: "BTC/USDT", direction: "BUY", confidence: 79, expiry: 10,
+    rsi: 41, macd: "bullish cross", note: "Bounced off 200 EMA support, volume spike." },
+  { asset: "USD/JPY", direction: "SELL", confidence: 85, expiry: 5,
+    rsi: 71, macd: "bearish cross", note: "Topping pattern at 159.50, MACD cross down." },
+  { asset: "ETH/USDT", direction: "BUY", confidence: 81, expiry: 7,
+    rsi: 58, macd: "bullish", note: "Ascending triangle breakout, higher-low formation." },
+  { asset: "AUD/USD", direction: "BUY", confidence: 78, expiry: 5,
+    rsi: 35, macd: "bullish cross", note: "Oversold bounce zone, weekly support holding." },
+];
+
+app.post("/api/vip/signal", authMiddleware, async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "db unavailable" });
+
+  // Депозитер?
+  const c = await pool.query(
+    `SELECT deposited_at FROM broker_claims WHERE tg_id = $1 AND deposited_at IS NOT NULL`,
+    [req.tgId]
+  );
+  if (!c.rows.length) return res.status(403).json({ error: "not_vip" });
+
+  // Atomic increment с проверкой лимита: WHERE signals_today < limit
+  await pool.query(
+    `INSERT INTO vip_usage (tg_id) VALUES ($1) ON CONFLICT (tg_id) DO NOTHING`,
+    [req.tgId]
+  );
+  const u = await pool.query(
+    `UPDATE vip_usage
+     SET signals_today = signals_today + 1, total_signals = total_signals + 1
+     WHERE tg_id = $1 AND signals_today < $2
+     RETURNING signals_today, total_signals`,
+    [req.tgId, VIP_LIMIT_PER_DAY]
+  );
+  if (!u.rows.length) {
+    return res.status(429).json({
+      error: "limit_reached",
+      signals_today: VIP_LIMIT_PER_DAY,
+      signals_left: 0,
+      signals_limit: VIP_LIMIT_PER_DAY,
+      seconds_to_reset: secondsToNextReset(),
+    });
+  }
+
+  const signal = VIP_DEMO_SIGNALS[Math.floor(Math.random() * VIP_DEMO_SIGNALS.length)];
+  res.json({
+    signal,
+    signals_today: u.rows[0].signals_today,
+    signals_left: Math.max(0, VIP_LIMIT_PER_DAY - u.rows[0].signals_today),
+    signals_limit: VIP_LIMIT_PER_DAY,
+    total_signals: u.rows[0].total_signals,
+    seconds_to_reset: secondsToNextReset(),
+    generated_at: new Date().toISOString(),
+  });
+});
+
 /* ───────── WEBHOOK: Pocket Option postback ─────────
  * Pocket Option (и большинство affiliate-сетей) шлют S2S-postback с клик-id
  * когда пользователь регистрируется или делает депозит.
