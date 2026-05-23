@@ -11,7 +11,8 @@
     "cors": "^2.8.5",
     "pg": "^8.13.1",
     "dotenv": "^16.4.5",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "@anthropic-ai/sdk": "^0.36.0"
   },
   "engines": {
     "node": ">=20"

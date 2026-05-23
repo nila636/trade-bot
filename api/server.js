@@ -20,6 +20,7 @@ import cors from "cors";
 import crypto from "crypto";
 import pg from "pg";
 import fetch from "node-fetch";
+import Anthropic from "@anthropic-ai/sdk";
 import "dotenv/config";
 
 const {
@@ -96,6 +97,24 @@ if (pool) {
       total_signals  INT NOT NULL DEFAULT 0,
       created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+  `);
+
+  // История выданных VIP-сигналов: каждый сигнал отдельной строкой.
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS vip_signals_log (
+      id           SERIAL PRIMARY KEY,
+      tg_id        BIGINT NOT NULL,
+      asset        TEXT NOT NULL,
+      direction    TEXT NOT NULL,
+      confidence   INT,
+      expiry       INT,
+      rsi          INT,
+      macd         TEXT,
+      note         TEXT,
+      source       TEXT,
+      generated_at TIMESTAMPTZ DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_vip_signals_tg ON vip_signals_log (tg_id, generated_at DESC);
   `);
   console.log("✅ API: Postgres connected, tables ready (including VIP schema)");
 }
@@ -480,7 +499,75 @@ app.get("/api/vip/status", authMiddleware, async (req, res) => {
   });
 });
 
-// Placeholder pool — на этапе 2 заменим на вызов Claude Sonnet 4.5.
+// Anthropic SDK инициализируется только если ANTHROPIC_API_KEY задан в env.
+// Ключ хранится ТОЛЬКО в Railway Variables — никогда не попадает в репозиторий.
+const anthropic = process.env.ANTHROPIC_API_KEY
+  ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  : null;
+const CLAUDE_MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-4-6";
+if (anthropic) console.log(`✅ Anthropic SDK ready (model=${CLAUDE_MODEL})`);
+else console.log("⚠ ANTHROPIC_API_KEY not set — VIP signals will use demo pool");
+
+async function generateAiSignal() {
+  if (!anthropic) {
+    return { signal: VIP_DEMO_SIGNALS[Math.floor(Math.random() * VIP_DEMO_SIGNALS.length)], source: "demo" };
+  }
+  try {
+    const nowUtc = new Date().toISOString();
+    const prompt = `You are a professional short-term trader generating binary-options signals. Output ONE realistic high-confidence trade signal.
+
+Constraints:
+- Pick exactly ONE asset from: EUR/USD, GBP/JPY, USD/JPY, AUD/USD, USD/CHF, EUR/GBP, BTC/USDT, ETH/USDT, SOL/USDT
+- direction: "BUY" (long) or "SELL" (short)
+- confidence: integer 75-94 (only trades you'd actually take; avoid 95+ which is unrealistic)
+- expiry: integer 3-15 (minutes)
+- rsi: integer 0-100 consistent with direction (oversold <40 + BUY, overbought >60 + SELL, neutral 40-60 also OK)
+- macd: one of "bullish cross", "bearish cross", "bullish divergence", "bearish divergence", "neutral"
+- note: 1-2 short sentences (max ~140 chars) explaining the setup like a senior trader
+
+Reference time (UTC): ${nowUtc}
+Consider typical market behavior for this UTC hour (London/NY sessions, Asia closing, etc).
+
+Respond with ONLY a JSON object, no markdown, no prose, no code fences:
+{"asset":"EUR/USD","direction":"BUY","confidence":82,"expiry":5,"rsi":34,"macd":"bullish cross","note":"..."}`;
+
+    const resp = await anthropic.messages.create({
+      model: CLAUDE_MODEL,
+      max_tokens: 300,
+      messages: [{ role: "user", content: prompt }],
+    });
+    const text = (resp.content?.[0]?.text || "").trim();
+    const m = text.match(/\{[\s\S]*\}/);
+    if (!m) throw new Error("no JSON in response");
+    const s = JSON.parse(m[0]);
+
+    if (!s.asset || !["BUY", "SELL"].includes(s.direction)) throw new Error("invalid shape");
+    if (typeof s.confidence !== "number" || s.confidence < 60 || s.confidence > 99) throw new Error("bad confidence");
+    if (typeof s.expiry !== "number" || s.expiry < 1 || s.expiry > 60) throw new Error("bad expiry");
+    s.rsi = Number(s.rsi) || 50;
+    s.macd = String(s.macd || "neutral").slice(0, 40);
+    s.note = String(s.note || "").slice(0, 200);
+
+    return { signal: s, source: "claude" };
+  } catch (e) {
+    console.error("Claude signal error:", e.message);
+    return { signal: VIP_DEMO_SIGNALS[Math.floor(Math.random() * VIP_DEMO_SIGNALS.length)], source: "demo_fallback" };
+  }
+}
+
+// История последних сигналов юзера для UI.
+app.get("/api/vip/history", authMiddleware, async (req, res) => {
+  if (!pool) return res.json({ history: [] });
+  const r = await pool.query(
+    `SELECT asset, direction, confidence, expiry, rsi, macd, note, source, generated_at
+     FROM vip_signals_log WHERE tg_id = $1
+     ORDER BY generated_at DESC LIMIT 20`,
+    [req.tgId]
+  );
+  res.json({ history: r.rows });
+});
+
+// Placeholder pool — fallback если Claude недоступен.
 const VIP_DEMO_SIGNALS = [
   { asset: "EUR/USD", direction: "BUY",  confidence: 87, expiry: 5,
     rsi: 32, macd: "bullish cross", note: "Price touched lower Bollinger band — reversion likely." },
@@ -528,9 +615,19 @@ app.post("/api/vip/signal", authMiddleware, async (req, res) => {
     });
   }
 
-  const signal = VIP_DEMO_SIGNALS[Math.floor(Math.random() * VIP_DEMO_SIGNALS.length)];
+  const { signal, source } = await generateAiSignal();
+
+  // Лог в историю — не блокируем ответ если запись падает.
+  pool.query(
+    `INSERT INTO vip_signals_log (tg_id, asset, direction, confidence, expiry, rsi, macd, note, source)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+    [req.tgId, signal.asset, signal.direction, signal.confidence, signal.expiry,
+     signal.rsi || null, signal.macd || null, signal.note || null, source]
+  ).catch(e => console.error("vip_signals_log insert:", e));
+
   res.json({
     signal,
+    source,
     signals_today: u.rows[0].signals_today,
     signals_left: Math.max(0, VIP_LIMIT_PER_DAY - u.rows[0].signals_today),
     signals_limit: VIP_LIMIT_PER_DAY,
