@@ -204,6 +204,94 @@ app.use(cors({
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
+/* ───────── Fallback auto-approve по UID ─────────
+ * Если postback от PO пришёл с потерянным sub_id1 — он лежит в broker_webhooks,
+ * но не сматчился с tg_id. При вводе UID или recheck'е пытаемся сматчить
+ * по trader_id из лога webhook'ов.
+ *
+ * Защита от кражи чужого UID:
+ *   1) UID не должен быть уже привязан к другому tg_id.
+ *   2) В логе webhook'ов для этого UID не должно быть постбека с явно ДРУГИМ sub_id1.
+ */
+async function tryAutoApproveByUid(tgId, uid) {
+  if (!pool || !uid) return { matched: false };
+  const uidStr = String(uid);
+
+  // 1) UID уже занят другим юзером — отказ.
+  const taken = await pool.query(
+    `SELECT tg_id FROM broker_claims WHERE broker_uid = $1 AND tg_id <> $2 LIMIT 1`,
+    [uidStr, tgId]
+  );
+  if (taken.rows.length) return { matched: false, reason: "uid_taken" };
+
+  // 2) Ищем postback'и с этим UID (PO называет поле по-разному: trader_id/user_id/uid/id).
+  const webhooks = await pool.query(`
+    SELECT query, body FROM broker_webhooks
+    WHERE source = 'pocketoption'
+      AND (
+        query->>'trader_id' = $1 OR body->>'trader_id' = $1 OR
+        query->>'traderid'  = $1 OR body->>'traderid'  = $1 OR
+        query->>'user_id'   = $1 OR body->>'user_id'   = $1 OR
+        query->>'uid'       = $1 OR body->>'uid'       = $1 OR
+        query->>'id'        = $1 OR body->>'id'        = $1
+      )
+    ORDER BY received_at DESC
+    LIMIT 20
+  `, [uidStr]);
+
+  if (!webhooks.rows.length) return { matched: false, reason: "no_webhook" };
+
+  // 3) Проверка sub_id: если хоть один postback пришёл с другим sub_id1 (числовой и != tgId) — отказ.
+  // Если sub_id отсутствует или совпадает — ОК.
+  let isFtd = false;
+  let amount = null;
+  for (const w of webhooks.rows) {
+    const q = w.query || {}, b = w.body || {};
+    const subId = q.sub_id || b.sub_id || q.subid || b.subid || q.s1 || b.s1 ||
+                  q.click_id || b.click_id || q.clickid || b.clickid ||
+                  q.cid || b.cid || q.tag || b.tag;
+    if (subId && /^\d+$/.test(String(subId)) && Number(subId) !== Number(tgId)) {
+      return { matched: false, reason: "wrong_sub_id" };
+    }
+    const ev = String(q.event || b.event || q.event_type || b.event_type ||
+                       q.goal || b.goal || q.status || b.status || "").toLowerCase();
+    if (/ftd|deposit/.test(ev)) {
+      isFtd = true;
+      const amt = Number(q.amount || b.amount || q.sum || b.sum || q.payout || b.payout || 0);
+      if (amt && !amount) amount = amt;
+    }
+  }
+
+  // 4) Апрувим (FTD-вариант если хоть один postback был с FTD).
+  if (isFtd) {
+    await pool.query(
+      `INSERT INTO broker_claims (tg_id, broker_uid, status, auto_approved, reviewed_at, deposited_at, first_deposit_amount)
+       VALUES ($1, $2, 'approved', TRUE, NOW(), NOW(), $3)
+       ON CONFLICT (tg_id) DO UPDATE SET
+         broker_uid           = COALESCE(broker_claims.broker_uid, EXCLUDED.broker_uid),
+         status               = 'approved',
+         auto_approved        = TRUE,
+         reviewed_at          = COALESCE(broker_claims.reviewed_at, NOW()),
+         deposited_at         = COALESCE(broker_claims.deposited_at, NOW()),
+         first_deposit_amount = COALESCE(broker_claims.first_deposit_amount, EXCLUDED.first_deposit_amount)`,
+      [tgId, uidStr, amount]
+    );
+  } else {
+    await pool.query(
+      `INSERT INTO broker_claims (tg_id, broker_uid, status, auto_approved, reviewed_at)
+       VALUES ($1, $2, 'approved', TRUE, NOW())
+       ON CONFLICT (tg_id) DO UPDATE SET
+         broker_uid    = COALESCE(broker_claims.broker_uid, EXCLUDED.broker_uid),
+         status        = 'approved',
+         auto_approved = TRUE,
+         reviewed_at   = NOW()`,
+      [tgId, uidStr]
+    );
+  }
+
+  return { matched: true, isFtd };
+}
+
 /* POST /api/auth
  *   body: { initData: "query_id=...&user=...&auth_date=...&hash=..." }
  *   → 200: { session, user, subscribed, brokerStatus }
@@ -240,11 +328,19 @@ app.post("/api/auth", async (req, res) => {
     dbLang = r.rows[0]?.lang || null;
   }
 
-  // Статус заявки на биржу
+  // Статус заявки на биржу. Если pending и UID известен — пробуем доскрести по логу webhook'ов.
   let brokerStatus = "none";
   if (pool) {
-    const r = await pool.query("SELECT status FROM broker_claims WHERE tg_id = $1", [user.id]);
+    const r = await pool.query("SELECT status, broker_uid FROM broker_claims WHERE tg_id = $1", [user.id]);
     brokerStatus = r.rows[0]?.status || "none";
+    const uid = r.rows[0]?.broker_uid;
+    if (brokerStatus === "pending" && uid) {
+      const match = await tryAutoApproveByUid(user.id, uid).catch(e => {
+        console.error("tryAutoApproveByUid (auth):", e);
+        return { matched: false };
+      });
+      if (match.matched) brokerStatus = "approved";
+    }
   }
 
   const session = signSession(user.id);
@@ -316,6 +412,16 @@ app.post("/api/broker/claim", authMiddleware, async (req, res) => {
        created_at = NOW()`,
     [req.tgId, broker_uid]
   );
+
+  // Попытка авто-апрува: вдруг postback от PO уже приходил по этому UID, но с потерянным sub_id1.
+  const match = await tryAutoApproveByUid(req.tgId, broker_uid).catch(e => {
+    console.error("tryAutoApproveByUid (claim):", e);
+    return { matched: false };
+  });
+  if (match.matched) {
+    return res.json({ ok: true, status: "approved", auto: true, isFtd: !!match.isFtd });
+  }
+
   res.json({ ok: true, status: "pending" });
 });
 
