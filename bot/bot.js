@@ -1502,6 +1502,37 @@ bot.command("check_uid", async (ctx) => {
   await ctx.reply(out.slice(0, 4000), { parse_mode: "Markdown" });
 });
 
+// /show_webhook <UID> — полный дамп последнего postback'а от PO по этому UID.
+// Используется для диагностики: какие именно поля PO нам передаёт (amount/sum/status и т.д.)
+bot.command("show_webhook", async (ctx) => {
+  if (!isAdmin(ctx.from.id)) return ctx.reply("⛔ Доступ запрещён.");
+  if (!pool) return ctx.reply("⚠ DB unavailable.");
+  const uid = (ctx.match || "").trim();
+  if (!/^\d+$/.test(uid)) return ctx.reply("Использование: `/show_webhook 133132195`", { parse_mode: "Markdown" });
+
+  const r = await pool.query(`
+    SELECT received_at, method, query, body, headers FROM broker_webhooks
+    WHERE source='pocketoption'
+      AND (
+        query->>'trader_id' = $1 OR body->>'trader_id' = $1 OR
+        query->>'traderid'  = $1 OR body->>'traderid'  = $1 OR
+        query->>'user_id'   = $1 OR body->>'user_id'   = $1 OR
+        query->>'uid'       = $1 OR body->>'uid'       = $1 OR
+        query->>'id'        = $1 OR body->>'id'        = $1
+      )
+    ORDER BY received_at DESC LIMIT 1
+  `, [uid]);
+  if (!r.rows.length) return ctx.reply(`📭 Постбеков по UID \`${uid}\` нет.`, { parse_mode: "Markdown" });
+  const w = r.rows[0];
+  const dump =
+    `🔍 *Webhook for UID* \`${uid}\`\n\n` +
+    `*Received:* \`${new Date(w.received_at).toISOString()}\`\n` +
+    `*Method:* \`${w.method}\`\n\n` +
+    `*Query params:*\n\`\`\`json\n${JSON.stringify(w.query, null, 2).slice(0, 1500)}\n\`\`\`\n` +
+    `*Body params:*\n\`\`\`json\n${JSON.stringify(w.body, null, 2).slice(0, 1500)}\n\`\`\``;
+  await ctx.reply(dump.slice(0, 4000), { parse_mode: "Markdown" });
+});
+
 // /grant_vip <tg_id> — вручную выдать VIP (ставит deposited_at=NOW())
 // Используется когда FTD postback от PO не пришёл, а юзер реально задепозитил.
 bot.command("grant_vip", async (ctx) => {
