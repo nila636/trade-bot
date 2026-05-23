@@ -760,17 +760,160 @@ async function getLangOrEn(id) {
 // Кликабельная ссылка-партнёр на Pocket Option. Используется и в кнопке,
 // и внутри инструкции (markdown-link).
 const POCKET_OPTION_LINK = "https://pocketoption.com/?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50";
-const VIP_BOT_URL = process.env.VIP_BOT_URL || ""; // подставить после создания @vip_bot
 
-// Подписи для VIP-кнопки на 12 языках
+const SIGNALS_PER_DAY = Number(process.env.SIGNALS_PER_DAY || 5);
+const RESET_HOUR_UTC  = Number(process.env.RESET_HOUR_UTC || 9); // 9 UTC = 12:00 MSK
+
+// VIP-функционал интегрирован прямо в этот бот — отдельной кнопки/бота нет.
+// VIP-меню открывается через callback "vip_menu" или deep-link /start vip.
 const VIP_BTN_LABEL = {
-  en: "💎 Open VIP bot", ru: "💎 Открыть VIP-бот",
-  es: "💎 Abrir bot VIP", pt: "💎 Abrir bot VIP",
-  tr: "💎 VIP botu aç", vi: "💎 Mở bot VIP",
-  id: "💎 Buka bot VIP", hi: "💎 VIP बॉट खोलें",
-  uz: "💎 VIP botni ochish", tg: "💎 Кушодани VIP-бот",
-  kk: "💎 VIP-ботты ашу", uk: "💎 Відкрити VIP-бота",
+  en: "💎 VIP signals", ru: "💎 VIP-сигналы",
+  es: "💎 Señales VIP", pt: "💎 Sinais VIP",
+  tr: "💎 VIP sinyaller", vi: "💎 Tín hiệu VIP",
+  id: "💎 Sinyal VIP", hi: "💎 VIP सिग्नल",
+  uz: "💎 VIP signallar", tg: "💎 VIP-сигналҳо",
+  kk: "💎 VIP сигналдар", uk: "💎 VIP-сигнали",
 };
+
+// Тексты VIP-функционала. Хранятся отдельно от L (не плодим ключи в 12 секциях).
+const VIP_I18N = {
+  en: {
+    welcome:     "💎 <b>VIP Access</b>\n\nYou get up to {limit} high-confidence AI signals per day with full analysis.\n\nTap below to get a signal. Counter resets daily at {hour}:00 UTC.",
+    need_deposit:"🔒 VIP unlocks after a Pocket Option deposit.\n\n1. Register on Pocket Option\n2. Make a deposit (any amount)\n3. Auto-approval is instant — you'll get a notification with VIP access.",
+    btn_signal:  "🤖 Get VIP signal ({left}/{limit} left)",
+    btn_blocked: "⏳ Limit reached — reset at {hour}:00 UTC",
+    btn_register:"🏦 Register on Pocket Option",
+    signal_hdr:  "🤖 <b>VIP AI SIGNAL</b>",
+    signal_note: "<i>AI integration coming in Phase 2 (Claude Sonnet 4.5). For now this is a demo signal — verifies limit/reset flow.</i>",
+    limit_full:  "⏳ You've used all {limit} signals for today.\n\nLimit resets at {hour}:00 UTC.",
+    not_depo:    "🔒 This is for depositors only.",
+  },
+  ru: {
+    welcome:     "💎 <b>VIP-доступ</b>\n\nВы получаете до {limit} высокоуверенных AI-сигналов в день с полным анализом.\n\nЖми кнопку ниже, чтобы получить сигнал. Счётчик обновляется каждый день в {hour}:00 UTC.",
+    need_deposit:"🔒 VIP открывается после депозита на Pocket Option.\n\n1. Зарегистрируйся на Pocket Option\n2. Внеси депозит (любая сумма)\n3. Одобрение приходит автоматически — придёт уведомление о VIP-доступе.",
+    btn_signal:  "🤖 Получить VIP-сигнал ({left}/{limit} осталось)",
+    btn_blocked: "⏳ Лимит исчерпан — обновится в {hour}:00 UTC",
+    btn_register:"🏦 Зарегистрироваться в Pocket Option",
+    signal_hdr:  "🤖 <b>VIP AI СИГНАЛ</b>",
+    signal_note: "<i>AI-интеграция появится на этапе 2 (Claude Sonnet 4.5). Сейчас это демо-сигнал — проверяем работу лимита/сброса.</i>",
+    limit_full:  "⏳ Ты использовал все {limit} сигналов на сегодня.\n\nЛимит обновится в {hour}:00 UTC.",
+    not_depo:    "🔒 Эта функция только для депозитеров.",
+  },
+  es: {
+    welcome:     "💎 <b>Acceso VIP</b>\n\nObtienes hasta {limit} señales IA de alta confianza al día con análisis completo.\n\nToca abajo para obtener una señal. El contador se reinicia diariamente a las {hour}:00 UTC.",
+    need_deposit:"🔒 VIP se desbloquea tras un depósito en Pocket Option.\n\n1. Regístrate en Pocket Option\n2. Realiza un depósito\n3. La aprobación es automática — recibirás notificación con acceso VIP.",
+    btn_signal:  "🤖 Obtener señal VIP ({left}/{limit} restantes)",
+    btn_blocked: "⏳ Límite alcanzado — reinicio a las {hour}:00 UTC",
+    btn_register:"🏦 Registrarse en Pocket Option",
+    signal_hdr:  "🤖 <b>SEÑAL VIP IA</b>",
+    signal_note: "<i>Integración IA en fase 2 (Claude Sonnet 4.5). Por ahora demo — verifica el flujo de límite/reinicio.</i>",
+    limit_full:  "⏳ Has usado las {limit} señales de hoy.\n\nReinicio a las {hour}:00 UTC.",
+    not_depo:    "🔒 Solo para depositantes.",
+  },
+  pt: {
+    welcome:     "💎 <b>Acesso VIP</b>\n\nVocê recebe até {limit} sinais IA de alta confiança por dia com análise completa.\n\nToque abaixo para obter um sinal. O contador é reiniciado diariamente às {hour}:00 UTC.",
+    need_deposit:"🔒 O VIP é desbloqueado após um depósito na Pocket Option.\n\n1. Cadastre-se na Pocket Option\n2. Faça um depósito\n3. A aprovação é automática — você receberá notificação com acesso VIP.",
+    btn_signal:  "🤖 Obter sinal VIP ({left}/{limit} restantes)",
+    btn_blocked: "⏳ Limite atingido — reset às {hour}:00 UTC",
+    btn_register:"🏦 Cadastrar na Pocket Option",
+    signal_hdr:  "🤖 <b>SINAL VIP IA</b>",
+    signal_note: "<i>Integração IA na fase 2 (Claude Sonnet 4.5). Por enquanto demo — verifica o fluxo de limite/reset.</i>",
+    limit_full:  "⏳ Você usou os {limit} sinais de hoje.\n\nReset às {hour}:00 UTC.",
+    not_depo:    "🔒 Apenas para depositantes.",
+  },
+  tr: {
+    welcome:     "💎 <b>VIP Erişim</b>\n\nGünde {limit} yüksek güvenilirlikli AI sinyali alıyorsun, tam analiz dahil.\n\nSinyal almak için aşağıya dokun. Sayaç her gün {hour}:00 UTC'de sıfırlanır.",
+    need_deposit:"🔒 VIP, Pocket Option'a yatırım yaptıktan sonra açılır.\n\n1. Pocket Option'a kayıt ol\n2. Yatırım yap\n3. Onay otomatik — VIP erişimle bildirim alırsın.",
+    btn_signal:  "🤖 VIP sinyal al ({left}/{limit} kaldı)",
+    btn_blocked: "⏳ Limit doldu — {hour}:00 UTC sıfırlanır",
+    btn_register:"🏦 Pocket Option'a kayıt",
+    signal_hdr:  "🤖 <b>VIP AI SİNYAL</b>",
+    signal_note: "<i>AI entegrasyonu faz 2'de (Claude Sonnet 4.5). Şimdilik demo — limit/sıfırlama akışını test ediyor.</i>",
+    limit_full:  "⏳ Bugünkü {limit} sinyalini kullandın.\n\n{hour}:00 UTC sıfırlanır.",
+    not_depo:    "🔒 Sadece yatırımcılar için.",
+  },
+  vi: {
+    welcome:     "💎 <b>Truy cập VIP</b>\n\nBạn nhận tối đa {limit} tín hiệu AI độ tin cậy cao/ngày kèm phân tích đầy đủ.\n\nNhấn bên dưới để nhận tín hiệu. Bộ đếm reset hàng ngày lúc {hour}:00 UTC.",
+    need_deposit:"🔒 VIP mở khóa sau khi nạp tiền vào Pocket Option.\n\n1. Đăng ký Pocket Option\n2. Nạp tiền (số tiền bất kỳ)\n3. Duyệt tự động — bạn sẽ nhận thông báo có truy cập VIP.",
+    btn_signal:  "🤖 Nhận tín hiệu VIP ({left}/{limit} còn)",
+    btn_blocked: "⏳ Đã đạt giới hạn — reset lúc {hour}:00 UTC",
+    btn_register:"🏦 Đăng ký Pocket Option",
+    signal_hdr:  "🤖 <b>TÍN HIỆU AI VIP</b>",
+    signal_note: "<i>Tích hợp AI ở Phase 2 (Claude Sonnet 4.5). Hiện đang là demo — kiểm tra luồng limit/reset.</i>",
+    limit_full:  "⏳ Bạn đã dùng hết {limit} tín hiệu hôm nay.\n\nReset lúc {hour}:00 UTC.",
+    not_depo:    "🔒 Chỉ cho người đã nạp tiền.",
+  },
+  id: {
+    welcome:     "💎 <b>Akses VIP</b>\n\nKamu dapat hingga {limit} sinyal AI berkeyakinan tinggi per hari dengan analisis lengkap.\n\nKetuk di bawah untuk mendapat sinyal. Counter reset setiap hari pukul {hour}:00 UTC.",
+    need_deposit:"🔒 VIP terbuka setelah deposit di Pocket Option.\n\n1. Daftar di Pocket Option\n2. Lakukan deposit\n3. Persetujuan otomatis — kamu akan dapat notifikasi akses VIP.",
+    btn_signal:  "🤖 Ambil sinyal VIP ({left}/{limit} tersisa)",
+    btn_blocked: "⏳ Limit tercapai — reset pukul {hour}:00 UTC",
+    btn_register:"🏦 Daftar di Pocket Option",
+    signal_hdr:  "🤖 <b>SINYAL VIP AI</b>",
+    signal_note: "<i>Integrasi AI di Fase 2 (Claude Sonnet 4.5). Untuk sekarang demo — verifikasi alur limit/reset.</i>",
+    limit_full:  "⏳ Kamu telah menggunakan {limit} sinyal hari ini.\n\nReset pukul {hour}:00 UTC.",
+    not_depo:    "🔒 Hanya untuk yang sudah deposit.",
+  },
+  hi: {
+    welcome:     "💎 <b>VIP एक्सेस</b>\n\nआपको पूरे विश्लेषण के साथ प्रति दिन {limit} उच्च-विश्वास AI सिग्नल मिलते हैं।\n\nसिग्नल पाने के लिए नीचे टैप करें। काउंटर रोज़ {hour}:00 UTC पर रीसेट होता है।",
+    need_deposit:"🔒 VIP तभी खुलता है जब Pocket Option पर डिपॉज़िट हो।\n\n1. Pocket Option पर रजिस्टर करें\n2. डिपॉज़िट करें\n3. ऑटो-अप्रूव होगा — VIP एक्सेस की सूचना मिलेगी।",
+    btn_signal:  "🤖 VIP सिग्नल पाएँ ({left}/{limit} बाक़ी)",
+    btn_blocked: "⏳ लिमिट खत्म — रीसेट {hour}:00 UTC",
+    btn_register:"🏦 Pocket Option पर रजिस्टर",
+    signal_hdr:  "🤖 <b>VIP AI सिग्नल</b>",
+    signal_note: "<i>AI इंटीग्रेशन फेज़ 2 में आएगा (Claude Sonnet 4.5)। अभी डेमो — limit/reset फ्लो जाँचा जा रहा है।</i>",
+    limit_full:  "⏳ आज के सभी {limit} सिग्नल इस्तेमाल कर लिए।\n\nरीसेट {hour}:00 UTC।",
+    not_depo:    "🔒 यह सिर्फ़ डिपॉज़िटर के लिए है।",
+  },
+  uz: {
+    welcome:     "💎 <b>VIP-kirish</b>\n\nKuniga {limit} tagacha yuqori ishonchli AI signal olasiz, to'liq tahlil bilan.\n\nSignal olish uchun pastdagi tugmani bosing. Hisoblagich har kuni {hour}:00 UTC da yangilanadi.",
+    need_deposit:"🔒 VIP Pocket Option'ga depozitdan keyin ochiladi.\n\n1. Pocket Option'da ro'yxatdan o'ting\n2. Depozit qiling\n3. Avto-tasdiq — VIP-kirish haqida xabar olasiz.",
+    btn_signal:  "🤖 VIP signal olish ({left}/{limit} qoldi)",
+    btn_blocked: "⏳ Limit tugadi — {hour}:00 UTC da yangilanadi",
+    btn_register:"🏦 Pocket Option'da ro'yxatdan o'tish",
+    signal_hdr:  "🤖 <b>VIP AI SIGNAL</b>",
+    signal_note: "<i>AI integratsiyasi 2-fazada (Claude Sonnet 4.5). Hozir demo — limit/reset jarayonini tekshirish.</i>",
+    limit_full:  "⏳ Bugun {limit} signal ham ishlatib bo'ldingiz.\n\n{hour}:00 UTC da yangilanadi.",
+    not_depo:    "🔒 Faqat depozit qilganlar uchun.",
+  },
+  tg: {
+    welcome:     "💎 <b>VIP-дастрасӣ</b>\n\nДар як рӯз то {limit} сигналҳои AI бо эътимоди баланд бо таҳлили пурра мегиред.\n\nБарои гирифтани сигнал ба зер пахш кунед. Ҳисобгар ҳар рӯз дар {hour}:00 UTC нав мешавад.",
+    need_deposit:"🔒 VIP пас аз депозит дар Pocket Option кушода мешавад.\n\n1. Дар Pocket Option номнавис шавед\n2. Депозит кунед\n3. Худтасдиқ — оид ба дастрасии VIP огоҳнома мегиред.",
+    btn_signal:  "🤖 VIP-сигнал гирифтан ({left}/{limit} мондааст)",
+    btn_blocked: "⏳ Лимит расид — навсозӣ дар {hour}:00 UTC",
+    btn_register:"🏦 Дар Pocket Option номнавис",
+    signal_hdr:  "🤖 <b>VIP AI СИГНАЛ</b>",
+    signal_note: "<i>Интеграцияи AI дар марҳилаи 2 меояд (Claude Sonnet 4.5). Ҳозир демо — санҷиши лимит/навсозӣ.</i>",
+    limit_full:  "⏳ Шумо ҳамаи {limit} сигналҳои имрӯзро истифода кардед.\n\nНавсозӣ дар {hour}:00 UTC.",
+    not_depo:    "🔒 Танҳо барои депозиткунандагон.",
+  },
+  kk: {
+    welcome:     "💎 <b>VIP-қолжетімділік</b>\n\nКүніне {limit}-ке дейін жоғары сенімді AI сигналдарын толық талдаумен аласыз.\n\nСигнал алу үшін төмендегі түймені басыңыз. Есептегіш күн сайын {hour}:00 UTC-де жаңарады.",
+    need_deposit:"🔒 VIP Pocket Option-ға депозитен кейін ашылады.\n\n1. Pocket Option-да тіркеліңіз\n2. Депозит жасаңыз\n3. Автомат-мақұлдау — VIP-қолжетімділік туралы хабарлама келеді.",
+    btn_signal:  "🤖 VIP сигнал алу ({left}/{limit} қалды)",
+    btn_blocked: "⏳ Лимит біткен — жаңару {hour}:00 UTC",
+    btn_register:"🏦 Pocket Option-да тіркелу",
+    signal_hdr:  "🤖 <b>VIP AI СИГНАЛ</b>",
+    signal_note: "<i>AI интеграциясы 2-кезеңде келеді (Claude Sonnet 4.5). Қазір демо — лимит/жаңару ағынын тексеру.</i>",
+    limit_full:  "⏳ Сіз бүгінгі {limit} сигналды пайдаландыңыз.\n\nЖаңару {hour}:00 UTC.",
+    not_depo:    "🔒 Тек депозит салғандар үшін.",
+  },
+  uk: {
+    welcome:     "💎 <b>VIP-доступ</b>\n\nТи отримуєш до {limit} високовпевнених AI-сигналів на день з повним аналізом.\n\nТисни кнопку нижче, щоб отримати сигнал. Лічильник оновлюється щодня о {hour}:00 UTC.",
+    need_deposit:"🔒 VIP відкривається після депозиту на Pocket Option.\n\n1. Зареєструйся на Pocket Option\n2. Внеси депозит (будь-яка сума)\n3. Підтвердження автоматичне — отримаєш сповіщення про VIP-доступ.",
+    btn_signal:  "🤖 Отримати VIP-сигнал ({left}/{limit} лишилось)",
+    btn_blocked: "⏳ Ліміт вичерпано — оновлення о {hour}:00 UTC",
+    btn_register:"🏦 Зареєструватися в Pocket Option",
+    signal_hdr:  "🤖 <b>VIP AI СИГНАЛ</b>",
+    signal_note: "<i>AI-інтеграція з'явиться на етапі 2 (Claude Sonnet 4.5). Зараз це демо — перевіряємо роботу ліміту/скидання.</i>",
+    limit_full:  "⏳ Ти використав усі {limit} сигналів на сьогодні.\n\nОновлення о {hour}:00 UTC.",
+    not_depo:    "🔒 Ця функція лише для депозиторів.",
+  },
+};
+
+function vipFmt(s, vars) {
+  return String(s).replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? `{${k}}`);
+}
 
 // Проверка: юзер сделал депозит? (broker_claims.deposited_at IS NOT NULL)
 async function isDepositor(tgId) {
@@ -782,6 +925,61 @@ async function isDepositor(tgId) {
   return !!r?.rows?.length;
 }
 
+async function getVipUsage(tgId) {
+  const r = await pool.query(
+    `INSERT INTO vip_usage (tg_id) VALUES ($1)
+     ON CONFLICT (tg_id) DO UPDATE SET tg_id = EXCLUDED.tg_id
+     RETURNING signals_today, last_reset, total_signals`,
+    [tgId]
+  );
+  return r.rows[0];
+}
+
+async function incrementVipUsage(tgId) {
+  await pool.query(
+    `UPDATE vip_usage SET signals_today = signals_today + 1, total_signals = total_signals + 1 WHERE tg_id = $1`,
+    [tgId]
+  );
+}
+
+async function vipDailyReset() {
+  if (!hasDb) return;
+  const r = await pool.query(
+    `UPDATE vip_usage SET signals_today = 0, last_reset = NOW() WHERE signals_today > 0`
+  );
+  console.log(`✅ VIP daily reset: ${r.rowCount} users`);
+  for (const adminId of ADMIN_IDS) {
+    bot.api.sendMessage(adminId, `✅ VIP daily reset: ${r.rowCount} users`).catch(() => {});
+  }
+}
+
+function scheduleVipDailyReset() {
+  const now = new Date();
+  const next = new Date(now);
+  next.setUTCHours(RESET_HOUR_UTC, 0, 0, 0);
+  if (next <= now) next.setUTCDate(next.getUTCDate() + 1);
+  const msUntilNext = next - now;
+  console.log(`⏰ Next VIP reset in ${Math.round(msUntilNext / 1000 / 60)} min (at ${next.toISOString()})`);
+  setTimeout(() => {
+    vipDailyReset().catch(e => console.error("vipDailyReset:", e));
+    setInterval(() => vipDailyReset().catch(e => console.error("vipDailyReset:", e)), 24 * 3600 * 1000);
+  }, msUntilNext);
+}
+
+async function buildVipKeyboard(tgId, lang) {
+  const T = VIP_I18N[lang] || VIP_I18N.en;
+  const usage = await getVipUsage(tgId);
+  const left = Math.max(0, SIGNALS_PER_DAY - usage.signals_today);
+  const kb = new InlineKeyboard();
+  if (left > 0) {
+    kb.text(vipFmt(T.btn_signal, { left, limit: SIGNALS_PER_DAY }), "vip_signal");
+  } else {
+    kb.text(vipFmt(T.btn_blocked, { hour: RESET_HOUR_UTC }), "vip_blocked");
+  }
+  kb.row().text((L[lang] || L.en).btn_back || "⬅", "back_main");
+  return { kb, left };
+}
+
 function mainKeyboard(lang, opts = {}) {
   const T = L[lang] || L.en;
   const kb = new InlineKeyboard()
@@ -791,9 +989,9 @@ function mainKeyboard(lang, opts = {}) {
     .text(T.btn_language, "language").row()
     .webApp(T.btn_signal, WEBAPP_URL).row()
     .url(T.btn_broker, POCKET_OPTION_LINK);
-  // VIP-кнопка видна только депозитерам и только если VIP_BOT_URL задан
-  if (opts.isVip && VIP_BOT_URL) {
-    kb.row().url(VIP_BTN_LABEL[lang] || VIP_BTN_LABEL.en, VIP_BOT_URL);
+  // VIP-кнопка видна только депозитерам — открывает VIP-меню в этом же боте.
+  if (opts.isVip) {
+    kb.row().text(VIP_BTN_LABEL[lang] || VIP_BTN_LABEL.en, "vip_menu");
   }
   return kb;
 }
@@ -848,6 +1046,22 @@ async function showWelcome(ctx, lang) {
   }
 }
 
+async function openVipMenu(ctx, lang) {
+  const T = VIP_I18N[lang] || VIP_I18N.en;
+  const depo = await isDepositor(ctx.from.id);
+  if (!depo) {
+    const kb = new InlineKeyboard()
+      .url(T.btn_register, `${POCKET_OPTION_LINK}&sub_id1=${ctx.from.id}`).row()
+      .text((L[lang] || L.en).btn_back || "⬅", "back_main");
+    return ctx.reply(T.need_deposit, { parse_mode: "HTML", reply_markup: kb, disable_web_page_preview: true });
+  }
+  const { kb } = await buildVipKeyboard(ctx.from.id, lang);
+  await ctx.reply(
+    vipFmt(T.welcome, { limit: SIGNALS_PER_DAY, hour: RESET_HOUR_UTC }),
+    { parse_mode: "HTML", reply_markup: kb }
+  );
+}
+
 bot.command("start", async (ctx) => {
   const lang = await getLang(ctx.from.id);
   if (!lang) {
@@ -858,7 +1072,59 @@ bot.command("start", async (ctx) => {
     );
     return;
   }
+  // Deep-link /start vip — переход из Mini App VIP-карточки
+  if ((ctx.match || "").trim() === "vip") {
+    return openVipMenu(ctx, lang);
+  }
   await showWelcome(ctx, lang);
+});
+
+bot.callbackQuery("vip_menu", async (ctx) => {
+  const lang = await getLangOrEn(ctx.from.id);
+  await ctx.answerCallbackQuery();
+  await openVipMenu(ctx, lang);
+});
+
+bot.callbackQuery("vip_blocked", async (ctx) => {
+  const lang = await getLangOrEn(ctx.from.id);
+  const T = VIP_I18N[lang] || VIP_I18N.en;
+  await ctx.answerCallbackQuery({
+    text: vipFmt(T.limit_full, { limit: SIGNALS_PER_DAY, hour: RESET_HOUR_UTC }).replace(/\n+/g, " "),
+    show_alert: true,
+  });
+});
+
+bot.callbackQuery("vip_signal", async (ctx) => {
+  const lang = await getLangOrEn(ctx.from.id);
+  const T = VIP_I18N[lang] || VIP_I18N.en;
+
+  const depo = await isDepositor(ctx.from.id);
+  if (!depo) return ctx.answerCallbackQuery({ text: T.not_depo, show_alert: true });
+
+  const usage = await getVipUsage(ctx.from.id);
+  if (usage.signals_today >= SIGNALS_PER_DAY) {
+    return ctx.answerCallbackQuery({
+      text: vipFmt(T.limit_full, { limit: SIGNALS_PER_DAY, hour: RESET_HOUR_UTC }),
+      show_alert: true,
+    });
+  }
+
+  await ctx.answerCallbackQuery();
+
+  // PLACEHOLDER SIGNAL (этап 1). На этапе 2 — вызов Claude Sonnet 4.5.
+  const text =
+    `${T.signal_hdr}\n\n` +
+    `📊 <b>EUR/USD</b>\n` +
+    `🟢 <b>BUY (LONG)</b>\n` +
+    `🎯 Confidence: <b>87%</b>\n` +
+    `⏱ Expiration: <b>5 min</b>\n\n` +
+    `<b>Analysis:</b>\n` +
+    `RSI(14) = 32 (oversold), MACD bullish cross on 5m, price touched lower Bollinger band — reversion likely.\n\n` +
+    `${T.signal_note}`;
+
+  await incrementVipUsage(ctx.from.id);
+  const { kb } = await buildVipKeyboard(ctx.from.id, lang);
+  await ctx.reply(text, { parse_mode: "HTML", reply_markup: kb });
 });
 
 bot.callbackQuery("guide", async (ctx) => {
@@ -1834,5 +2100,6 @@ bot.start({
     if (ADMIN_IDS.length) console.log(`   Admins: ${ADMIN_IDS.join(", ")}`);
     else console.log(`   ⚠ ADMIN_IDS not set — /admin команда недоступна`);
     scheduleDailySignals();
+    scheduleVipDailyReset();
   },
 });

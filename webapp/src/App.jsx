@@ -1471,7 +1471,9 @@ const useT = () => useContext(LangCtx);
 
 const CHANNEL_URL = "https://t.me/+99i4nWL7PPk5MTYy";
 const BROKER_URL  = "https://pocketoption.com/?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50";
-const VIP_BOT_URL = (typeof import.meta !== "undefined" && import.meta.env?.VITE_VIP_BOT_URL) || "https://t.me/your_vip_bot";
+// VIP открывается в этом же боте через deep-link /start vip.
+// Переопределяется через VITE_VIP_BOT_URL только если когда-то понадобится отдельный бот.
+const VIP_BOT_URL = (typeof import.meta !== "undefined" && import.meta.env?.VITE_VIP_BOT_URL) || "https://t.me/tradenewpt_bot?start=vip";
 
 // Локализация VIP-карточки. Отдельный объект — чтобы не плодить ключи во всех 12 STR-блоках.
 const VIP_CARD = {
