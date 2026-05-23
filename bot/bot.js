@@ -760,16 +760,42 @@ async function getLangOrEn(id) {
 // Кликабельная ссылка-партнёр на Pocket Option. Используется и в кнопке,
 // и внутри инструкции (markdown-link).
 const POCKET_OPTION_LINK = "https://pocketoption.com/cabinet/demo-quick-high-low?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50";
+const VIP_BOT_URL = process.env.VIP_BOT_URL || ""; // подставить после создания @vip_bot
 
-function mainKeyboard(lang) {
+// Подписи для VIP-кнопки на 12 языках
+const VIP_BTN_LABEL = {
+  en: "💎 Open VIP bot", ru: "💎 Открыть VIP-бот",
+  es: "💎 Abrir bot VIP", pt: "💎 Abrir bot VIP",
+  tr: "💎 VIP botu aç", vi: "💎 Mở bot VIP",
+  id: "💎 Buka bot VIP", hi: "💎 VIP बॉट खोलें",
+  uz: "💎 VIP botni ochish", tg: "💎 Кушодани VIP-бот",
+  kk: "💎 VIP-ботты ашу", uk: "💎 Відкрити VIP-бота",
+};
+
+// Проверка: юзер сделал депозит? (broker_claims.deposited_at IS NOT NULL)
+async function isDepositor(tgId) {
+  if (!hasDb) return false;
+  const r = await pool.query(
+    `SELECT 1 FROM broker_claims WHERE tg_id = $1 AND deposited_at IS NOT NULL`,
+    [tgId]
+  ).catch(() => null);
+  return !!r?.rows?.length;
+}
+
+function mainKeyboard(lang, opts = {}) {
   const T = L[lang] || L.en;
-  return new InlineKeyboard()
+  const kb = new InlineKeyboard()
     .text(T.btn_guide,    "guide")
     .text(T.btn_reviews,  "reviews").row()
     .text(T.btn_support,  "support")
     .text(T.btn_language, "language").row()
     .webApp(T.btn_signal, WEBAPP_URL).row()
     .url(T.btn_broker, POCKET_OPTION_LINK);
+  // VIP-кнопка видна только депозитерам и только если VIP_BOT_URL задан
+  if (opts.isVip && VIP_BOT_URL) {
+    kb.row().url(VIP_BTN_LABEL[lang] || VIP_BTN_LABEL.en, VIP_BOT_URL);
+  }
+  return kb;
 }
 
 function langKeyboard() {
@@ -813,7 +839,8 @@ bot.use(async (ctx, next) => {
 async function showWelcome(ctx, lang) {
   const T = L[lang] || L.en;
   const caption = `${T.title}\n\n${T.welcome}\n\n${T.choose}`;
-  const opts = { parse_mode: "Markdown", reply_markup: mainKeyboard(lang) };
+  const isVip = await isDepositor(ctx.from.id);
+  const opts = { parse_mode: "Markdown", reply_markup: mainKeyboard(lang, { isVip }) };
   if (WELCOME_IMAGE) {
     await ctx.replyWithPhoto(WELCOME_IMAGE, { caption, ...opts });
   } else {
@@ -872,11 +899,12 @@ bot.callbackQuery(/^setlang_([a-z]{2})$/, async (ctx) => {
   // Показываем приветствие на новом языке
   // Сначала пытаемся обновить caption у текущего сообщения, если не вышло — отправляем новое
   const caption = `${T.title}\n\n${T.welcome}\n\n${T.choose}`;
+  const isVip = await isDepositor(ctx.from.id);
   try {
-    await ctx.editMessageCaption({ caption, parse_mode: "Markdown", reply_markup: mainKeyboard(code) });
+    await ctx.editMessageCaption({ caption, parse_mode: "Markdown", reply_markup: mainKeyboard(code, { isVip }) });
   } catch {
     try {
-      await ctx.editMessageText(caption, { parse_mode: "Markdown", reply_markup: mainKeyboard(code) });
+      await ctx.editMessageText(caption, { parse_mode: "Markdown", reply_markup: mainKeyboard(code, { isVip }) });
     } catch {
       await showWelcome(ctx, code);
     }
@@ -885,10 +913,11 @@ bot.callbackQuery(/^setlang_([a-z]{2})$/, async (ctx) => {
 
 bot.callbackQuery("back_main", async (ctx) => {
   const lang = await getLangOrEn(ctx.from.id);
+  const isVip = await isDepositor(ctx.from.id);
   await ctx.answerCallbackQuery();
-  await ctx.editMessageReplyMarkup({ reply_markup: mainKeyboard(lang) }).catch(async () => {
+  await ctx.editMessageReplyMarkup({ reply_markup: mainKeyboard(lang, { isVip }) }).catch(async () => {
     const T = L[lang];
-    await ctx.reply(`${T.title}\n\n${T.choose}`, { parse_mode: "Markdown", reply_markup: mainKeyboard(lang) });
+    await ctx.reply(`${T.title}\n\n${T.choose}`, { parse_mode: "Markdown", reply_markup: mainKeyboard(lang, { isVip }) });
   });
 });
 

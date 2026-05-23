@@ -82,7 +82,22 @@ if (pool) {
   `);
   // На случай, если таблица уже была создана старой версией без auto_approved
   await pool.query(`ALTER TABLE broker_claims ADD COLUMN IF NOT EXISTS auto_approved BOOLEAN DEFAULT FALSE`).catch(() => {});
-  console.log("✅ API: Postgres connected, tables ready");
+  // VIP: трекаем когда юзер сделал первый депозит (FTD) — это его пропуск в VIP-бот.
+  await pool.query(`ALTER TABLE broker_claims ADD COLUMN IF NOT EXISTS deposited_at TIMESTAMPTZ NULL`).catch(() => {});
+  await pool.query(`ALTER TABLE broker_claims ADD COLUMN IF NOT EXISTS first_deposit_amount NUMERIC NULL`).catch(() => {});
+
+  // VIP usage: лимит 5 сигналов в день, обнуляется в 12:00 UTC.
+  // Один ряд на юзера, поле signals_today — счётчик, last_reset — последний reset.
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS vip_usage (
+      tg_id          BIGINT PRIMARY KEY,
+      signals_today  INT NOT NULL DEFAULT 0,
+      last_reset     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      total_signals  INT NOT NULL DEFAULT 0,
+      created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+  console.log("✅ API: Postgres connected, tables ready (including VIP schema)");
 }
 
 /* ───────── Проверка initData от Telegram ─────────
@@ -360,24 +375,61 @@ app.all("/api/webhook/pocketoption", express.urlencoded({ extended: true }), asy
   }
 
   const tgId = Number(subId);
+  const isFtd = /ftd|deposit|first.*deposit/i.test(String(eventType));
+  const amount = Number(params.amount || params.sum || params.payout || 0) || null;
 
   if (pool) {
-    // Upsert: если заявки нет — создаём approved. Если есть pending/rejected — переводим в approved.
-    await pool.query(
-      `INSERT INTO broker_claims (tg_id, broker_uid, status, auto_approved, reviewed_at)
-       VALUES ($1, $2, 'approved', TRUE, NOW())
-       ON CONFLICT (tg_id) DO UPDATE SET
-         broker_uid    = COALESCE(EXCLUDED.broker_uid, broker_claims.broker_uid),
-         status        = 'approved',
-         auto_approved = TRUE,
-         reviewed_at   = NOW()`,
-      [tgId, traderId ? String(traderId) : null]
-    );
+    if (isFtd) {
+      // FTD событие — юзер сделал первый депозит. Это его пропуск в VIP-бот.
+      // Upsert: если строки нет — создаём со status='approved' + deposited_at = NOW().
+      // Если есть — обновляем deposited_at и amount (но НЕ перетираем broker_uid если он был).
+      await pool.query(
+        `INSERT INTO broker_claims (tg_id, broker_uid, status, auto_approved, reviewed_at, deposited_at, first_deposit_amount)
+         VALUES ($1, $2, 'approved', TRUE, NOW(), NOW(), $3)
+         ON CONFLICT (tg_id) DO UPDATE SET
+           broker_uid           = COALESCE(broker_claims.broker_uid, EXCLUDED.broker_uid),
+           status               = 'approved',
+           auto_approved        = TRUE,
+           reviewed_at          = COALESCE(broker_claims.reviewed_at, NOW()),
+           deposited_at         = COALESCE(broker_claims.deposited_at, NOW()),
+           first_deposit_amount = COALESCE(broker_claims.first_deposit_amount, EXCLUDED.first_deposit_amount)`,
+        [tgId, traderId ? String(traderId) : null, amount]
+      );
+    } else {
+      // Обычное событие reg — Upsert: если заявки нет — создаём approved. Если есть pending/rejected — переводим в approved.
+      await pool.query(
+        `INSERT INTO broker_claims (tg_id, broker_uid, status, auto_approved, reviewed_at)
+         VALUES ($1, $2, 'approved', TRUE, NOW())
+         ON CONFLICT (tg_id) DO UPDATE SET
+           broker_uid    = COALESCE(EXCLUDED.broker_uid, broker_claims.broker_uid),
+           status        = 'approved',
+           auto_approved = TRUE,
+           reviewed_at   = NOW()`,
+        [tgId, traderId ? String(traderId) : null]
+      );
+    }
 
     // Локализованное уведомление пользователю через Telegram Bot API.
     // Берём lang из БД (юзер выбрал в боте или подхватился из Telegram).
     const langRow = await pool.query("SELECT lang FROM users WHERE tg_id = $1", [tgId]).catch(() => null);
     const userLang = langRow?.rows?.[0]?.lang || "en";
+
+    // FTD-уведомление приоритетнее обычного approve: юзер получает доступ к VIP-боту.
+    const VIP_BOT_URL = process.env.VIP_BOT_URL || "https://t.me/your_vip_bot";
+    const FTD_TEXTS = {
+      en: `💎 Your deposit has been received!\n\n🤖 You now have access to our <b>VIP bot</b> with AI-powered signals — up to 5 high-confidence trades per day with full explanation.\n\n👉 Open: <a href="${VIP_BOT_URL}">${VIP_BOT_URL}</a>`,
+      ru: `💎 Ваш депозит получен!\n\n🤖 Вам открыт доступ к <b>VIP-боту</b> с AI-сигналами — до 5 высокоуверенных сделок в день с полным разбором.\n\n👉 Открыть: <a href="${VIP_BOT_URL}">${VIP_BOT_URL}</a>`,
+      es: `💎 ¡Tu depósito ha sido recibido!\n\n🤖 Ahora tienes acceso al <b>bot VIP</b> con señales por IA — hasta 5 operaciones de alta confianza al día con análisis completo.\n\n👉 Abrir: <a href="${VIP_BOT_URL}">${VIP_BOT_URL}</a>`,
+      pt: `💎 Seu depósito foi recebido!\n\n🤖 Você agora tem acesso ao <b>bot VIP</b> com sinais de IA — até 5 operações de alta confiança por dia com análise completa.\n\n👉 Abrir: <a href="${VIP_BOT_URL}">${VIP_BOT_URL}</a>`,
+      tr: `💎 Depozitonuz alındı!\n\n🤖 Artık AI sinyalleri ile <b>VIP botumuza</b> erişiminiz var — günde 5'e kadar yüksek güvenilirlikli işlem, tam analizle.\n\n👉 Aç: <a href="${VIP_BOT_URL}">${VIP_BOT_URL}</a>`,
+      vi: `💎 Tiền nạp của bạn đã được nhận!\n\n🤖 Bạn có quyền truy cập <b>bot VIP</b> với tín hiệu AI — tối đa 5 giao dịch độ tin cậy cao/ngày kèm phân tích đầy đủ.\n\n👉 Mở: <a href="${VIP_BOT_URL}">${VIP_BOT_URL}</a>`,
+      id: `💎 Deposit Anda diterima!\n\n🤖 Anda kini punya akses ke <b>bot VIP</b> dengan sinyal AI — hingga 5 transaksi keyakinan tinggi/hari dengan analisis lengkap.\n\n👉 Buka: <a href="${VIP_BOT_URL}">${VIP_BOT_URL}</a>`,
+      hi: `💎 आपका जमा प्राप्त हुआ!\n\n🤖 अब आपके पास AI सिग्नल वाले <b>VIP बॉट</b> तक पहुँच है — पूरे विश्लेषण के साथ प्रति दिन 5 उच्च-विश्वास वाले ट्रेड।\n\n👉 खोलें: <a href="${VIP_BOT_URL}">${VIP_BOT_URL}</a>`,
+      uz: `💎 Depozitingiz qabul qilindi!\n\n🤖 Endi sizda AI signalli <b>VIP botga</b> kirish bor — kuniga 5 tagacha yuqori ishonchli savdo, to'liq tahlil bilan.\n\n👉 Ochish: <a href="${VIP_BOT_URL}">${VIP_BOT_URL}</a>`,
+      tg: `💎 Депозити шумо қабул шуд!\n\n🤖 Ҳозир шумо ба <b>VIP-боти</b> мо бо сигналҳои AI дастрасӣ доред — то 5 савдои эътимоди баланд дар як рӯз бо таҳлили пурра.\n\n👉 Кушодан: <a href="${VIP_BOT_URL}">${VIP_BOT_URL}</a>`,
+      kk: `💎 Сіздің депозитіңіз қабылданды!\n\n🤖 Енді сізде AI сигналдары бар <b>VIP-ботқа</b> рұқсат бар — күніне 5-ке дейін жоғары сенімді сауда толық талдаумен.\n\n👉 Ашу: <a href="${VIP_BOT_URL}">${VIP_BOT_URL}</a>`,
+      uk: `💎 Ваш депозит отримано!\n\n🤖 Тепер у вас є доступ до <b>VIP-бота</b> з AI-сигналами — до 5 високовпевнених угод на день з повним аналізом.\n\n👉 Відкрити: <a href="${VIP_BOT_URL}">${VIP_BOT_URL}</a>`,
+    };
     const APPROVE_TEXTS = {
       en: `✅ Your Pocket Option registration has been confirmed automatically!\nPocket Option ID: ${traderId || "—"}\n\nFull access to the app is now open. 🚀`,
       ru: `✅ Ваша регистрация на Pocket Option подтверждена автоматически!\nPocket Option ID: ${traderId || "—"}\n\nПолный доступ к приложению открыт. 🚀`,
@@ -392,11 +444,19 @@ app.all("/api/webhook/pocketoption", express.urlencoded({ extended: true }), asy
       kk: `✅ Pocket Option тіркеуіңіз автоматты түрде расталды!\nPocket Option ID: ${traderId || "—"}\n\nҚолданбаға толық рұқсат ашылды. 🚀`,
       uk: `✅ Вашу реєстрацію на Pocket Option підтверджено автоматично!\nPocket Option ID: ${traderId || "—"}\n\nПовний доступ до застосунку відкрито. 🚀`,
     };
-    const notifyText = APPROVE_TEXTS[userLang] || APPROVE_TEXTS.en;
+    // FTD → отдельный текст про VIP бот. Иначе — стандартный approve.
+    const notifyText = isFtd
+      ? (FTD_TEXTS[userLang] || FTD_TEXTS.en)
+      : (APPROVE_TEXTS[userLang] || APPROVE_TEXTS.en);
     fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: tgId, text: notifyText }),
+      body: JSON.stringify({
+        chat_id: tgId,
+        text: notifyText,
+        parse_mode: "HTML",
+        disable_web_page_preview: true,
+      }),
     }).catch(() => {});
   }
 
