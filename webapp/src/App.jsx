@@ -1470,7 +1470,7 @@ const useT = () => useContext(LangCtx);
 /* ────────────────────────── CONFIG ────────────────────────── */
 
 const CHANNEL_URL = "https://t.me/+99i4nWL7PPk5MTYy";
-const BROKER_URL  = "https://pocketoption.com/cabinet/demo-quick-high-low?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50";
+const BROKER_URL  = "https://pocketoption.com/?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50";
 const API_URL_HARDCODED = "https://api-production-6682.up.railway.app";
 
 /* ────────────────────────── DATA ────────────────────────── */
