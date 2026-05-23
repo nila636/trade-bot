@@ -1471,6 +1471,23 @@ const useT = () => useContext(LangCtx);
 
 const CHANNEL_URL = "https://t.me/+99i4nWL7PPk5MTYy";
 const BROKER_URL  = "https://pocketoption.com/?utm_campaign=844412&utm_source=affiliate&utm_medium=sr&a=PUzmkw57PSkH73&ac=smart-link&code=WELCOME50";
+const VIP_BOT_URL = (typeof import.meta !== "undefined" && import.meta.env?.VITE_VIP_BOT_URL) || "https://t.me/your_vip_bot";
+
+// Локализация VIP-карточки. Отдельный объект — чтобы не плодить ключи во всех 12 STR-блоках.
+const VIP_CARD = {
+  ru: { title: "VIP ДОСТУП",    sub: "Для лучших трейдеров",       btn: "Открыть" },
+  en: { title: "VIP ACCESS",    sub: "For top traders",            btn: "Open" },
+  es: { title: "ACCESO VIP",    sub: "Para los mejores traders",   btn: "Abrir" },
+  pt: { title: "ACESSO VIP",    sub: "Para os melhores traders",   btn: "Abrir" },
+  tr: { title: "VIP ERİŞİM",    sub: "En iyi traderlar için",      btn: "Aç" },
+  vi: { title: "VIP TRUY CẬP",  sub: "Cho những trader hàng đầu",  btn: "Mở" },
+  id: { title: "AKSES VIP",     sub: "Untuk trader terbaik",       btn: "Buka" },
+  hi: { title: "VIP एक्सेस",      sub: "बेहतरीन ट्रेडर्स के लिए",        btn: "खोलें" },
+  uz: { title: "VIP KIRISH",    sub: "Eng yaxshi treyderlar uchun", btn: "Ochish" },
+  tg: { title: "ВИП-ДАСТРАСӢ",  sub: "Барои беҳтарин трейдерҳо",   btn: "Кушодан" },
+  kk: { title: "VIP ҚОЛЖЕТІМДІ", sub: "Үздік трейдерлерге арналған", btn: "Ашу" },
+  uk: { title: "VIP ДОСТУП",    sub: "Для найкращих трейдерів",    btn: "Відкрити" },
+};
 const API_URL_HARDCODED = "https://api-production-6682.up.railway.app";
 
 /* ────────────────────────── DATA ────────────────────────── */
@@ -2322,6 +2339,32 @@ export default function TradeAppBot() {
 
         {/* ACCORDIONS */}
         {!gateMode && <main className="relative z-10 px-4 mt-5 space-y-3">
+          {/* VIP-карточка — мотиватор сделать депозит, ссылка на @vip_bot */}
+          {(() => {
+            const vipT = VIP_CARD[lang] || VIP_CARD.en;
+            return (
+              <a
+                href={VIP_BOT_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="block rounded-2xl bg-gradient-to-br from-black via-neutral-900 to-black border border-yellow-500/30 shadow-[0_0_24px_rgba(234,179,8,0.18)] p-4 hover:border-yellow-500/70 hover:shadow-[0_0_32px_rgba(234,179,8,0.30)] transition-all"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400/20 to-yellow-600/10 border border-yellow-500/30 flex items-center justify-center text-2xl flex-shrink-0">
+                    💎
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-extrabold text-yellow-400 tracking-wider truncate">{vipT.title}</div>
+                    <div className="text-xs text-neutral-400 mt-0.5 truncate">{vipT.sub}</div>
+                  </div>
+                  <div className="text-xs font-bold text-black bg-gradient-to-br from-yellow-300 to-yellow-500 px-4 py-2.5 rounded-lg whitespace-nowrap flex-shrink-0">
+                    {vipT.btn}
+                  </div>
+                </div>
+              </a>
+            );
+          })()}
+
           <AccordionBlock
             icon={<BarChart3 size={18} />} title={t.blocks.assets.title}
             count={`${Object.values(ASSETS_BY_CAT).filter(l => l !== ASSETS_BY_CAT.fav).reduce((s,l)=>s+l.length,0)} ${t.assets_count_suffix}`} open={openBlock === "assets"}

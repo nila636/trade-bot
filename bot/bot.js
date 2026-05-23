@@ -1236,6 +1236,29 @@ bot.command("check_uid", async (ctx) => {
   await ctx.reply(out.slice(0, 4000), { parse_mode: "Markdown" });
 });
 
+// /grant_vip <tg_id> — вручную выдать VIP (ставит deposited_at=NOW())
+// Используется когда FTD postback от PO не пришёл, а юзер реально задепозитил.
+bot.command("grant_vip", async (ctx) => {
+  if (!isAdmin(ctx.from.id)) return ctx.reply("⛔ Доступ запрещён.");
+  if (!pool) return ctx.reply("⚠ DB unavailable.");
+  const tgId = (ctx.match || "").trim();
+  if (!/^\d+$/.test(tgId)) return ctx.reply("Использование: `/grant_vip 7853415163`", { parse_mode: "Markdown" });
+
+  const r = await pool.query(
+    `INSERT INTO broker_claims (tg_id, status, auto_approved, reviewed_at, deposited_at)
+     VALUES ($1, 'approved', TRUE, NOW(), NOW())
+     ON CONFLICT (tg_id) DO UPDATE SET
+       status        = 'approved',
+       auto_approved = TRUE,
+       reviewed_at   = COALESCE(broker_claims.reviewed_at, NOW()),
+       deposited_at  = COALESCE(broker_claims.deposited_at, NOW())
+     RETURNING tg_id, broker_uid, deposited_at`,
+    [Number(tgId)]
+  );
+  const row = r.rows[0];
+  await ctx.reply(`✅ VIP выдан\ntg_id: \`${row.tg_id}\`\nuid: \`${row.broker_uid || "—"}\`\ndeposited_at: \`${row.deposited_at?.toISOString() || "—"}\``, { parse_mode: "Markdown" });
+});
+
 // /recent_webhooks — последние 10 postback'ов от PO (любых)
 bot.command("recent_webhooks", async (ctx) => {
   if (!isAdmin(ctx.from.id)) return ctx.reply("⛔ Доступ запрещён.");
