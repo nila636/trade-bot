@@ -467,16 +467,32 @@ app.all("/api/webhook/pocketoption", express.urlencoded({ extended: true }), asy
     ).catch(e => console.error("webhook log:", e));
   }
 
-  // Pocket Option умеет называть параметры по-разному: sub_id, subid, s1, click_id, clickid
-  const subId =
-    params.sub_id || params.subid || params.s1 ||
-    params.click_id || params.clickid || params.cid || params.tag;
-  const traderId =
-    params.trader_id || params.traderid || params.user_id || params.uid || params.id;
+  // Берём первое поле, где значение — действительно число.
+  // PO иногда оставляет литеральные плейсхолдеры (например "{sub_id1}") в полях,
+  // которые партнёр прописал руками в URL postback'а — их нужно игнорировать.
+  const pickNum = (...cands) => {
+    for (const c of cands) {
+      if (c === null || c === undefined) continue;
+      const s = String(c).trim();
+      if (/^\d+$/.test(s)) return s;
+    }
+    return null;
+  };
+  // sub_id1 чаще всего содержит реальный tg_id (PO подставляет его из affiliate URL).
+  // sub_id может оказаться литеральным плейсхолдером — проверяем после.
+  const subId = pickNum(
+    params.sub_id1, params.subid1, params.s1,
+    params.sub_id,  params.subid,
+    params.click_id, params.clickid, params.cid, params.tag
+  );
+  const traderId = pickNum(
+    params.trader_id, params.traderid,
+    params.user_id, params.uid, params.id
+  );
   const eventType =
     params.event || params.event_type || params.goal || params.status || "reg";
 
-  if (!subId || !/^\d+$/.test(String(subId))) {
+  if (!subId) {
     return res.json({ ok: true, warn: "no valid sub_id, logged" });
   }
 

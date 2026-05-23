@@ -1502,6 +1502,75 @@ bot.command("check_uid", async (ctx) => {
   await ctx.reply(out.slice(0, 4000), { parse_mode: "Markdown" });
 });
 
+// /wipe_claim <tg_id> — удалить запись из broker_claims (откат ошибочного grant_vip и т.п.)
+bot.command("wipe_claim", async (ctx) => {
+  if (!isAdmin(ctx.from.id)) return ctx.reply("⛔ Доступ запрещён.");
+  if (!pool) return ctx.reply("⚠ DB unavailable.");
+  const tgId = (ctx.match || "").trim();
+  if (!/^\d+$/.test(tgId)) return ctx.reply("Использование: `/wipe_claim 133132195`", { parse_mode: "Markdown" });
+  const r = await pool.query("DELETE FROM broker_claims WHERE tg_id = $1", [Number(tgId)]);
+  await ctx.reply(`🗑 Удалено строк: ${r.rowCount}`);
+});
+
+// /replay_webhooks — прогнать все ранее залогированные PO postback'и через
+// исправленный парсер и сматчить тех, кого старый парсер пропустил.
+// Это разовая разоблюдка после фикса бага с литеральным {sub_id1}.
+bot.command("replay_webhooks", async (ctx) => {
+  if (!isAdmin(ctx.from.id)) return ctx.reply("⛔ Доступ запрещён.");
+  if (!pool) return ctx.reply("⚠ DB unavailable.");
+
+  const r = await pool.query(`
+    SELECT id, query, body FROM broker_webhooks
+    WHERE source='pocketoption' ORDER BY received_at ASC
+  `);
+
+  const pickNum = (...cands) => {
+    for (const c of cands) {
+      if (c === null || c === undefined) continue;
+      const s = String(c).trim();
+      if (/^\d+$/.test(s)) return s;
+    }
+    return null;
+  };
+
+  let matched = 0, skipped = 0, errors = 0;
+  for (const row of r.rows) {
+    const q = row.query || {}, b = row.body || {};
+    const subId = pickNum(
+      q.sub_id1, b.sub_id1, q.subid1, b.subid1, q.s1, b.s1,
+      q.sub_id, b.sub_id, q.subid, b.subid,
+      q.click_id, b.click_id, q.clickid, b.clickid,
+      q.cid, b.cid, q.tag, b.tag
+    );
+    const traderId = pickNum(
+      q.trader_id, b.trader_id, q.traderid, b.traderid,
+      q.user_id, b.user_id, q.uid, b.uid, q.id, b.id
+    );
+    if (!subId) { skipped++; continue; }
+
+    try {
+      await pool.query(
+        `INSERT INTO broker_claims (tg_id, broker_uid, status, auto_approved, reviewed_at)
+         VALUES ($1, $2, 'approved', TRUE, NOW())
+         ON CONFLICT (tg_id) DO UPDATE SET
+           broker_uid    = COALESCE(EXCLUDED.broker_uid, broker_claims.broker_uid),
+           status        = 'approved',
+           auto_approved = TRUE,
+           reviewed_at   = COALESCE(broker_claims.reviewed_at, NOW())`,
+        [Number(subId), traderId ? String(traderId) : null]
+      );
+      matched++;
+    } catch (e) {
+      errors++;
+      console.error("replay_webhooks row failed:", e);
+    }
+  }
+
+  await ctx.reply(
+    `✅ Replay finished\n📨 Webhooks total: ${r.rows.length}\n✅ Approved: ${matched}\n⏭ Skipped (no sub_id): ${skipped}\n⚠ Errors: ${errors}`
+  );
+});
+
 // /show_webhook <UID> — полный дамп последнего postback'а от PO по этому UID.
 // Используется для диагностики: какие именно поля PO нам передаёт (amount/sum/status и т.д.)
 bot.command("show_webhook", async (ctx) => {
