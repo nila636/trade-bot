@@ -1498,6 +1498,22 @@ const VIP_PANEL = {
     history_empty: "Здесь появятся сигналы, которые ты получил",
     error_limit: "Лимит на сегодня исчерпан",
     error_generic: "Ошибка — попробуй ещё раз",
+    current_price: "Текущая цена",
+    entry_zone: "Зона входа",
+    support: "Поддержка",
+    resistance: "Сопротивление",
+    stop_loss: "Стоп-лосс",
+    take_profit: "Тейк-профит",
+    indicators: "Индикаторы",
+    market_context: "Контекст рынка",
+    key_factors: "Ключевые факторы",
+    risk_level: "Уровень риска",
+    risk_low: "Низкий",
+    risk_medium: "Средний",
+    risk_high: "Высокий",
+    rsi_oversold: "перепродан",
+    rsi_overbought: "перекуплен",
+    rsi_neutral: "нейтр.",
   },
   en: {
     header: "VIP AI SIGNALS", sub: "High-confidence trades with analysis",
@@ -1518,6 +1534,22 @@ const VIP_PANEL = {
     history_empty: "Your past signals will appear here",
     error_limit: "Daily limit reached",
     error_generic: "Error — try again",
+    current_price: "Current price",
+    entry_zone: "Entry zone",
+    support: "Support",
+    resistance: "Resistance",
+    stop_loss: "Stop-loss",
+    take_profit: "Take-profit",
+    indicators: "Indicators",
+    market_context: "Market context",
+    key_factors: "Key factors",
+    risk_level: "Risk level",
+    risk_low: "Low",
+    risk_medium: "Medium",
+    risk_high: "High",
+    rsi_oversold: "oversold",
+    rsi_overbought: "overbought",
+    rsi_neutral: "neutral",
   },
   es: {
     header: "SEÑALES IA VIP", sub: "Operaciones de alta confianza con análisis",
@@ -1993,6 +2025,15 @@ export default function TradeAppBot() {
   const [eduTab, setEduTab] = useState("basics");
   const [assetSignal, setAssetSignal] = useState(null);
   const [vipOpen, setVipOpen] = useState(false);
+
+  // Auto-open VIP overlay при заходе через WebApp deep-link (?startapp=vip из бота)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const startParam = params.get("startapp") || params.get("tgWebAppStartParam") ||
+      window.Telegram?.WebApp?.initDataUnsafe?.start_param;
+    if (startParam === "vip") setVipOpen(true);
+  }, []);
   const [langOpen, setLangOpen] = useState(false);
   const scanRunId = useRef(0);
 
@@ -3836,6 +3877,214 @@ function NumInput({ label, value, onChange, step = 1, min, max }) {
 
 /* ────────────────────────── VIP OVERLAY ────────────────────────── */
 
+// Расширенная карточка сигнала с RSI-баром, уровнями цен, индикаторами, факторами.
+function SignalCard({ signal, source, T }) {
+  const isBuy = signal.direction === "BUY";
+  const dirColor = isBuy ? "emerald" : "rose";
+
+  // RSI зона: <30 oversold, 30-70 neutral, >70 overbought
+  const rsi = signal.rsi ?? 50;
+  const rsiZone = rsi < 30 ? T.rsi_oversold : rsi > 70 ? T.rsi_overbought : T.rsi_neutral;
+  const rsiColor = rsi < 30 ? "text-emerald-400" : rsi > 70 ? "text-rose-400" : "text-yellow-400";
+
+  // Уровень риска
+  const riskLabel = {
+    low: T.risk_low, medium: T.risk_medium, high: T.risk_high
+  }[signal.risk_level] || T.risk_medium;
+  const riskColor = {
+    low: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+    medium: "text-yellow-400 bg-yellow-500/10 border-yellow-500/20",
+    high: "text-rose-400 bg-rose-500/10 border-rose-500/20",
+  }[signal.risk_level] || "text-yellow-400 bg-yellow-500/10 border-yellow-500/20";
+
+  // Утилита показа цены — десятичные знаки зависят от величины
+  const fmtPrice = (p) => {
+    if (p == null) return "—";
+    if (p >= 10000) return p.toLocaleString("en-US", { maximumFractionDigits: 0 });
+    if (p >= 100) return p.toFixed(2);
+    if (p >= 10) return p.toFixed(3);
+    return p.toFixed(5);
+  };
+
+  const hasPrices = signal.current_price != null || signal.support != null || signal.resistance != null;
+  const hasIndicators = signal.indicators && (signal.indicators.bollinger || signal.indicators.stochastic || signal.indicators.ma_trend);
+
+  return (
+    <div className={`relative rounded-2xl overflow-hidden border border-${dirColor}-500/25 bg-neutral-950 slide-up`}>
+      {/* Подложка-градиент */}
+      <div className={`absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-${dirColor}-500/10 to-transparent pointer-events-none`} />
+
+      <div className="relative p-5 space-y-4">
+        {/* Header: asset + direction */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-xl font-extrabold text-white tracking-wider">{signal.asset}</div>
+            {signal.current_price != null && (
+              <div className="text-[11px] text-neutral-500 mono mt-0.5">
+                <span className="uppercase tracking-wider">{T.current_price}: </span>
+                <span className="text-neutral-300 font-bold">{fmtPrice(signal.current_price)}</span>
+              </div>
+            )}
+          </div>
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold ${
+            isBuy
+              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+              : "bg-rose-500/15 text-rose-400 border border-rose-500/30"
+          }`}>
+            {isBuy ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
+            {isBuy ? T.direction_buy : T.direction_sell}
+          </div>
+        </div>
+
+        {/* Metrics row: confidence + expiry + risk */}
+        <div className="grid grid-cols-3 gap-2">
+          <div className="bg-black/40 rounded-xl px-3 py-2.5 border border-white/5">
+            <div className="text-[10px] text-neutral-500 uppercase tracking-wider">{T.confidence}</div>
+            <div className="text-lg font-extrabold text-yellow-400 mono mt-0.5">{signal.confidence}%</div>
+          </div>
+          <div className="bg-black/40 rounded-xl px-3 py-2.5 border border-white/5">
+            <div className="text-[10px] text-neutral-500 uppercase tracking-wider">{T.expiry}</div>
+            <div className="text-lg font-extrabold text-white mono mt-0.5">{signal.expiry}<span className="text-xs text-neutral-500 font-bold"> {T.expiry_min}</span></div>
+          </div>
+          <div className={`rounded-xl px-3 py-2.5 border ${riskColor}`}>
+            <div className="text-[10px] uppercase tracking-wider opacity-70">{T.risk_level}</div>
+            <div className="text-sm font-extrabold mt-1">{riskLabel}</div>
+          </div>
+        </div>
+
+        {/* RSI bar + tag */}
+        <div className="bg-black/40 rounded-xl px-4 py-3 border border-white/5">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-[10px] text-neutral-500 uppercase tracking-wider">RSI(14)</div>
+            <div className={`text-xs font-bold mono ${rsiColor}`}>
+              {rsi} <span className="text-neutral-500 font-normal text-[10px] uppercase">· {rsiZone}</span>
+            </div>
+          </div>
+          {/* Сам бар: 3 зоны (0-30 emerald, 30-70 neutral, 70-100 rose) с индикатором текущего значения */}
+          <div className="relative h-2 rounded-full bg-white/5 overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-[30%] bg-emerald-500/15" />
+            <div className="absolute right-0 top-0 bottom-0 w-[30%] bg-rose-500/15" />
+            <div
+              className={`absolute top-0 bottom-0 w-1 -translate-x-1/2 ${rsi < 30 ? "bg-emerald-400" : rsi > 70 ? "bg-rose-400" : "bg-yellow-400"} shadow-[0_0_8px_currentColor]`}
+              style={{ left: `${rsi}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-[9px] text-neutral-600 mt-1 mono">
+            <span>0</span><span>30</span><span>50</span><span>70</span><span>100</span>
+          </div>
+          {/* MACD под RSI bar */}
+          <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between">
+            <div className="text-[10px] text-neutral-500 uppercase tracking-wider">MACD</div>
+            <div className="text-xs text-neutral-300 font-bold">{signal.macd}</div>
+          </div>
+        </div>
+
+        {/* Уровни цен: support / resistance / entry / SL / TP */}
+        {hasPrices && (
+          <div className="bg-black/40 rounded-xl px-4 py-3 border border-white/5 space-y-2">
+            <div className="text-[10px] text-neutral-500 uppercase tracking-wider mb-1">Levels</div>
+            {signal.entry_zone && (
+              <PriceRow label={T.entry_zone} value={signal.entry_zone} accent="yellow" />
+            )}
+            {signal.take_profit != null && (
+              <PriceRow label={T.take_profit} value={fmtPrice(signal.take_profit)} accent="emerald" />
+            )}
+            {signal.stop_loss != null && (
+              <PriceRow label={T.stop_loss} value={fmtPrice(signal.stop_loss)} accent="rose" />
+            )}
+            {signal.resistance != null && (
+              <PriceRow label={T.resistance} value={fmtPrice(signal.resistance)} accent="neutral" />
+            )}
+            {signal.support != null && (
+              <PriceRow label={T.support} value={fmtPrice(signal.support)} accent="neutral" />
+            )}
+          </div>
+        )}
+
+        {/* Indicators block */}
+        {hasIndicators && (
+          <div className="bg-black/40 rounded-xl px-4 py-3 border border-white/5 space-y-2">
+            <div className="text-[10px] text-neutral-500 uppercase tracking-wider mb-1">{T.indicators}</div>
+            {signal.indicators.bollinger && (
+              <IndicatorRow label="Bollinger" text={signal.indicators.bollinger} />
+            )}
+            {signal.indicators.stochastic && (
+              <IndicatorRow label="Stochastic" text={signal.indicators.stochastic} />
+            )}
+            {signal.indicators.ma_trend && (
+              <IndicatorRow label="MA trend" text={signal.indicators.ma_trend} />
+            )}
+          </div>
+        )}
+
+        {/* Key factors */}
+        {Array.isArray(signal.key_factors) && signal.key_factors.length > 0 && (
+          <div className="bg-black/40 rounded-xl px-4 py-3 border border-white/5">
+            <div className="text-[10px] text-neutral-500 uppercase tracking-wider mb-2">{T.key_factors}</div>
+            <div className="space-y-1.5">
+              {signal.key_factors.map((f, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <div className={`mt-1.5 w-1 h-1 rounded-full ${isBuy ? "bg-emerald-400" : "bg-rose-400"} flex-shrink-0`} />
+                  <div className="text-xs text-neutral-300 leading-relaxed">{f}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Market context */}
+        {signal.market_context && (
+          <div className="bg-gradient-to-br from-yellow-500/[0.04] to-transparent border border-yellow-500/15 rounded-xl px-4 py-3">
+            <div className="text-[10px] text-yellow-500/80 uppercase tracking-wider mb-1">{T.market_context}</div>
+            <div className="text-xs text-neutral-200 leading-relaxed">{signal.market_context}</div>
+          </div>
+        )}
+
+        {/* Note */}
+        {signal.note && (
+          <div className="bg-black/40 rounded-xl px-4 py-3 border border-white/5">
+            <div className="text-[10px] text-neutral-500 uppercase tracking-wider mb-1.5">{T.analysis}</div>
+            <div className="text-sm text-neutral-200 leading-relaxed">{signal.note}</div>
+          </div>
+        )}
+
+        {/* Source plate */}
+        <div className="text-[10px] text-neutral-600 italic leading-relaxed flex items-center gap-1.5 pt-1">
+          {source === "claude" ? (
+            <><Sparkles size={10} className="text-yellow-500/70" /> {T.note_ai}</>
+          ) : (
+            <>{T.note_demo}</>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PriceRow({ label, value, accent }) {
+  const accentColor = {
+    yellow:   "text-yellow-400",
+    emerald:  "text-emerald-400",
+    rose:     "text-rose-400",
+    neutral:  "text-neutral-300",
+  }[accent] || "text-neutral-300";
+  return (
+    <div className="flex items-center justify-between text-xs">
+      <span className="text-neutral-500 uppercase tracking-wider text-[10px]">{label}</span>
+      <span className={`font-extrabold mono ${accentColor}`}>{value}</span>
+    </div>
+  );
+}
+
+function IndicatorRow({ label, text }) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="text-[10px] text-neutral-500 uppercase tracking-wider font-bold flex-shrink-0 pt-0.5 w-20">{label}</span>
+      <span className="text-xs text-neutral-300 leading-relaxed flex-1">{text}</span>
+    </div>
+  );
+}
+
 function VipOverlay({ lang, session, apiUrl, brokerUrl, tgId, onClose }) {
   const T = VIP_PANEL[lang] || VIP_PANEL.en;
   const [status, setStatus] = useState(null);    // { is_vip, signals_left, signals_limit, signals_today, reset_hour_utc }
@@ -4007,62 +4256,8 @@ function VipOverlay({ lang, session, apiUrl, brokerUrl, tgId, onClose }) {
               </div>
             )}
 
-            {/* Карточка сигнала */}
-            {signal && (
-              <div className={`relative rounded-2xl overflow-hidden border ${
-                signal.direction === "BUY" ? "border-emerald-500/25" : "border-rose-500/25"
-              } bg-neutral-950 slide-up`}>
-                {/* Подложка с цветом направления */}
-                <div className={`absolute inset-x-0 top-0 h-32 bg-gradient-to-b ${
-                  signal.direction === "BUY" ? "from-emerald-500/10 to-transparent" : "from-rose-500/10 to-transparent"
-                } pointer-events-none`} />
-
-                <div className="relative p-5">
-                  {/* Asset + Direction */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="text-xl font-extrabold text-white tracking-wider">{signal.asset}</div>
-                    <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold ${
-                      signal.direction === "BUY"
-                        ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                        : "bg-rose-500/15 text-rose-400 border border-rose-500/30"
-                    }`}>
-                      {signal.direction === "BUY" ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
-                      {signal.direction === "BUY" ? T.direction_buy : T.direction_sell}
-                    </div>
-                  </div>
-
-                  {/* Metrics */}
-                  <div className="grid grid-cols-2 gap-2 mb-4">
-                    <div className="bg-black/40 rounded-xl px-3 py-2.5 border border-white/5">
-                      <div className="text-[10px] text-neutral-500 uppercase tracking-wider">{T.confidence}</div>
-                      <div className="text-lg font-extrabold text-yellow-400 mono mt-0.5">{signal.confidence}%</div>
-                    </div>
-                    <div className="bg-black/40 rounded-xl px-3 py-2.5 border border-white/5">
-                      <div className="text-[10px] text-neutral-500 uppercase tracking-wider">{T.expiry}</div>
-                      <div className="text-lg font-extrabold text-white mono mt-0.5">{signal.expiry} <span className="text-xs text-neutral-500 font-bold">{T.expiry_min}</span></div>
-                    </div>
-                  </div>
-
-                  {/* Analysis */}
-                  <div className="bg-black/40 rounded-xl px-4 py-3 border border-white/5">
-                    <div className="text-[10px] text-neutral-500 uppercase tracking-wider mb-1.5">{T.analysis}</div>
-                    <div className="text-sm text-neutral-200 leading-relaxed">
-                      <span className="text-yellow-400 mono">RSI({signal.rsi})</span> · <span className="text-neutral-300">{signal.macd}</span>
-                    </div>
-                    <div className="text-xs text-neutral-400 mt-2 leading-relaxed">{signal.note}</div>
-                  </div>
-
-                  {/* Source plate (AI vs demo) */}
-                  <div className="text-[10px] text-neutral-600 italic mt-3 leading-relaxed flex items-center gap-1.5">
-                    {signalSource === "claude" ? (
-                      <><Sparkles size={10} className="text-yellow-500/70" /> {T.note_ai}</>
-                    ) : (
-                      <>{T.note_demo}</>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* Карточка сигнала — расширенный анализ */}
+            {signal && <SignalCard signal={signal} source={signalSource} T={T} />}
 
             {/* No-signal hint */}
             {!signal && !error && (

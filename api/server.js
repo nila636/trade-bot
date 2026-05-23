@@ -116,6 +116,8 @@ if (pool) {
     );
     CREATE INDEX IF NOT EXISTS idx_vip_signals_tg ON vip_signals_log (tg_id, generated_at DESC);
   `);
+  // Расширенные данные сигнала (current_price, support/resistance, indicators, etc) — JSONB.
+  await pool.query(`ALTER TABLE vip_signals_log ADD COLUMN IF NOT EXISTS extra JSONB`).catch(() => {});
   console.log("✅ API: Postgres connected, tables ready (including VIP schema)");
 }
 
@@ -514,26 +516,66 @@ async function generateAiSignal() {
   }
   try {
     const nowUtc = new Date().toISOString();
-    const prompt = `You are a professional short-term trader generating binary-options signals. Output ONE realistic high-confidence trade signal.
+    const utcHour = new Date().getUTCHours();
+    const session =
+      utcHour < 7  ? "Asia (Tokyo)" :
+      utcHour < 11 ? "Asia/London overlap" :
+      utcHour < 13 ? "London open" :
+      utcHour < 16 ? "London / pre-NY" :
+      utcHour < 21 ? "London/NY overlap (highest volume)" :
+                     "NY close / late session";
 
-Constraints:
-- Pick exactly ONE asset from: EUR/USD, GBP/JPY, USD/JPY, AUD/USD, USD/CHF, EUR/GBP, BTC/USDT, ETH/USDT, SOL/USDT
-- direction: "BUY" (long) or "SELL" (short)
-- confidence: integer 75-94 (only trades you'd actually take; avoid 95+ which is unrealistic)
-- expiry: integer 3-15 (minutes)
-- rsi: integer 0-100 consistent with direction (oversold <40 + BUY, overbought >60 + SELL, neutral 40-60 also OK)
-- macd: one of "bullish cross", "bearish cross", "bullish divergence", "bearish divergence", "neutral"
-- note: 1-2 short sentences (max ~140 chars) explaining the setup like a senior trader
+    const prompt = `You are a senior FX/crypto short-term trader generating one trade signal for a binary-options platform.
+Output ONE realistic high-confidence signal as STRICT JSON.
 
-Reference time (UTC): ${nowUtc}
-Consider typical market behavior for this UTC hour (London/NY sessions, Asia closing, etc).
+ASSETS (pick exactly ONE): EUR/USD, GBP/USD, GBP/JPY, USD/JPY, AUD/USD, USD/CHF, EUR/GBP, NZD/USD, BTC/USDT, ETH/USDT, SOL/USDT, XAU/USD
 
-Respond with ONLY a JSON object, no markdown, no prose, no code fences:
-{"asset":"EUR/USD","direction":"BUY","confidence":82,"expiry":5,"rsi":34,"macd":"bullish cross","note":"..."}`;
+REFERENCE TIME (UTC): ${nowUtc}
+TRADING SESSION: ${session}
+Consider liquidity/volatility typical for this UTC hour and session-specific behaviour.
+
+REQUIREMENTS:
+- direction: "BUY" or "SELL"
+- confidence: integer 75-92 (only trades you'd actually take; avoid 95+)
+- expiry: integer 3-15 minutes (longer expiry only if setup is genuinely slower-moving)
+- rsi: integer 0-100, must be consistent with direction (oversold <40 + BUY, overbought >60 + SELL, neutral 40-60 also OK with strong context)
+- prices: REALISTIC for the asset (EUR/USD ~1.0–1.1, USD/JPY ~150–160, BTC ~70k–95k, XAU ~2300–2700, etc.)
+- key_factors: exactly 3 short bullet points, max ~70 chars each, concrete and specific
+- note: 2-3 sentences (max ~280 chars) — sound like a senior trader explaining the setup, not a textbook
+
+Respond with ONLY a JSON object, no markdown, no code fences:
+
+{
+  "asset": "EUR/USD",
+  "direction": "BUY",
+  "confidence": 82,
+  "expiry": 5,
+  "rsi": 34,
+  "macd": "bullish cross",
+  "current_price": 1.0852,
+  "entry_zone": "1.0848-1.0855",
+  "support": 1.0820,
+  "resistance": 1.0890,
+  "stop_loss": 1.0815,
+  "take_profit": 1.0888,
+  "indicators": {
+    "bollinger": "5m candle touched lower band, wicks rejecting",
+    "stochastic": "%K=24, exiting oversold and curling up",
+    "ma_trend": "above MA50, below MA200 — counter-trend bounce"
+  },
+  "market_context": "Late Asia / pre-London, dollar slightly weak after weak Tokyo CPI; thin liquidity favours mean-reversion plays.",
+  "risk_level": "medium",
+  "key_factors": [
+    "Oversold RSI rebound from 30",
+    "Higher-low structure forming on 5m",
+    "Volume uptick on last 3 bullish bars"
+  ],
+  "note": "EUR/USD bouncing off 1.0820 support in thin Asia hours. MACD cross on 5m confirms momentum shift; targeting short-term recovery into London open."
+}`;
 
     const resp = await anthropic.messages.create({
       model: CLAUDE_MODEL,
-      max_tokens: 300,
+      max_tokens: 900,
       messages: [{ role: "user", content: prompt }],
     });
     const text = (resp.content?.[0]?.text || "").trim();
@@ -541,12 +583,36 @@ Respond with ONLY a JSON object, no markdown, no prose, no code fences:
     if (!m) throw new Error("no JSON in response");
     const s = JSON.parse(m[0]);
 
+    // Базовая валидация — без этого выкидываем в fallback.
     if (!s.asset || !["BUY", "SELL"].includes(s.direction)) throw new Error("invalid shape");
     if (typeof s.confidence !== "number" || s.confidence < 60 || s.confidence > 99) throw new Error("bad confidence");
     if (typeof s.expiry !== "number" || s.expiry < 1 || s.expiry > 60) throw new Error("bad expiry");
-    s.rsi = Number(s.rsi) || 50;
+
+    // Sanitization строк/чисел
+    s.rsi  = Math.max(0, Math.min(100, Math.round(Number(s.rsi) || 50)));
     s.macd = String(s.macd || "neutral").slice(0, 40);
-    s.note = String(s.note || "").slice(0, 200);
+    s.note = String(s.note || "").slice(0, 320);
+    s.current_price  = Number.isFinite(Number(s.current_price))  ? Number(s.current_price)  : null;
+    s.entry_zone     = s.entry_zone ? String(s.entry_zone).slice(0, 30) : null;
+    s.support        = Number.isFinite(Number(s.support))    ? Number(s.support)    : null;
+    s.resistance     = Number.isFinite(Number(s.resistance)) ? Number(s.resistance) : null;
+    s.stop_loss      = Number.isFinite(Number(s.stop_loss))  ? Number(s.stop_loss)  : null;
+    s.take_profit    = Number.isFinite(Number(s.take_profit))? Number(s.take_profit): null;
+    s.market_context = s.market_context ? String(s.market_context).slice(0, 280) : null;
+    s.risk_level     = ["low", "medium", "high"].includes(s.risk_level) ? s.risk_level : "medium";
+
+    if (s.indicators && typeof s.indicators === "object") {
+      s.indicators = {
+        bollinger:  s.indicators.bollinger  ? String(s.indicators.bollinger).slice(0, 100)  : null,
+        stochastic: s.indicators.stochastic ? String(s.indicators.stochastic).slice(0, 100) : null,
+        ma_trend:   s.indicators.ma_trend   ? String(s.indicators.ma_trend).slice(0, 120)   : null,
+      };
+    } else {
+      s.indicators = null;
+    }
+    s.key_factors = Array.isArray(s.key_factors)
+      ? s.key_factors.slice(0, 5).map(f => String(f).slice(0, 100)).filter(Boolean)
+      : [];
 
     return { signal: s, source: "claude" };
   } catch (e) {
@@ -555,32 +621,69 @@ Respond with ONLY a JSON object, no markdown, no prose, no code fences:
   }
 }
 
-// История последних сигналов юзера для UI.
+// История последних сигналов юзера для UI. extra JSONB разворачиваем в общий ряд.
 app.get("/api/vip/history", authMiddleware, async (req, res) => {
   if (!pool) return res.json({ history: [] });
   const r = await pool.query(
-    `SELECT asset, direction, confidence, expiry, rsi, macd, note, source, generated_at
+    `SELECT asset, direction, confidence, expiry, rsi, macd, note, source, generated_at, extra
      FROM vip_signals_log WHERE tg_id = $1
      ORDER BY generated_at DESC LIMIT 20`,
     [req.tgId]
   );
-  res.json({ history: r.rows });
+  const history = r.rows.map(row => ({ ...row, ...(row.extra || {}), extra: undefined }));
+  res.json({ history });
 });
 
-// Placeholder pool — fallback если Claude недоступен.
+// Placeholder pool — fallback если Claude недоступен. Расширен теми же полями что и AI-сигнал.
 const VIP_DEMO_SIGNALS = [
-  { asset: "EUR/USD", direction: "BUY",  confidence: 87, expiry: 5,
-    rsi: 32, macd: "bullish cross", note: "Price touched lower Bollinger band — reversion likely." },
-  { asset: "GBP/JPY", direction: "SELL", confidence: 82, expiry: 3,
-    rsi: 72, macd: "bearish divergence", note: "Resistance at 213.50, momentum weakening." },
+  { asset: "EUR/USD", direction: "BUY", confidence: 84, expiry: 5,
+    rsi: 32, macd: "bullish cross",
+    current_price: 1.0852, entry_zone: "1.0848-1.0855", support: 1.0820, resistance: 1.0890,
+    stop_loss: 1.0815, take_profit: 1.0888, risk_level: "medium",
+    indicators: { bollinger: "5m candle touched lower band", stochastic: "%K=26, exiting oversold", ma_trend: "above MA50, below MA200" },
+    market_context: "Late Asia / pre-London, dollar slightly weak. Thin liquidity favours mean-reversion.",
+    key_factors: ["Oversold RSI rebound from 30", "Higher-low pattern on 5m", "Volume uptick on bullish bars"],
+    note: "EUR/USD bouncing off 1.0820 support in thin Asia hours. MACD cross on 5m confirms momentum shift." },
+  { asset: "USD/JPY", direction: "SELL", confidence: 81, expiry: 5,
+    rsi: 71, macd: "bearish cross",
+    current_price: 159.42, entry_zone: "159.40-159.48", support: 158.90, resistance: 159.60,
+    stop_loss: 159.70, take_profit: 158.95, risk_level: "medium",
+    indicators: { bollinger: "upper band rejection on 15m", stochastic: "%K=82 overbought", ma_trend: "above MA20 but stalling at MA50" },
+    market_context: "Topping pattern at 159.50 zone, BoJ intervention risk above 160 caps upside.",
+    key_factors: ["Overbought RSI rolling over", "Daily resistance at 159.60", "MACD bearish cross on 15m"],
+    note: "USD/JPY rejecting 159.60 resistance after weak push. Targeting reversion to 159.00 round number." },
   { asset: "BTC/USDT", direction: "BUY", confidence: 79, expiry: 10,
-    rsi: 41, macd: "bullish cross", note: "Bounced off 200 EMA support, volume spike." },
-  { asset: "USD/JPY", direction: "SELL", confidence: 85, expiry: 5,
-    rsi: 71, macd: "bearish cross", note: "Topping pattern at 159.50, MACD cross down." },
-  { asset: "ETH/USDT", direction: "BUY", confidence: 81, expiry: 7,
-    rsi: 58, macd: "bullish", note: "Ascending triangle breakout, higher-low formation." },
-  { asset: "AUD/USD", direction: "BUY", confidence: 78, expiry: 5,
-    rsi: 35, macd: "bullish cross", note: "Oversold bounce zone, weekly support holding." },
+    rsi: 41, macd: "bullish divergence",
+    current_price: 84250, entry_zone: "84100-84400", support: 83500, resistance: 86000,
+    stop_loss: 83200, take_profit: 85900, risk_level: "high",
+    indicators: { bollinger: "middle band hold on 1h", stochastic: "%K=38 turning up", ma_trend: "above MA200 4h, holding bullish bias" },
+    market_context: "BTC defending 200 EMA on 4h after pullback. Funding rates resetting to neutral.",
+    key_factors: ["Bullish divergence RSI vs price", "Volume profile node at 84k", "Higher-low structure on 4h"],
+    note: "BTC bouncing off 200 EMA support with volume spike. Setup invalidated below 83200." },
+  { asset: "GBP/JPY", direction: "SELL", confidence: 82, expiry: 3,
+    rsi: 72, macd: "bearish divergence",
+    current_price: 213.45, entry_zone: "213.40-213.55", support: 212.80, resistance: 213.60,
+    stop_loss: 213.70, take_profit: 212.85, risk_level: "high",
+    indicators: { bollinger: "above upper band — extended", stochastic: "%K=88 deep overbought", ma_trend: "extended above all MAs" },
+    market_context: "GBP/JPY parabolic move into 213.60 resistance, ATR-extended. Mean-reversion setup.",
+    key_factors: ["RSI bearish divergence 5m", "Price >2 ATR above MA20", "Wick rejection at 213.60"],
+    note: "GBP/JPY overstretched into key resistance. Quick reversal play targeting 212.85 mean." },
+  { asset: "XAU/USD", direction: "BUY", confidence: 86, expiry: 8,
+    rsi: 38, macd: "bullish cross",
+    current_price: 2638, entry_zone: "2636-2640", support: 2620, resistance: 2660,
+    stop_loss: 2618, take_profit: 2658, risk_level: "low",
+    indicators: { bollinger: "lower band touch on 15m", stochastic: "%K=22 oversold reversal", ma_trend: "uptrend intact, pullback to MA50" },
+    market_context: "Gold pulling back to MA50 in established uptrend. Risk-off bid intact from geopolitical headlines.",
+    key_factors: ["Pullback to MA50 in uptrend", "Oversold RSI in bullish regime", "Strong demand zone at 2620"],
+    note: "XAU/USD textbook trend continuation pullback. Buying the dip into rising MA50 with tight stop." },
+  { asset: "ETH/USDT", direction: "BUY", confidence: 80, expiry: 7,
+    rsi: 55, macd: "bullish cross",
+    current_price: 3215, entry_zone: "3210-3220", support: 3160, resistance: 3290,
+    stop_loss: 3155, take_profit: 3285, risk_level: "medium",
+    indicators: { bollinger: "squeeze on 1h — expansion likely", stochastic: "%K=52 mid-range", ma_trend: "MA20 crossing MA50 bullish" },
+    market_context: "ETH consolidating after BTC strength. Ascending triangle pattern on 4h building.",
+    key_factors: ["Bollinger squeeze before expansion", "Bullish MA20/50 cross", "Ascending triangle on 4h"],
+    note: "ETH coiling for breakout above 3290. Bollinger squeeze suggests expansion imminent." },
 ];
 
 app.post("/api/vip/signal", authMiddleware, async (req, res) => {
@@ -618,11 +721,24 @@ app.post("/api/vip/signal", authMiddleware, async (req, res) => {
   const { signal, source } = await generateAiSignal();
 
   // Лог в историю — не блокируем ответ если запись падает.
+  // В extra складываем всё что не помещается в плоские колонки (цены, индикаторы, факторы).
+  const extra = {
+    current_price:  signal.current_price ?? null,
+    entry_zone:     signal.entry_zone ?? null,
+    support:        signal.support ?? null,
+    resistance:     signal.resistance ?? null,
+    stop_loss:      signal.stop_loss ?? null,
+    take_profit:    signal.take_profit ?? null,
+    market_context: signal.market_context ?? null,
+    risk_level:     signal.risk_level ?? null,
+    indicators:     signal.indicators ?? null,
+    key_factors:    signal.key_factors ?? null,
+  };
   pool.query(
-    `INSERT INTO vip_signals_log (tg_id, asset, direction, confidence, expiry, rsi, macd, note, source)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+    `INSERT INTO vip_signals_log (tg_id, asset, direction, confidence, expiry, rsi, macd, note, source, extra)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
     [req.tgId, signal.asset, signal.direction, signal.confidence, signal.expiry,
-     signal.rsi || null, signal.macd || null, signal.note || null, source]
+     signal.rsi || null, signal.macd || null, signal.note || null, source, extra]
   ).catch(e => console.error("vip_signals_log insert:", e));
 
   res.json({

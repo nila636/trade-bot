@@ -989,9 +989,11 @@ function mainKeyboard(lang, opts = {}) {
     .text(T.btn_language, "language").row()
     .webApp(T.btn_signal, WEBAPP_URL).row()
     .url(T.btn_broker, POCKET_OPTION_LINK);
-  // VIP-кнопка видна только депозитерам — открывает VIP-меню в этом же боте.
+  // VIP-кнопка видна только депозитерам — открывает Mini App с deep-link на VIP overlay.
+  // ?startapp=vip читается в App.jsx и автоматически открывает VipOverlay при загрузке.
   if (opts.isVip) {
-    kb.row().text(VIP_BTN_LABEL[lang] || VIP_BTN_LABEL.en, "vip_menu");
+    const vipUrl = WEBAPP_URL + (WEBAPP_URL.includes("?") ? "&" : "?") + "startapp=vip";
+    kb.row().webApp(VIP_BTN_LABEL[lang] || VIP_BTN_LABEL.en, vipUrl);
   }
   return kb;
 }
@@ -1050,12 +1052,16 @@ async function openVipMenu(ctx, lang) {
   const T = VIP_I18N[lang] || VIP_I18N.en;
   const depo = await isDepositor(ctx.from.id);
   if (!depo) {
+    // Не-депозитерам шлём текстовое сообщение с CTA на регистрацию.
     const kb = new InlineKeyboard()
       .url(T.btn_register, `${POCKET_OPTION_LINK}&sub_id1=${ctx.from.id}`).row()
       .text((L[lang] || L.en).btn_back || "⬅", "back_main");
     return ctx.reply(T.need_deposit, { parse_mode: "HTML", reply_markup: kb, disable_web_page_preview: true });
   }
-  const { kb } = await buildVipKeyboard(ctx.from.id, lang);
+  // Депозитерам — открываем VIP overlay прямо в Mini App.
+  const vipUrl = WEBAPP_URL + (WEBAPP_URL.includes("?") ? "&" : "?") + "startapp=vip";
+  const kb = new InlineKeyboard()
+    .webApp(VIP_BTN_LABEL[lang] || VIP_BTN_LABEL.en, vipUrl);
   await ctx.reply(
     vipFmt(T.welcome, { limit: SIGNALS_PER_DAY, hour: RESET_HOUR_UTC }),
     { parse_mode: "HTML", reply_markup: kb }
