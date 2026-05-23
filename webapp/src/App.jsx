@@ -2339,7 +2339,7 @@ export default function TradeAppBot() {
 
         {/* ACCORDIONS */}
         {!gateMode && <main className="relative z-10 px-4 mt-5 space-y-3">
-          {/* VIP-карточка — мотиватор сделать депозит, ссылка на @vip_bot */}
+          {/* VIP-карточка — total black, центр, вся область кликается */}
           {(() => {
             const vipT = VIP_CARD[lang] || VIP_CARD.en;
             return (
@@ -2347,20 +2347,13 @@ export default function TradeAppBot() {
                 href={VIP_BOT_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="block rounded-2xl bg-gradient-to-br from-black via-neutral-900 to-black border border-yellow-500/30 shadow-[0_0_24px_rgba(234,179,8,0.18)] p-4 hover:border-yellow-500/70 hover:shadow-[0_0_32px_rgba(234,179,8,0.30)] transition-all"
+                className="block rounded-2xl bg-black border border-white/10 px-5 py-5 text-center hover:border-white/30 hover:bg-neutral-950 transition-all"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400/20 to-yellow-600/10 border border-yellow-500/30 flex items-center justify-center text-2xl flex-shrink-0">
-                    💎
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-extrabold text-yellow-400 tracking-wider truncate">{vipT.title}</div>
-                    <div className="text-xs text-neutral-400 mt-0.5 truncate">{vipT.sub}</div>
-                  </div>
-                  <div className="text-xs font-bold text-black bg-gradient-to-br from-yellow-300 to-yellow-500 px-4 py-2.5 rounded-lg whitespace-nowrap flex-shrink-0">
-                    {vipT.btn}
-                  </div>
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-xl">💎</span>
+                  <span className="text-base font-extrabold text-white tracking-[0.15em]">{vipT.title}</span>
                 </div>
+                <div className="text-[11px] text-neutral-500 mt-1.5 tracking-wide">{vipT.sub}</div>
               </a>
             );
           })()}
