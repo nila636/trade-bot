@@ -998,6 +998,35 @@ function mainKeyboard(lang, opts = {}) {
   return kb;
 }
 
+// Persistent reply keyboard — постоянное меню снизу (как у MostBet/казино-ботов).
+// WebApp кнопки открывают Mini App сразу; text кнопки бот ловит через bot.hears(...).
+function mainReplyKeyboard(lang, opts = {}) {
+  const T = L[lang] || L.en;
+  const rows = [
+    [{ text: T.btn_signal, web_app: { url: WEBAPP_URL } }],
+  ];
+  if (opts.isVip) {
+    const vipUrl = WEBAPP_URL + (WEBAPP_URL.includes("?") ? "&" : "?") + "startapp=vip";
+    rows.push([{ text: VIP_BTN_LABEL[lang] || VIP_BTN_LABEL.en, web_app: { url: vipUrl } }]);
+  }
+  rows.push([{ text: T.btn_broker }]);
+  rows.push([{ text: T.btn_guide }, { text: T.btn_support }]);
+  rows.push([{ text: T.btn_reviews }, { text: T.btn_language }]);
+  return {
+    keyboard: rows,
+    resize_keyboard: true,
+    is_persistent: true,
+  };
+}
+
+// Собирает все локализации одного ключа (для bot.hears принимающего array of strings)
+function allLabelsFor(key) {
+  return Object.values(L).map(l => l && l[key]).filter(Boolean);
+}
+function allVipLabels() {
+  return Object.values(VIP_BTN_LABEL).filter(Boolean);
+}
+
 function langKeyboard() {
   // 8 языков, по 2 в ряду
   const kb = new InlineKeyboard();
@@ -1040,7 +1069,8 @@ async function showWelcome(ctx, lang) {
   const T = L[lang] || L.en;
   const caption = `${T.title}\n\n${T.welcome}\n\n${T.choose}`;
   const isVip = await isDepositor(ctx.from.id);
-  const opts = { parse_mode: "Markdown", reply_markup: mainKeyboard(lang, { isVip }) };
+  // Persistent reply keyboard снизу — главное меню действий, всегда видно.
+  const opts = { parse_mode: "Markdown", reply_markup: mainReplyKeyboard(lang, { isVip }) };
   if (WELCOME_IMAGE) {
     await ctx.replyWithPhoto(WELCOME_IMAGE, { caption, ...opts });
   } else {
@@ -1107,6 +1137,46 @@ bot.command("po", async (ctx) => {
     `sub_id1=${ctx.from.id}&click_id=${ctx.from.id}`;
   const kb = new InlineKeyboard().url(T.btn_broker, url);
   await ctx.reply("🏦", { reply_markup: kb });
+});
+
+/* ───────── Reply-keyboard text handlers ─────────
+ * Когда юзер тапает кнопку persistent-меню, Telegram шлёт обычное сообщение
+ * с текстом кнопки. Ловим все 12 локализаций каждой кнопки через bot.hears.
+ * WebApp-кнопки (btn_signal, VIP) Telegram открывает сам — здесь их нет. */
+
+bot.hears(allLabelsFor("btn_guide"), async (ctx) => {
+  const lang = await getLangOrEn(ctx.from.id);
+  await ctx.reply(L[lang].guide, { parse_mode: "Markdown" });
+});
+
+bot.hears(allLabelsFor("btn_reviews"), async (ctx) => {
+  await ctx.reply(REVIEWS_URL);
+});
+
+bot.hears(allLabelsFor("btn_support"), async (ctx) => {
+  await ctx.reply(SUPPORT_URL);
+});
+
+bot.hears(allLabelsFor("btn_language"), async (ctx) => {
+  await ctx.reply(
+    "🌐 *Choose your language / Выберите язык:*",
+    { parse_mode: "Markdown", reply_markup: langKeyboard() }
+  );
+});
+
+bot.hears(allLabelsFor("btn_broker"), async (ctx) => {
+  const lang = await getLangOrEn(ctx.from.id);
+  const T = L[lang] || L.en;
+  const url = POCKET_OPTION_LINK + (POCKET_OPTION_LINK.includes("?") ? "&" : "?") +
+    `sub_id1=${ctx.from.id}&click_id=${ctx.from.id}`;
+  const kb = new InlineKeyboard().url(T.btn_broker, url);
+  await ctx.reply("🏦", { reply_markup: kb });
+});
+
+// VIP — если юзер тапнул label из reply keyboard (а не WebApp кнопка по какой-то причине).
+bot.hears(allVipLabels(), async (ctx) => {
+  const lang = await getLangOrEn(ctx.from.id);
+  await openVipMenu(ctx, lang);
 });
 
 bot.callbackQuery("vip_blocked", async (ctx) => {
@@ -1186,19 +1256,9 @@ bot.callbackQuery(/^setlang_([a-z]{2})$/, async (ctx) => {
   await setLang(ctx.from.id, code);
   const T = L[code];
   await ctx.answerCallbackQuery({ text: T.lang_set });
-  // Показываем приветствие на новом языке
-  // Сначала пытаемся обновить caption у текущего сообщения, если не вышло — отправляем новое
-  const caption = `${T.title}\n\n${T.welcome}\n\n${T.choose}`;
-  const isVip = await isDepositor(ctx.from.id);
-  try {
-    await ctx.editMessageCaption({ caption, parse_mode: "Markdown", reply_markup: mainKeyboard(code, { isVip }) });
-  } catch {
-    try {
-      await ctx.editMessageText(caption, { parse_mode: "Markdown", reply_markup: mainKeyboard(code, { isVip }) });
-    } catch {
-      await showWelcome(ctx, code);
-    }
-  }
+  // Удаляем сообщение с выбором языка и шлём новое welcome с reply-клавиатурой на выбранном языке.
+  await ctx.deleteMessage().catch(() => {});
+  await showWelcome(ctx, code);
 });
 
 bot.callbackQuery("back_main", async (ctx) => {
