@@ -1132,6 +1132,24 @@ bot.command("app", async (ctx) => {
   await ctx.reply("🚀", { reply_markup: kb });
 });
 
+// /url — диагностика: показывает какой URL бот использует в web_app кнопках
+// и кладёт тестовую web_app кнопку с этим же URL. Если кнопка ниже работает,
+// а "Получить сигнал" в reply-keyboard нет — TG Desktop держит старый state,
+// нужно очистить Local Storage. Если и эта кнопка даёт Access error — проблема
+// в URL (см. вывод ниже).
+bot.command("url", async (ctx) => {
+  const me = await bot.api.getMe().catch(() => ({ username: "?" }));
+  const raw = process.env.WEBAPP_URL || "(not set, using fallback)";
+  const text =
+    `🔍 *WebApp URL diagnostics*\n\n` +
+    `Bot: @${me.username} (id ${me.id})\n` +
+    `env WEBAPP\\_URL: \`${raw}\`\n` +
+    `Used URL: \`${WEBAPP_URL}\`\n\n` +
+    `Тестовая web\\_app кнопка ниже использует именно этот URL.`;
+  const kb = new InlineKeyboard().webApp("🧪 Test WebApp", WEBAPP_URL);
+  await ctx.reply(text, { parse_mode: "Markdown", reply_markup: kb });
+});
+
 // /po — быстрая реферальная ссылка на Pocket Option с sub_id1
 bot.command("po", async (ctx) => {
   const lang = await getLangOrEn(ctx.from.id);
