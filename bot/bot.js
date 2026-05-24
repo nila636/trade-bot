@@ -19,7 +19,10 @@ import "dotenv/config";
 import pg from "pg";
 
 const BOT_TOKEN     = process.env.BOT_TOKEN;
-const WEBAPP_URL    = process.env.WEBAPP_URL    || "https://example.com";
+// WebApp URL ОБЯЗАТЕЛЬНО должен заканчиваться слешем — иначе Vercel делает 301-редирект
+// на канонический URL со слешем и при этом Telegram теряет initData → bad_init_data.
+const WEBAPP_URL_RAW = process.env.WEBAPP_URL || "https://example.com";
+const WEBAPP_URL    = WEBAPP_URL_RAW.endsWith("/") ? WEBAPP_URL_RAW : WEBAPP_URL_RAW + "/";
 const SUPPORT_URL   = process.env.SUPPORT_URL   || "https://t.me/your_support";
 const REVIEWS_URL   = process.env.REVIEWS_URL   || "https://t.me/your_reviews";
 const WELCOME_IMAGE = process.env.WELCOME_IMAGE;
