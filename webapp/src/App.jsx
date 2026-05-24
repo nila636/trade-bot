@@ -3899,7 +3899,7 @@ function NumInput({ label, value, onChange, step = 1, min, max }) {
 /* ────────────────────────── VIP OVERLAY ────────────────────────── */
 
 // Расширенная карточка сигнала с RSI-баром, уровнями цен, индикаторами, факторами.
-function SignalCard({ signal, source, T }) {
+function SignalCard({ signal, source, T, lang }) {
   const isBuy = signal.direction === "BUY";
   const dirColor = isBuy ? "emerald" : "rose";
 
@@ -3944,6 +3944,7 @@ function SignalCard({ signal, source, T }) {
               <div className="text-[11px] text-neutral-500 mono mt-0.5">
                 <span className="uppercase tracking-wider">{T.current_price}: </span>
                 <span className="text-neutral-300 font-bold">{fmtPrice(signal.current_price)}</span>
+                <span className="text-[9px] text-neutral-600 italic ml-1 normal-case tracking-normal">· market</span>
               </div>
             )}
           </div>
@@ -3956,6 +3957,9 @@ function SignalCard({ signal, source, T }) {
             {isBuy ? T.direction_buy : T.direction_sell}
           </div>
         </div>
+
+        {/* Live TradingView chart — bridges market price gap with PO spread */}
+        <TradingViewMini ticker={signal.asset} locale={lang === "en" ? "en" : lang} />
 
         {/* Metrics row: confidence + expiry + risk */}
         <div className="grid grid-cols-3 gap-2">
@@ -4092,6 +4096,71 @@ function IndicatorRow({ label, text }) {
     <div className="flex items-start gap-3">
       <span className="text-[10px] text-neutral-500 uppercase tracking-wider font-bold flex-shrink-0 pt-0.5 w-20">{label}</span>
       <span className="text-xs text-neutral-300 leading-relaxed flex-1">{text}</span>
+    </div>
+  );
+}
+
+// Маппинг наших тикеров → TradingView symbol для embed-виджета.
+// Для OTC указываем underlying spot symbol (PO синтезирует OTC из реального рынка).
+const TV_SYMBOL = {
+  // FX
+  "EUR/USD":"FX:EURUSD","GBP/USD":"FX:GBPUSD","USD/JPY":"FX:USDJPY","USD/CHF":"FX:USDCHF",
+  "USD/CAD":"FX:USDCAD","AUD/USD":"FX:AUDUSD","NZD/USD":"FX:NZDUSD","EUR/GBP":"FX:EURGBP",
+  "EUR/JPY":"FX:EURJPY","EUR/CHF":"FX:EURCHF","EUR/CAD":"FX:EURCAD","EUR/AUD":"FX:EURAUD",
+  "EUR/NZD":"FX:EURNZD","GBP/JPY":"FX:GBPJPY","GBP/CHF":"FX:GBPCHF","GBP/CAD":"FX:GBPCAD",
+  "GBP/AUD":"FX:GBPAUD","AUD/JPY":"FX:AUDJPY","AUD/CAD":"FX:AUDCAD","AUD/NZD":"FX:AUDNZD",
+  "AUD/CHF":"FX:AUDCHF","NZD/JPY":"FX:NZDJPY","CAD/JPY":"FX:CADJPY","CAD/CHF":"FX:CADCHF",
+  "CHF/JPY":"FX:CHFJPY","USD/TRY":"FX:USDTRY","USD/MXN":"FX:USDMXN","USD/ZAR":"FX:USDZAR",
+  // OTC → underlying spot
+  "EUR/USD OTC":"FX:EURUSD","GBP/USD OTC":"FX:GBPUSD","USD/JPY OTC":"FX:USDJPY",
+  "AUD/USD OTC":"FX:AUDUSD","NZD/USD OTC":"FX:NZDUSD","USD/CHF OTC":"FX:USDCHF",
+  "USD/CAD OTC":"FX:USDCAD","EUR/JPY OTC":"FX:EURJPY","GBP/JPY OTC":"FX:GBPJPY",
+  "CHF/JPY OTC":"FX:CHFJPY","EUR/CAD OTC":"FX:EURCAD","CHF/NOK OTC":"FX:CHFNOK",
+  "BHD/CNY OTC":"FX_IDC:BHDCNY","USD/ARS OTC":"FX:USDARS",
+  // Crypto
+  "BTC/USDT":"BINANCE:BTCUSDT","ETH/USDT":"BINANCE:ETHUSDT","BNB/USDT":"BINANCE:BNBUSDT",
+  "SOL/USDT":"BINANCE:SOLUSDT","XRP/USDT":"BINANCE:XRPUSDT","ADA/USDT":"BINANCE:ADAUSDT",
+  "DOGE/USDT":"BINANCE:DOGEUSDT","AVAX/USDT":"BINANCE:AVAXUSDT","TRX/USDT":"BINANCE:TRXUSDT",
+  "DOT/USDT":"BINANCE:DOTUSDT","LINK/USDT":"BINANCE:LINKUSDT","MATIC/USDT":"BINANCE:MATICUSDT",
+  "LTC/USDT":"BINANCE:LTCUSDT","BCH/USDT":"BINANCE:BCHUSDT","SHIB/USDT":"BINANCE:SHIBUSDT",
+  "UNI/USDT":"BINANCE:UNIUSDT","ATOM/USDT":"BINANCE:ATOMUSDT","XLM/USDT":"BINANCE:XLMUSDT",
+  "NEAR/USDT":"BINANCE:NEARUSDT","APT/USDT":"BINANCE:APTUSDT","FIL/USDT":"BINANCE:FILUSDT",
+  "ETC/USDT":"BINANCE:ETCUSDT",
+  // Stocks (US)
+  "AAPL":"NASDAQ:AAPL","MSFT":"NASDAQ:MSFT","GOOGL":"NASDAQ:GOOGL","AMZN":"NASDAQ:AMZN",
+  "META":"NASDAQ:META","TSLA":"NASDAQ:TSLA","NVDA":"NASDAQ:NVDA","NFLX":"NASDAQ:NFLX",
+  "JPM":"NYSE:JPM","V":"NYSE:V","MA":"NYSE:MA","PYPL":"NASDAQ:PYPL","DIS":"NYSE:DIS",
+  "NKE":"NYSE:NKE","MCD":"NYSE:MCD","KO":"NYSE:KO","PEP":"NASDAQ:PEP","SBUX":"NASDAQ:SBUX",
+  "BA":"NYSE:BA","INTC":"NASDAQ:INTC","AMD":"NASDAQ:AMD","CSCO":"NASDAQ:CSCO",
+  "ORCL":"NYSE:ORCL","IBM":"NYSE:IBM","ADBE":"NASDAQ:ADBE","CRM":"NYSE:CRM",
+  "UBER":"NYSE:UBER","ABNB":"NASDAQ:ABNB","SHOP":"NYSE:SHOP","SPOT":"NYSE:SPOT",
+  "BABA":"NYSE:BABA","WMT":"NYSE:WMT","XOM":"NYSE:XOM","CVX":"NYSE:CVX","PFE":"NYSE:PFE",
+  "COIN":"NASDAQ:COIN",
+  // Commodities
+  "XAU/USD":"OANDA:XAUUSD","XAG/USD":"OANDA:XAGUSD","XPT/USD":"TVC:PLATINUM",
+  "XPD/USD":"TVC:PALLADIUM","WTI":"TVC:USOIL","BRENT":"TVC:UKOIL","NATGAS":"TVC:NATURALGAS",
+  "COPPER":"TVC:COPPER","COFFEE":"TVC:KC1!",
+  // Indices
+  "SPX500":"FOREXCOM:SPXUSD","NAS100":"FOREXCOM:NSXUSD","DJ30":"FOREXCOM:DJIUSD",
+  "RUS2K":"FOREXCOM:RUTUSD","UK100":"FOREXCOM:UKXGBP","GER40":"FOREXCOM:DEUIDXEUR",
+  "FRA40":"FOREXCOM:FRXEUR","EU50":"FOREXCOM:EUSIDXEUR","JPN225":"FOREXCOM:JPXJPY",
+  "HK50":"FOREXCOM:HKXHKD","CN50":"FOREXCOM:CHNIDXUSD","AUS200":"FOREXCOM:AUSIDXAUD",
+};
+
+// Inline TradingView widget (mini chart). Telegram WebApp поддерживает iframe.
+function TradingViewMini({ ticker, theme = "dark", locale = "en" }) {
+  const symbol = TV_SYMBOL[ticker];
+  if (!symbol) return null;
+  const src = `https://s.tradingview.com/embed-widget/mini-symbol-overview/?symbol=${encodeURIComponent(symbol)}&dateRange=1D&colorTheme=${theme}&trendLineColor=rgba(234%2C179%2C8%2C1)&underLineColor=rgba(234%2C179%2C8%2C0.18)&underLineBottomColor=rgba(234%2C179%2C8%2C0)&isTransparent=true&autosize=true&locale=${locale}`;
+  return (
+    <div className="rounded-xl overflow-hidden border border-white/5 bg-black/40" style={{ height: 200 }}>
+      <iframe
+        src={src}
+        title={`TradingView ${symbol}`}
+        style={{ width: "100%", height: "100%", border: 0 }}
+        allowtransparency="true"
+        loading="lazy"
+      />
     </div>
   );
 }
@@ -4350,7 +4419,7 @@ function VipOverlay({ lang, session, apiUrl, brokerUrl, livePrices, tgId, onClos
             )}
 
             {/* Карточка сигнала — расширенный анализ */}
-            {signal && <SignalCard signal={signal} source={signalSource} T={T} />}
+            {signal && <SignalCard signal={signal} source={signalSource} T={T} lang={lang} />}
 
             {/* No-signal hint */}
             {!signal && !error && (
