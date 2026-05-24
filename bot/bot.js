@@ -1002,18 +1002,17 @@ function mainKeyboard(lang, opts = {}) {
 }
 
 // Persistent reply keyboard — постоянное меню снизу (как у MostBet/казино-ботов).
-// Все кнопки — обычный text; бот ловит их через bot.hears(...) и отвечает
-// сообщением с inline web_app кнопкой. Reply-keyboard web_app кнопки требуют,
-// чтобы URL был в whitelist бота, и на TG Desktop 9.6 это срабатывает не у
-// всех чатов (даже при выставленном menu button типа web_app) — отдаёт
-// "bad_init_data: no initData". Inline web_app кнопки работают всегда.
+// WebApp кнопки открывают Mini App сразу; text кнопки бот ловит через bot.hears(...).
+// Reply-keyboard web_app работает потому что Mini App зарегистрирован у бота
+// через BotFather /newapp — URL whitelist'нут на уровне платформы.
 function mainReplyKeyboard(lang, opts = {}) {
   const T = L[lang] || L.en;
   const rows = [
-    [{ text: T.btn_signal }],
+    [{ text: T.btn_signal, web_app: { url: WEBAPP_URL } }],
   ];
   if (opts.isVip) {
-    rows.push([{ text: VIP_BTN_LABEL[lang] || VIP_BTN_LABEL.en }]);
+    const vipUrl = WEBAPP_URL + (WEBAPP_URL.includes("?") ? "&" : "?") + "startapp=vip";
+    rows.push([{ text: VIP_BTN_LABEL[lang] || VIP_BTN_LABEL.en, web_app: { url: vipUrl } }]);
   }
   rows.push([{ text: T.btn_broker }]);
   rows.push([{ text: T.btn_guide }, { text: T.btn_support }]);
@@ -1165,16 +1164,8 @@ bot.command("po", async (ctx) => {
 
 /* ───────── Reply-keyboard text handlers ─────────
  * Когда юзер тапает кнопку persistent-меню, Telegram шлёт обычное сообщение
- * с текстом кнопки. Ловим все 12 локализаций каждой кнопки через bot.hears
- * и отвечаем сообщением с inline web_app кнопкой (она всегда передаёт
- * initData, в отличие от reply-keyboard web_app). */
-
-bot.hears(allLabelsFor("btn_signal"), async (ctx) => {
-  const lang = await getLangOrEn(ctx.from.id);
-  const T = L[lang] || L.en;
-  const kb = new InlineKeyboard().webApp(T.btn_signal, WEBAPP_URL);
-  await ctx.reply("🚀", { reply_markup: kb });
-});
+ * с текстом кнопки. Ловим все 12 локализаций каждой кнопки через bot.hears.
+ * WebApp-кнопки (btn_signal, VIP) Telegram открывает сам — здесь их нет. */
 
 bot.hears(allLabelsFor("btn_guide"), async (ctx) => {
   const lang = await getLangOrEn(ctx.from.id);
