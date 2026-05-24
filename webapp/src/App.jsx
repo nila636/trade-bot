@@ -3031,6 +3031,7 @@ export default function TradeAppBot() {
             session={authState.session}
             apiUrl={API_URL}
             brokerUrl={BROKER_URL}
+            livePrices={livePrices}
             tgId={typeof window !== "undefined" ? (window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null) : null}
             onClose={() => setVipOpen(false)}
           />
@@ -3999,24 +4000,14 @@ function SignalCard({ signal, source, T }) {
           </div>
         </div>
 
-        {/* Уровни цен: support / resistance / entry / SL / TP */}
-        {hasPrices && (
+        {/* Уровни support / resistance — для PO бинарок TP/SL не применяются, эти оставляем как технические зоны */}
+        {(signal.support != null || signal.resistance != null) && (
           <div className="bg-black/40 rounded-xl px-4 py-3 border border-white/5 space-y-2">
-            <div className="text-[10px] text-neutral-500 uppercase tracking-wider mb-1">Levels</div>
-            {signal.entry_zone && (
-              <PriceRow label={T.entry_zone} value={signal.entry_zone} accent="yellow" />
-            )}
-            {signal.take_profit != null && (
-              <PriceRow label={T.take_profit} value={fmtPrice(signal.take_profit)} accent="emerald" />
-            )}
-            {signal.stop_loss != null && (
-              <PriceRow label={T.stop_loss} value={fmtPrice(signal.stop_loss)} accent="rose" />
-            )}
             {signal.resistance != null && (
-              <PriceRow label={T.resistance} value={fmtPrice(signal.resistance)} accent="neutral" />
+              <PriceRow label={T.resistance} value={fmtPrice(signal.resistance)} accent="rose" />
             )}
             {signal.support != null && (
-              <PriceRow label={T.support} value={fmtPrice(signal.support)} accent="neutral" />
+              <PriceRow label={T.support} value={fmtPrice(signal.support)} accent="emerald" />
             )}
           </div>
         )}
@@ -4115,7 +4106,7 @@ const VIP_CATEGORIES = [
   { key: "idx",    emoji: "📈" },
 ];
 
-function VipOverlay({ lang, session, apiUrl, brokerUrl, tgId, onClose }) {
+function VipOverlay({ lang, session, apiUrl, brokerUrl, livePrices, tgId, onClose }) {
   const T = VIP_PANEL[lang] || VIP_PANEL.en;
   const [status, setStatus] = useState(null);
   const [signal, setSignal] = useState(null);
@@ -4157,10 +4148,17 @@ function VipOverlay({ lang, session, apiUrl, brokerUrl, tgId, onClose }) {
     setLoading(true);
     setError("");
     try {
+      // livePrices приходят через props — собираем словарь { ticker: price } для бэка
+      const pricesPayload = {};
+      if (livePrices) {
+        for (const [ticker, q] of Object.entries(livePrices)) {
+          if (q && Number.isFinite(Number(q.price))) pricesPayload[ticker] = Number(q.price);
+        }
+      }
       const r = await fetch(`${apiUrl}/api/vip/signal`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Session": session },
-        body: JSON.stringify({ category }),
+        body: JSON.stringify({ category, lang, prices: pricesPayload }),
       });
       const d = await r.json();
       if (r.status === 429) {
@@ -4307,14 +4305,25 @@ function VipOverlay({ lang, session, apiUrl, brokerUrl, tgId, onClose }) {
                   <span className="text-neutral-600"> / {limit}</span>
                 </div>
               </div>
-              <div className="flex gap-1.5">
-                {Array.from({ length: limit }).map((_, i) => (
+              {limit <= 10 ? (
+                // Малый лимит — точки
+                <div className="flex gap-1.5">
+                  {Array.from({ length: limit }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`flex-1 h-2 rounded-full ${i < today ? "bg-yellow-500" : "bg-white/10"}`}
+                    />
+                  ))}
+                </div>
+              ) : (
+                // Большой лимит — единая прогресс-полоса
+                <div className="relative h-2 rounded-full bg-white/10 overflow-hidden">
                   <div
-                    key={i}
-                    className={`flex-1 h-2 rounded-full ${i < today ? "bg-yellow-500" : "bg-white/10"}`}
+                    className="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-yellow-400 to-yellow-500 transition-all"
+                    style={{ width: `${Math.min(100, (today / limit) * 100)}%` }}
                   />
-                ))}
-              </div>
+                </div>
+              )}
             </div>
 
             {/* Кнопка получения сигнала */}

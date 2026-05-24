@@ -463,8 +463,16 @@ app.get("/api/me", authMiddleware, async (req, res) => {
  * /api/vip/status — текущий статус юзера (депозитер ли, сколько сигналов осталось)
  * /api/vip/signal — выдача нового сигнала с atomic increment счётчика */
 
-const VIP_LIMIT_PER_DAY = Number(process.env.SIGNALS_PER_DAY || 5);
+const VIP_LIMIT_PER_DAY = Number(process.env.SIGNALS_PER_DAY || 20);
 const VIP_RESET_HOUR    = Number(process.env.RESET_HOUR_UTC || 9);
+
+// Маппинг lang-code → название языка для Claude prompt
+const VIP_LANG_NAMES = {
+  ru: "Russian", en: "English", es: "Spanish", pt: "Portuguese (Brazilian)",
+  tr: "Turkish", vi: "Vietnamese", id: "Indonesian", hi: "Hindi",
+  uz: "Uzbek (Latin script)", tg: "Tajik (Cyrillic)",
+  kk: "Kazakh (Cyrillic)", uk: "Ukrainian",
+};
 
 function secondsToNextReset() {
   const now = new Date();
@@ -531,7 +539,7 @@ const CATEGORY_HINTS = {
   idx: "Stock index. Consider index components' direction, futures market sentiment, key support/resistance, opening gaps. Use realistic index prices (SPX in 5000s, NAS in 18000-22000s, etc.).",
 };
 
-async function generateAiSignal(category) {
+async function generateAiSignal(category, lang, prices) {
   const validCategory = VIP_ASSETS_BY_CATEGORY[category] ? category : null;
   if (!anthropic) {
     // Demo pool отфильтрованный по категории, если категория валидна.
@@ -556,14 +564,31 @@ async function generateAiSignal(category) {
       ? VIP_ASSETS_BY_CATEGORY[validCategory].join(", ")
       : Object.values(VIP_ASSETS_BY_CATEGORY).flat().join(", ");
     const categoryHint = validCategory ? (CATEGORY_HINTS[validCategory] || "") : "";
+    const langName = VIP_LANG_NAMES[lang] || "English";
 
-    const prompt = `You are a senior trader generating one trade signal for a binary-options platform.
+    // Реальные котировки (если фронт прислал) — Claude использует их как опору.
+    let pricesBlock = "";
+    if (prices && typeof prices === "object") {
+      const lines = Object.entries(prices)
+        .filter(([t, p]) => Number.isFinite(Number(p)))
+        .filter(([t]) => !validCategory || VIP_ASSETS_BY_CATEGORY[validCategory].includes(t))
+        .slice(0, 30)
+        .map(([t, p]) => `  ${t} = ${p}`);
+      if (lines.length) pricesBlock = `\nLIVE PRICES (use these as ground truth for current_price, support/resistance levels):\n${lines.join("\n")}\n`;
+    }
+
+    const prompt = `You are a senior trader generating one trade signal for a binary-options platform (Pocket Option).
+On a binary platform the user only picks DIRECTION + EXPIRY — there is no take-profit, stop-loss, or entry-zone.
+Goal: predict whether price will be higher or lower than now at expiry.
+
 Output ONE realistic high-confidence signal as STRICT JSON.
 
 ASSETS (pick exactly ONE from this exact list — use the ticker verbatim including "OTC" suffix if present):
 ${assetList}
 
-CATEGORY CONTEXT: ${categoryHint}
+CATEGORY CONTEXT: ${categoryHint}${pricesBlock}
+
+OUTPUT LANGUAGE: ALL text fields (note, market_context, key_factors, indicators.bollinger/stochastic/ma_trend) MUST be written in ${langName}. Only ticker names, MACD label and direction stay in English.
 
 REFERENCE TIME (UTC): ${nowUtc}
 TRADING SESSION: ${session}
@@ -578,7 +603,9 @@ REQUIREMENTS:
 - key_factors: exactly 3 short bullet points, max ~70 chars each, concrete and specific
 - note: 2-3 sentences (max ~280 chars) — sound like a senior trader explaining the setup, not a textbook
 
-Respond with ONLY a JSON object, no markdown, no code fences:
+DO NOT include take_profit, stop_loss, or entry_zone — Pocket Option is a binary platform, these fields are not applicable.
+
+Respond with ONLY a JSON object, no markdown, no code fences. Example shape (text fields in ${langName}):
 
 {
   "asset": "EUR/USD",
@@ -588,24 +615,21 @@ Respond with ONLY a JSON object, no markdown, no code fences:
   "rsi": 34,
   "macd": "bullish cross",
   "current_price": 1.0852,
-  "entry_zone": "1.0848-1.0855",
   "support": 1.0820,
   "resistance": 1.0890,
-  "stop_loss": 1.0815,
-  "take_profit": 1.0888,
   "indicators": {
-    "bollinger": "5m candle touched lower band, wicks rejecting",
-    "stochastic": "%K=24, exiting oversold and curling up",
-    "ma_trend": "above MA50, below MA200 — counter-trend bounce"
+    "bollinger": "<text in ${langName}>",
+    "stochastic": "<text in ${langName}>",
+    "ma_trend": "<text in ${langName}>"
   },
-  "market_context": "Late Asia / pre-London, dollar slightly weak after weak Tokyo CPI; thin liquidity favours mean-reversion plays.",
+  "market_context": "<text in ${langName}>",
   "risk_level": "medium",
   "key_factors": [
-    "Oversold RSI rebound from 30",
-    "Higher-low structure forming on 5m",
-    "Volume uptick on last 3 bullish bars"
+    "<text in ${langName}>",
+    "<text in ${langName}>",
+    "<text in ${langName}>"
   ],
-  "note": "EUR/USD bouncing off 1.0820 support in thin Asia hours. MACD cross on 5m confirms momentum shift; targeting short-term recovery into London open."
+  "note": "<text in ${langName}>"
 }`;
 
     const resp = await anthropic.messages.create({
@@ -628,13 +652,12 @@ Respond with ONLY a JSON object, no markdown, no code fences:
     s.macd = String(s.macd || "neutral").slice(0, 40);
     s.note = String(s.note || "").slice(0, 320);
     s.current_price  = Number.isFinite(Number(s.current_price))  ? Number(s.current_price)  : null;
-    s.entry_zone     = s.entry_zone ? String(s.entry_zone).slice(0, 30) : null;
     s.support        = Number.isFinite(Number(s.support))    ? Number(s.support)    : null;
     s.resistance     = Number.isFinite(Number(s.resistance)) ? Number(s.resistance) : null;
-    s.stop_loss      = Number.isFinite(Number(s.stop_loss))  ? Number(s.stop_loss)  : null;
-    s.take_profit    = Number.isFinite(Number(s.take_profit))? Number(s.take_profit): null;
     s.market_context = s.market_context ? String(s.market_context).slice(0, 280) : null;
     s.risk_level     = ["low", "medium", "high"].includes(s.risk_level) ? s.risk_level : "medium";
+    // Удаляем TP/SL/entry_zone если Claude их всё-таки прислал (Pocket Option их не использует)
+    delete s.entry_zone; delete s.stop_loss; delete s.take_profit;
 
     if (s.indicators && typeof s.indicators === "object") {
       s.indicators = {
@@ -736,9 +759,20 @@ app.post("/api/vip/signal", authMiddleware, async (req, res) => {
   if (!pool) return res.status(503).json({ error: "db unavailable" });
 
   // Категория (обязательна) — ограничивает Claude списком тикеров для данной категории.
-  const category = String((req.body && req.body.category) || "").trim();
+  const body = req.body || {};
+  const category = String(body.category || "").trim();
   if (!VIP_ASSETS_BY_CATEGORY[category]) {
     return res.status(400).json({ error: "invalid_category", allowed: Object.keys(VIP_ASSETS_BY_CATEGORY) });
+  }
+  const lang = String(body.lang || "en").slice(0, 5);
+
+  // Объединяем server-side quotesCache (crypto/stocks/indices/commodities) с тем что прислал фронт
+  // (там обычно frankfurter FX-пары). Server-side приоритетнее как более свежий источник.
+  const clientPrices = body.prices && typeof body.prices === "object" ? body.prices : {};
+  await refreshQuotes().catch(() => {});
+  const merged = { ...clientPrices };
+  for (const [t, q] of Object.entries(quotesCache.data || {})) {
+    if (q && Number.isFinite(Number(q.price))) merged[t] = Number(q.price);
   }
 
   // Депозитер?
@@ -770,7 +804,7 @@ app.post("/api/vip/signal", authMiddleware, async (req, res) => {
     });
   }
 
-  const { signal, source } = await generateAiSignal(category);
+  const { signal, source } = await generateAiSignal(category, lang, merged);
 
   // Защита: если Claude по какой-то причине вернул ассет вне списка категории — заменяем на первый из списка.
   if (!VIP_ASSETS_BY_CATEGORY[category].includes(signal.asset)) {
@@ -778,15 +812,17 @@ app.post("/api/vip/signal", authMiddleware, async (req, res) => {
     signal.asset = VIP_ASSETS_BY_CATEGORY[category][Math.floor(Math.random() * VIP_ASSETS_BY_CATEGORY[category].length)];
   }
 
+  // Если у нас есть live-цена для этого актива — перезаписываем current_price (приоритет реалу над AI).
+  if (Number.isFinite(Number(merged[signal.asset]))) {
+    signal.current_price = Number(merged[signal.asset]);
+  }
+
   // Лог в историю — не блокируем ответ если запись падает.
   // В extra складываем всё что не помещается в плоские колонки (цены, индикаторы, факторы).
   const extra = {
     current_price:  signal.current_price ?? null,
-    entry_zone:     signal.entry_zone ?? null,
     support:        signal.support ?? null,
     resistance:     signal.resistance ?? null,
-    stop_loss:      signal.stop_loss ?? null,
-    take_profit:    signal.take_profit ?? null,
     market_context: signal.market_context ?? null,
     risk_level:     signal.risk_level ?? null,
     indicators:     signal.indicators ?? null,
