@@ -1174,7 +1174,7 @@ bot.hears(allLabelsFor("btn_signal"), async (ctx) => {
   const lang = await getLangOrEn(ctx.from.id);
   const T = L[lang] || L.en;
   const kb = new InlineKeyboard().webApp(T.btn_signal, WEBAPP_URL);
-  await ctx.reply("🚀", { reply_markup: kb });
+  await ctx.reply("👇", { reply_markup: kb });
 });
 
 bot.hears(allLabelsFor("btn_guide"), async (ctx) => {
