@@ -510,9 +510,36 @@ const CLAUDE_MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-4-6";
 if (anthropic) console.log(`✅ Anthropic SDK ready (model=${CLAUDE_MODEL})`);
 else console.log("⚠ ANTHROPIC_API_KEY not set — VIP signals will use demo pool");
 
-async function generateAiSignal() {
+// Полный каталог активов PO, разбит на категории (синхронизирован с webapp/src/App.jsx).
+// Claude получает список ТОЛЬКО для выбранной юзером категории.
+const VIP_ASSETS_BY_CATEGORY = {
+  fiat: ["EUR/USD","GBP/USD","USD/JPY","USD/CHF","USD/CAD","AUD/USD","NZD/USD","EUR/GBP","EUR/JPY","EUR/CHF","EUR/CAD","EUR/AUD","EUR/NZD","GBP/JPY","GBP/CHF","GBP/CAD","GBP/AUD","AUD/JPY","AUD/CAD","AUD/NZD","AUD/CHF","NZD/JPY","CAD/JPY","CAD/CHF","CHF/JPY","USD/TRY","USD/MXN","USD/ZAR"],
+  otc: ["EUR/USD OTC","GBP/USD OTC","USD/JPY OTC","AUD/USD OTC","NZD/USD OTC","USD/CHF OTC","USD/CAD OTC","EUR/JPY OTC","GBP/JPY OTC","CHF/JPY OTC","EUR/CAD OTC","CHF/NOK OTC","BHD/CNY OTC","USD/ARS OTC"],
+  crypto: ["BTC/USDT","ETH/USDT","BNB/USDT","SOL/USDT","XRP/USDT","ADA/USDT","DOGE/USDT","AVAX/USDT","TRX/USDT","DOT/USDT","LINK/USDT","MATIC/USDT","LTC/USDT","BCH/USDT","SHIB/USDT","UNI/USDT","ATOM/USDT","XLM/USDT","NEAR/USDT","APT/USDT","FIL/USDT","ETC/USDT"],
+  stocks: ["AAPL","MSFT","GOOGL","AMZN","META","TSLA","NVDA","NFLX","JPM","V","MA","PYPL","DIS","NKE","MCD","KO","PEP","SBUX","BA","INTC","AMD","CSCO","ORCL","IBM","ADBE","CRM","UBER","ABNB","SHOP","SPOT","BABA","WMT","XOM","CVX","PFE","COIN"],
+  comm: ["XAU/USD","XAG/USD","XPT/USD","XPD/USD","WTI","BRENT","NATGAS","COPPER","COFFEE"],
+  idx: ["SPX500","NAS100","DJ30","RUS2K","UK100","GER40","FRA40","EU50","JPN225","HK50","CN50","AUS200"],
+};
+
+// Category-specific prompt hints (рынок ведёт себя по-разному, разные индикаторы релевантны).
+const CATEGORY_HINTS = {
+  fiat: "Forex pair. Consider session liquidity, central bank narratives, intra-day technical levels (round numbers, recent swing highs/lows, Bollinger bands). Use realistic FX-pair prices.",
+  otc: "Pocket Option OTC pair (weekend/extended-hours synthetic instrument). Use TA-only analysis — RSI, MACD, Bollinger, S/R. OTC quotes track underlying but with synthetic smoothing.",
+  crypto: "Crypto perpetual. Mention funding/open interest if relevant, key technical levels, 200 EMA on 4h, volume profile. Use realistic crypto prices.",
+  stocks: "US stock ticker. Consider sector context, recent earnings/news direction, key support/resistance, premarket/afterhours behaviour if applicable. Use realistic stock prices.",
+  comm: "Commodity. Consider USD strength, supply/demand drivers (gold = risk-off, oil = inventory/OPEC, etc.), key technical levels. Use realistic commodity prices.",
+  idx: "Stock index. Consider index components' direction, futures market sentiment, key support/resistance, opening gaps. Use realistic index prices (SPX in 5000s, NAS in 18000-22000s, etc.).",
+};
+
+async function generateAiSignal(category) {
+  const validCategory = VIP_ASSETS_BY_CATEGORY[category] ? category : null;
   if (!anthropic) {
-    return { signal: VIP_DEMO_SIGNALS[Math.floor(Math.random() * VIP_DEMO_SIGNALS.length)], source: "demo" };
+    // Demo pool отфильтрованный по категории, если категория валидна.
+    const pool = validCategory
+      ? VIP_DEMO_SIGNALS.filter(s => VIP_ASSETS_BY_CATEGORY[validCategory].includes(s.asset))
+      : VIP_DEMO_SIGNALS;
+    const choice = (pool.length ? pool : VIP_DEMO_SIGNALS)[Math.floor(Math.random() * (pool.length || VIP_DEMO_SIGNALS.length))];
+    return { signal: choice, source: "demo" };
   }
   try {
     const nowUtc = new Date().toISOString();
@@ -525,10 +552,18 @@ async function generateAiSignal() {
       utcHour < 21 ? "London/NY overlap (highest volume)" :
                      "NY close / late session";
 
-    const prompt = `You are a senior FX/crypto short-term trader generating one trade signal for a binary-options platform.
+    const assetList = validCategory
+      ? VIP_ASSETS_BY_CATEGORY[validCategory].join(", ")
+      : Object.values(VIP_ASSETS_BY_CATEGORY).flat().join(", ");
+    const categoryHint = validCategory ? (CATEGORY_HINTS[validCategory] || "") : "";
+
+    const prompt = `You are a senior trader generating one trade signal for a binary-options platform.
 Output ONE realistic high-confidence signal as STRICT JSON.
 
-ASSETS (pick exactly ONE): EUR/USD, GBP/USD, GBP/JPY, USD/JPY, AUD/USD, USD/CHF, EUR/GBP, NZD/USD, BTC/USDT, ETH/USDT, SOL/USDT, XAU/USD
+ASSETS (pick exactly ONE from this exact list — use the ticker verbatim including "OTC" suffix if present):
+${assetList}
+
+CATEGORY CONTEXT: ${categoryHint}
 
 REFERENCE TIME (UTC): ${nowUtc}
 TRADING SESSION: ${session}
@@ -621,6 +656,17 @@ Respond with ONLY a JSON object, no markdown, no code fences:
   }
 }
 
+// Список категорий и активов для UI (выбор перед получением сигнала).
+app.get("/api/vip/assets", authMiddleware, (req, res) => {
+  res.json({
+    categories: Object.keys(VIP_ASSETS_BY_CATEGORY).map(key => ({
+      key,
+      count: VIP_ASSETS_BY_CATEGORY[key].length,
+      sample: VIP_ASSETS_BY_CATEGORY[key].slice(0, 3),
+    })),
+  });
+});
+
 // История последних сигналов юзера для UI. extra JSONB разворачиваем в общий ряд.
 app.get("/api/vip/history", authMiddleware, async (req, res) => {
   if (!pool) return res.json({ history: [] });
@@ -689,6 +735,12 @@ const VIP_DEMO_SIGNALS = [
 app.post("/api/vip/signal", authMiddleware, async (req, res) => {
   if (!pool) return res.status(503).json({ error: "db unavailable" });
 
+  // Категория (обязательна) — ограничивает Claude списком тикеров для данной категории.
+  const category = String((req.body && req.body.category) || "").trim();
+  if (!VIP_ASSETS_BY_CATEGORY[category]) {
+    return res.status(400).json({ error: "invalid_category", allowed: Object.keys(VIP_ASSETS_BY_CATEGORY) });
+  }
+
   // Депозитер?
   const c = await pool.query(
     `SELECT deposited_at FROM broker_claims WHERE tg_id = $1 AND deposited_at IS NOT NULL`,
@@ -718,7 +770,13 @@ app.post("/api/vip/signal", authMiddleware, async (req, res) => {
     });
   }
 
-  const { signal, source } = await generateAiSignal();
+  const { signal, source } = await generateAiSignal(category);
+
+  // Защита: если Claude по какой-то причине вернул ассет вне списка категории — заменяем на первый из списка.
+  if (!VIP_ASSETS_BY_CATEGORY[category].includes(signal.asset)) {
+    console.warn(`Claude returned out-of-category asset "${signal.asset}" for ${category}; substituting.`);
+    signal.asset = VIP_ASSETS_BY_CATEGORY[category][Math.floor(Math.random() * VIP_ASSETS_BY_CATEGORY[category].length)];
+  }
 
   // Лог в историю — не блокируем ответ если запись падает.
   // В extra складываем всё что не помещается в плоские колонки (цены, индикаторы, факторы).

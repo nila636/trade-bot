@@ -1514,6 +1514,16 @@ const VIP_PANEL = {
     rsi_oversold: "перепродан",
     rsi_overbought: "перекуплен",
     rsi_neutral: "нейтр.",
+    choose_category: "Выбери категорию",
+    choose_category_sub: "AI сгенерирует сигнал по активу из выбранной категории",
+    change_category: "Сменить категорию",
+    cat_count: "активов",
+    cat_fiat: "Валюты",
+    cat_otc: "Валюты OTC",
+    cat_crypto: "Криптовалюты",
+    cat_stocks: "Акции",
+    cat_comm: "Сырьё",
+    cat_idx: "Индексы",
   },
   en: {
     header: "VIP AI SIGNALS", sub: "High-confidence trades with analysis",
@@ -1550,6 +1560,16 @@ const VIP_PANEL = {
     rsi_oversold: "oversold",
     rsi_overbought: "overbought",
     rsi_neutral: "neutral",
+    choose_category: "Choose category",
+    choose_category_sub: "AI will generate a signal for an asset from the selected category",
+    change_category: "Change category",
+    cat_count: "assets",
+    cat_fiat: "Currencies",
+    cat_otc: "Currencies OTC",
+    cat_crypto: "Cryptocurrencies",
+    cat_stocks: "Stocks",
+    cat_comm: "Commodities",
+    cat_idx: "Indices",
   },
   es: {
     header: "SEÑALES IA VIP", sub: "Operaciones de alta confianza con análisis",
@@ -4085,29 +4105,46 @@ function IndicatorRow({ label, text }) {
   );
 }
 
+// Метаданные категорий: иконка-эмодзи + порядок отображения в гриде.
+const VIP_CATEGORIES = [
+  { key: "fiat",   emoji: "💵" },
+  { key: "otc",    emoji: "🕒" },
+  { key: "crypto", emoji: "₿"  },
+  { key: "comm",   emoji: "🛢" },
+  { key: "stocks", emoji: "📊" },
+  { key: "idx",    emoji: "📈" },
+];
+
 function VipOverlay({ lang, session, apiUrl, brokerUrl, tgId, onClose }) {
   const T = VIP_PANEL[lang] || VIP_PANEL.en;
-  const [status, setStatus] = useState(null);    // { is_vip, signals_left, signals_limit, signals_today, reset_hour_utc }
-  const [signal, setSignal] = useState(null);    // последний сигнал из /api/vip/signal
-  const [signalSource, setSignalSource] = useState(null); // 'claude' | 'demo' | 'demo_fallback'
-  const [history, setHistory] = useState([]);    // последние сигналы из /api/vip/history
-  const [loading, setLoading] = useState(false); // запрос сигнала идёт
+  const [status, setStatus] = useState(null);
+  const [signal, setSignal] = useState(null);
+  const [signalSource, setSignalSource] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // Выбор категории (null = экран выбора, "fiat"/"otc"/etc = выбрана)
+  const [category, setCategory] = useState(null);
+  // Метаданные категорий с бэка (count активов)
+  const [assetsMeta, setAssetsMeta] = useState(null);
 
-  // Загрузка статуса + истории при открытии
+  // Загрузка статуса + истории + категорий при открытии
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [statusRes, historyRes] = await Promise.all([
+        const [statusRes, historyRes, assetsRes] = await Promise.all([
           fetch(`${apiUrl}/api/vip/status`, { headers: { "X-Session": session } }),
           fetch(`${apiUrl}/api/vip/history`, { headers: { "X-Session": session } }),
+          fetch(`${apiUrl}/api/vip/assets`, { headers: { "X-Session": session } }),
         ]);
         const statusData = await statusRes.json();
         const historyData = await historyRes.json().catch(() => ({ history: [] }));
+        const assetsData = await assetsRes.json().catch(() => ({ categories: [] }));
         if (cancelled) return;
         setStatus(statusData);
         setHistory(historyData.history || []);
+        setAssetsMeta(assetsData.categories || []);
       } catch (e) {
         if (!cancelled) setError(T.error_generic);
       }
@@ -4116,12 +4153,14 @@ function VipOverlay({ lang, session, apiUrl, brokerUrl, tgId, onClose }) {
   }, [apiUrl, session, T.error_generic]);
 
   async function requestSignal() {
+    if (!category) return; // защита: без категории не отправляем
     setLoading(true);
     setError("");
     try {
       const r = await fetch(`${apiUrl}/api/vip/signal`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Session": session },
+        body: JSON.stringify({ category }),
       });
       const d = await r.json();
       if (r.status === 429) {
@@ -4206,9 +4245,54 @@ function VipOverlay({ lang, session, apiUrl, brokerUrl, tgId, onClose }) {
           </div>
         )}
 
-        {/* VIP-режим */}
-        {status?.is_vip && (
+        {/* VIP, но категория ещё не выбрана — экран выбора */}
+        {status?.is_vip && !category && (
           <div className="space-y-5">
+            <div className="text-center">
+              <div className="text-lg font-extrabold text-white tracking-wide">{T.choose_category}</div>
+              <div className="text-xs text-neutral-500 mt-2 px-4 leading-relaxed">{T.choose_category_sub}</div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {VIP_CATEGORIES.map(cat => {
+                const meta = assetsMeta?.find(m => m.key === cat.key);
+                const count = meta?.count || 0;
+                const label = T[`cat_${cat.key}`] || cat.key;
+                return (
+                  <button
+                    key={cat.key}
+                    onClick={() => setCategory(cat.key)}
+                    className="bg-neutral-950 border border-white/10 rounded-2xl px-4 py-5 hover:border-yellow-500/40 hover:bg-neutral-900 transition-all text-left"
+                  >
+                    <div className="text-3xl mb-2">{cat.emoji}</div>
+                    <div className="text-sm font-extrabold text-white tracking-wide">{label}</div>
+                    <div className="text-[10px] text-neutral-500 mt-1 mono">{count} {T.cat_count}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* VIP-режим — категория выбрана */}
+        {status?.is_vip && category && (
+          <div className="space-y-5">
+            {/* Plate с выбранной категорией + смена */}
+            <div className="flex items-center justify-between bg-neutral-950 border border-white/5 rounded-2xl px-4 py-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{VIP_CATEGORIES.find(c => c.key === category)?.emoji}</span>
+                <div>
+                  <div className="text-sm font-extrabold text-white tracking-wide">{T[`cat_${category}`] || category}</div>
+                  <div className="text-[10px] text-neutral-500 mono">{assetsMeta?.find(m => m.key === category)?.count || 0} {T.cat_count}</div>
+                </div>
+              </div>
+              <button
+                onClick={() => { setCategory(null); setSignal(null); setError(""); }}
+                className="text-[11px] text-yellow-400 hover:text-yellow-300 font-bold tracking-wide px-3 py-2 rounded-lg hover:bg-yellow-500/5 transition"
+              >
+                {T.change_category}
+              </button>
+            </div>
+
             {/* Sub-header */}
             <div className="text-center">
               <div className="text-[11px] text-neutral-500 tracking-[0.15em] uppercase">{T.sub}</div>
