@@ -2117,7 +2117,11 @@ export default function TradeAppBot() {
           body: JSON.stringify({ initData: tg.initData }),
           signal: ctrl.signal,
         });
-        if (!r.ok) throw new Error((await r.json()).error || "auth failed");
+        if (!r.ok) {
+          const body = await r.json().catch(() => ({}));
+          const detail = body.reason ? `${body.error}: ${body.reason}` : (body.error || "auth failed");
+          throw new Error(detail);
+        }
         const d = await r.json();
         setAuthState({ loading: false, session: d.session, subscribed: d.subscribed, brokerStatus: d.brokerStatus, error: null });
 
@@ -2308,7 +2312,11 @@ export default function TradeAppBot() {
         body: JSON.stringify({ initData: tg.initData }),
         signal: ctrl.signal,
       });
-      if (!r.ok) throw new Error((await r.json()).error || "auth failed");
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        const detail = body.reason ? `${body.error}: ${body.reason}` : (body.error || "auth failed");
+        throw new Error(detail);
+      }
       const d = await r.json();
       setAuthState({ loading: false, session: d.session, subscribed: d.subscribed, brokerStatus: d.brokerStatus, error: null });
     } catch (e) {
