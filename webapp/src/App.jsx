@@ -4463,27 +4463,46 @@ function VipOverlay({ lang, session, apiUrl, brokerUrl, livePrices, tgId, onClos
                 <div className="text-center text-xs text-neutral-600 italic py-4">{T.history_empty}</div>
               ) : (
                 <div className="space-y-2">
-                  {history.map((h, i) => (
-                    <div key={i} className="bg-neutral-950 border border-white/5 rounded-xl px-3 py-2.5 flex items-center justify-between">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className={`w-1 h-8 rounded-full ${h.direction === "BUY" ? "bg-emerald-500" : "bg-rose-500"} flex-shrink-0`} />
-                        <div className="min-w-0">
-                          <div className="text-sm font-bold text-white tracking-wide">{h.asset}</div>
-                          <div className="text-[10px] text-neutral-500 mono">
-                            {new Date(h.generated_at).toISOString().slice(5, 16).replace("T", " ")}
+                  {history.map((h, i) => {
+                    const isOpen = signal && signal.asset === h.asset && signal.generated_at === h.generated_at;
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => {
+                          setSignal({ ...h });
+                          setSignalSource(h.source || null);
+                          setError("");
+                          if (typeof window !== "undefined") {
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }
+                        }}
+                        className={`w-full text-left bg-neutral-950 border rounded-xl px-3 py-2.5 flex items-center justify-between transition-all active:scale-[0.985] ${
+                          isOpen
+                            ? "border-yellow-500/40 bg-neutral-900"
+                            : "border-white/5 hover:border-yellow-500/25 hover:bg-neutral-900/60"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className={`w-1 h-8 rounded-full ${h.direction === "BUY" ? "bg-emerald-500" : "bg-rose-500"} flex-shrink-0`} />
+                          <div className="min-w-0">
+                            <div className="text-sm font-bold text-white tracking-wide">{h.asset}</div>
+                            <div className="text-[10px] text-neutral-500 mono">
+                              {new Date(h.generated_at).toISOString().slice(5, 16).replace("T", " ")}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <div className={`text-[10px] font-bold px-2 py-1 rounded ${
-                          h.direction === "BUY" ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"
-                        }`}>
-                          {h.direction}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <div className={`text-[10px] font-bold px-2 py-1 rounded ${
+                            h.direction === "BUY" ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"
+                          }`}>
+                            {h.direction}
+                          </div>
+                          <div className="text-xs font-bold text-yellow-400 mono w-9 text-right">{h.confidence}%</div>
                         </div>
-                        <div className="text-xs font-bold text-yellow-400 mono w-9 text-right">{h.confidence}%</div>
-                      </div>
-                    </div>
-                  ))}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
