@@ -2070,8 +2070,13 @@ export default function TradeAppBot() {
   // ─── Telegram Web App SDK init + auth ───
   useEffect(() => {
     const tg = typeof window !== "undefined" ? window.Telegram?.WebApp : null;
-    if (!tg) {
-      // dev-режим в обычном браузере — пропускаем гейт
+    // SDK создаёт window.Telegram.WebApp даже в обычном Chrome (мы грузим
+    // telegram-web-app.js всегда). Отличаем реальный Telegram от браузера по
+    // platform: в TG это tdesktop/android/ios/weba/webk, вне TG — "unknown".
+    const inTelegram = !!tg && tg.platform && tg.platform !== "unknown";
+    if (!tg || !inTelegram) {
+      // dev-режим в обычном браузере — пропускаем гейт, чтобы можно было
+      // открыть webapp напрямую и посмотреть UI без Telegram-сессии.
       setAuthState({ loading: false, session: null, subscribed: true, brokerStatus: "approved", error: null });
       return;
     }
@@ -2104,6 +2109,15 @@ export default function TradeAppBot() {
 
     if (!API_URL) {
       setAuthState({ loading: false, session: null, subscribed: true, brokerStatus: "approved", error: null });
+      return;
+    }
+
+    // Если initData пустой даже внутри Telegram — нет смысла ходить на /auth,
+    // он точно вернёт 401. Покажем сразу понятную диагностику.
+    if (!tg.initData) {
+      const diag = `platform=${tg.platform} ver=${tg.version} initData=0 url=${typeof window !== "undefined" ? window.location.href : ""}`;
+      setAuthState({ loading: false, session: null, subscribed: false, brokerStatus: "none",
+        error: `Откройте через кнопку бота. ${diag}` });
       return;
     }
 
@@ -2302,6 +2316,12 @@ export default function TradeAppBot() {
   const recheckAuth = async () => {
     const tg = window.Telegram?.WebApp;
     if (!tg || !API_URL) return;
+    if (!tg.initData) {
+      const diag = `platform=${tg.platform} ver=${tg.version} initData=0 url=${window.location.href}`;
+      setAuthState({ loading: false, session: null, subscribed: false, brokerStatus: "none",
+        error: `Откройте через кнопку бота. ${diag}` });
+      return;
+    }
     setAuthState(s => ({ ...s, loading: true }));
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 10000);
