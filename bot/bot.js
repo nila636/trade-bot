@@ -1002,17 +1002,19 @@ function mainKeyboard(lang, opts = {}) {
 }
 
 // Persistent reply keyboard — постоянное меню снизу (как у MostBet/казино-ботов).
-// WebApp кнопки открывают Mini App сразу; text кнопки бот ловит через bot.hears(...).
-// Reply-keyboard web_app работает потому что Mini App зарегистрирован у бота
-// через BotFather /newapp — URL whitelist'нут на уровне платформы.
+// Все кнопки — обычный text; бот ловит их через bot.hears(...) и отвечает
+// сообщением с inline web_app кнопкой. Пытались делать reply-keyboard web_app
+// напрямую — даже после регистрации Mini App через BotFather /newapp и при
+// выставленном menu button типа web_app TG Desktop 9.6 всё равно не передаёт
+// initData (приходит fragment с tgWebAppVersion/Platform но без tgWebAppData).
+// Inline web_app кнопки работают всегда. Один лишний тап, но стабильно.
 function mainReplyKeyboard(lang, opts = {}) {
   const T = L[lang] || L.en;
   const rows = [
-    [{ text: T.btn_signal, web_app: { url: WEBAPP_URL } }],
+    [{ text: T.btn_signal }],
   ];
   if (opts.isVip) {
-    const vipUrl = WEBAPP_URL + (WEBAPP_URL.includes("?") ? "&" : "?") + "startapp=vip";
-    rows.push([{ text: VIP_BTN_LABEL[lang] || VIP_BTN_LABEL.en, web_app: { url: vipUrl } }]);
+    rows.push([{ text: VIP_BTN_LABEL[lang] || VIP_BTN_LABEL.en }]);
   }
   rows.push([{ text: T.btn_broker }]);
   rows.push([{ text: T.btn_guide }, { text: T.btn_support }]);
@@ -1164,8 +1166,16 @@ bot.command("po", async (ctx) => {
 
 /* ───────── Reply-keyboard text handlers ─────────
  * Когда юзер тапает кнопку persistent-меню, Telegram шлёт обычное сообщение
- * с текстом кнопки. Ловим все 12 локализаций каждой кнопки через bot.hears.
- * WebApp-кнопки (btn_signal, VIP) Telegram открывает сам — здесь их нет. */
+ * с текстом кнопки. Ловим все 12 локализаций каждой кнопки через bot.hears
+ * и отвечаем сообщением с inline web_app кнопкой (она всегда передаёт
+ * initData, в отличие от reply-keyboard web_app). */
+
+bot.hears(allLabelsFor("btn_signal"), async (ctx) => {
+  const lang = await getLangOrEn(ctx.from.id);
+  const T = L[lang] || L.en;
+  const kb = new InlineKeyboard().webApp(T.btn_signal, WEBAPP_URL);
+  await ctx.reply("🚀", { reply_markup: kb });
+});
 
 bot.hears(allLabelsFor("btn_guide"), async (ctx) => {
   const lang = await getLangOrEn(ctx.from.id);
