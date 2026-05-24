@@ -1091,6 +1091,24 @@ bot.callbackQuery("vip_menu", async (ctx) => {
   await openVipMenu(ctx, lang);
 });
 
+// /app — быстрая ссылка на Mini App (для меню команд снизу)
+bot.command("app", async (ctx) => {
+  const lang = await getLangOrEn(ctx.from.id);
+  const T = L[lang] || L.en;
+  const kb = new InlineKeyboard().webApp(T.btn_signal, WEBAPP_URL);
+  await ctx.reply("🚀", { reply_markup: kb });
+});
+
+// /po — быстрая реферальная ссылка на Pocket Option с sub_id1
+bot.command("po", async (ctx) => {
+  const lang = await getLangOrEn(ctx.from.id);
+  const T = L[lang] || L.en;
+  const url = POCKET_OPTION_LINK + (POCKET_OPTION_LINK.includes("?") ? "&" : "?") +
+    `sub_id1=${ctx.from.id}&click_id=${ctx.from.id}`;
+  const kb = new InlineKeyboard().url(T.btn_broker, url);
+  await ctx.reply("🏦", { reply_markup: kb });
+});
+
 bot.callbackQuery("vip_blocked", async (ctx) => {
   const lang = await getLangOrEn(ctx.from.id);
   const T = VIP_I18N[lang] || VIP_I18N.en;
@@ -2200,12 +2218,45 @@ bot.command("daily_signals", async (ctx) => {
 
 bot.catch((err) => console.error("Bot error:", err));
 
+async function setupBotMenu() {
+  // Локализованные команды для меню снизу-слева у поля ввода.
+  const cmdEn = [
+    { command: "start", description: "Main menu" },
+    { command: "app",   description: "🚀 Open the app" },
+    { command: "po",    description: "🏦 Open Pocket Option" },
+  ];
+  const cmdRu = [
+    { command: "start", description: "Главное меню" },
+    { command: "app",   description: "🚀 Открыть приложение" },
+    { command: "po",    description: "🏦 Открыть Pocket Option" },
+  ];
+  const cmdEs = [
+    { command: "start", description: "Menú principal" },
+    { command: "app",   description: "🚀 Abrir la app" },
+    { command: "po",    description: "🏦 Abrir Pocket Option" },
+  ];
+  const cmdPt = [
+    { command: "start", description: "Menu principal" },
+    { command: "app",   description: "🚀 Abrir o app" },
+    { command: "po",    description: "🏦 Abrir Pocket Option" },
+  ];
+  await bot.api.setMyCommands(cmdEn).catch(e => console.error("setMyCommands en:", e));
+  await bot.api.setMyCommands(cmdRu, { language_code: "ru" }).catch(() => {});
+  await bot.api.setMyCommands(cmdEs, { language_code: "es" }).catch(() => {});
+  await bot.api.setMyCommands(cmdPt, { language_code: "pt" }).catch(() => {});
+  await bot.api.setMyCommands(cmdRu, { language_code: "uk" }).catch(() => {});
+  // Заменяем WebApp menu button ("Trade Bot") на дефолтный — теперь там "Menu" со списком команд.
+  await bot.api.setChatMenuButton({ menu_button: { type: "default" } })
+    .catch(e => console.error("setChatMenuButton:", e));
+}
+
 bot.start({
-  onStart: (me) => {
+  onStart: async (me) => {
     console.log(`✅ @${me.username} is running`);
     if (ADMIN_IDS.length) console.log(`   Admins: ${ADMIN_IDS.join(", ")}`);
     else console.log(`   ⚠ ADMIN_IDS not set — /admin команда недоступна`);
     scheduleDailySignals();
     scheduleVipDailyReset();
+    setupBotMenu().then(() => console.log("✅ Bot menu configured")).catch(e => console.error("setupBotMenu:", e));
   },
 });
