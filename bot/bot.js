@@ -2305,9 +2305,13 @@ async function setupBotMenu() {
   await bot.api.setMyCommands(cmdEs, { language_code: "es" }).catch(() => {});
   await bot.api.setMyCommands(cmdPt, { language_code: "pt" }).catch(() => {});
   await bot.api.setMyCommands(cmdRu, { language_code: "uk" }).catch(() => {});
-  // Заменяем WebApp menu button ("Trade Bot") на дефолтный — теперь там "Menu" со списком команд.
-  await bot.api.setChatMenuButton({ menu_button: { type: "default" } })
-    .catch(e => console.error("setChatMenuButton:", e));
+  // Menu button = WebApp — нужен чтобы Telegram добавил URL Mini App в whitelist бота.
+  // Без этого reply-keyboard web_app кнопки могут не передавать initData в некоторых клиентах.
+  // Текст короткий ("🚀"), чтобы не дублировать "Trade Bot" и не занимать место.
+  await bot.api.setChatMenuButton({
+    menu_button: { type: "web_app", text: "🚀", web_app: { url: WEBAPP_URL } }
+  }).catch(e => console.error("setChatMenuButton:", e));
+  console.log(`✅ WebApp URL registered as menu button: ${WEBAPP_URL}`);
 }
 
 bot.start({
